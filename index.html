@@ -398,7 +398,7 @@ function periodSelect(){
 }
 
 /* ============ khung & điều hướng ============ */
-const NAV=[["Tổng quan",[["dashboard","Dashboard","dash"],["tasks","Việc cần làm","task"]]],["Bán hàng",[["pipeline","Pipeline","pipe"],["clients","Khách hàng","users"]]],["Tài chính",[["ledger","Sổ thu chi","ledger"],["reports","Báo cáo lợi nhuận","report"]]],["Dữ liệu",[["io","Nhập / xuất file","io"]]]];
+const NAV=[["Điều hành",[["dashboard","Tổng quan","dash"],["tasks","Lịch chăm sóc","task"]]],["Khách hàng",[["pipeline","Tiến độ chốt khách","pipe"],["clients","Hồ sơ khách hàng","users"]]],["Tài chính",[["ledger","Sổ thu chi","ledger"],["reports","Báo cáo lợi nhuận","report"]]],["Dữ liệu",[["io","Nhập / xuất dữ liệu","io"]]]];
 function render(){
   const root=$("#root");
   if(S.setup){root.innerHTML=`<div class="page"><div class="card empty"><b>Chưa cấu hình cơ sở dữ liệu</b><span>Điền SUPABASE_URL và SUPABASE_ANON_KEY vào file config.js theo hướng dẫn trong README.</span></div></div>`;return}
@@ -408,7 +408,7 @@ function render(){
   if(!$(".app")){root.innerHTML=`<div class="app"><aside class="side"><a class="logo" href="#" data-view="dashboard">${mark("")}<div><b>H&amp;P GROUP</b><span>CRM</span></div></a><nav class="nav" id="nav"></nav><div class="side-foot"><span class="who" id="who"></span><button type="button" id="btnLogout">Đăng xuất</button></div></aside><main class="main"><div class="page" id="page"></div></main></div>`}
   $("#nav").innerHTML=NAV.map(([grp,items])=>`<div class="grp">${grp}</div>`+items.map(([v,l,i])=>`<button type="button" data-view="${v}" ${S.view===v?'aria-current="page"':""}>${ico(i)}<span>${l}</span>${v==="tasks"&&due?`<span class="badge">${due}</span>`:""}</button>`).join("")).join("")+`<button type="button" class="m-only" id="btnLogoutM">Đăng xuất</button>`;
   $("#who").textContent=S.uid||"";
-  const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-2.sql</code> trong kho GitHub để bật Nhật ký chăm sóc, Việc cần làm và các trường mới.</div>`:"";
+  const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-2.sql</code> trong kho GitHub để bật Nhật ký chăm sóc, Lịch chăm sóc khách và các trường mới.</div>`:"";
   $("#page").innerHTML=banner+({dashboard:vDashboard,tasks:vTasks,pipeline:vPipeline,clients:vClients,ledger:vLedger,reports:vReports,io:vIO}[S.view]||vDashboard)();
 }
 function renderLogin(){
@@ -457,23 +457,23 @@ function vDashboard(){
   const src={};cl.forEach(c=>{const k=c.source||"Chưa rõ";src[k]??={n:0,won:0,v:0};src[k].n++;if(SIGNED.has(c.status)){src[k].won++;src[k].v+=c.contractValue||0}});
   const ag=aggregate();const own={};cl.forEach(c=>{const k=c.owner||"Chưa phân công";own[k]??={n:0,won:0,v:0,thu:0,chi:0};own[k].n++;if(SIGNED.has(c.status)){own[k].won++;own[k].v+=c.contractValue||0}const p=ag.per[c.id];if(p){own[k].thu+=p.thu;own[k].chi+=p.chi}});
   const todo=[...g.over,...g.today].slice(0,7);const noMoney=!S.entries.length;
-  return pageHead("Dashboard",`Hôm nay ${dmy(todayISO())} · ${S.clients.size} khách trong hệ thống`,periodSelect()+btnEntry+btnClient)+`
+  return pageHead("Tổng quan",`Hôm nay ${dmy(todayISO())} · ${S.clients.size} khách trong hệ thống`,periodSelect()+btnEntry+btnClient)+`
   <section class="kpis">
     <div class="card kpi hl"><span class="l">Doanh thu tháng ${cur.slice(5)}</span><span class="v num">${fmtM(ms.thu)}</span><span class="s">${dRev==null?"Tháng trước chưa có thu":`So với tháng trước <span class="delta ${dRev>=0?"up":"dn"}">${dRev>=0?"+":""}${dRev}%</span>`}</span></div>
     <div class="card kpi"><span class="l">Lợi nhuận tháng ${cur.slice(5)}</span><span class="v num ${ms.thu-ms.chi<0?"neg":""}">${fmtM(ms.thu-ms.chi)}</span><span class="s">Chi ${fmtM(ms.chi)}</span></div>
-    <div class="card kpi"><span class="l">Pipeline đang mở</span><span class="v num">${fmtM(pipeVal)}</span><span class="s">${openDeals.length} cơ hội chưa chốt</span></div>
+    <div class="card kpi"><span class="l">Giá trị đang đàm phán</span><span class="v num">${fmtM(pipeVal)}</span><span class="s">${openDeals.length} khách đang tư vấn / báo giá</span></div>
     <div class="card kpi"><span class="l">Còn phải thu</span><span class="v num">${fmtM(oweSum)}</span><span class="s">${owe.length} hợp đồng chưa thu đủ</span></div>
-    <div class="card kpi ${g.over.length?"alert":""}"><span class="l">Việc quá hạn</span><span class="v num">${g.over.length}</span><span class="s">${g.today.length} việc hôm nay</span></div>
+    <div class="card kpi ${g.over.length?"alert":""}"><span class="l">Quá hạn liên hệ</span><span class="v num">${g.over.length}</span><span class="s">${g.today.length} khách cần gọi hôm nay</span></div>
   </section>
   <div class="row r-21">
     <section class="card"><div class="card-h"><h2>Thu và chi theo tháng</h2><p>12 tháng gần nhất</p><div class="r legend"><span><i class="k s-thu"></i>Thu</span><span><i class="k s-chi"></i>Chi</span></div></div>
       <div class="card-b">${noMoney?emptyBox("ledger","Chưa có khoản thu chi","Ghi khoản đầu tiên, biểu đồ sẽ tự hiện.",`<button class="btn pri" type="button" data-act="add-entry">Ghi thu / chi</button>`):`<div class="chart-wrap">${chartMonthly(months,byM)}</div>`}</div></section>
-    <section class="card"><div class="card-h"><h2>Cần xử lý</h2><p>Quá hạn và hôm nay</p><div class="r"><button class="btn sm ghost" type="button" data-view="tasks">Xem tất cả</button></div></div>
-      ${todo.length?`<div class="tasks" style="margin-top:10px">${todo.map(c=>taskRow(c,true)).join("")}</div>`:`<div class="card-b">${emptyBox("task","Không có việc gấp","Mọi khách đều đã được hẹn lịch hợp lý.")}</div>`}</section>
+    <section class="card"><div class="card-h"><h2>Khách cần liên hệ</h2><p>Quá hạn và hôm nay</p><div class="r"><button class="btn sm ghost" type="button" data-view="tasks">Xem lịch</button></div></div>
+      ${todo.length?`<div class="tasks" style="margin-top:10px">${todo.map(c=>taskRow(c,true)).join("")}</div>`:`<div class="card-b">${emptyBox("task","Không có khách cần gọi gấp","Mọi khách đều đã được hẹn lịch liên hệ.")}</div>`}</section>
   </div>
   <div class="row r-2">
     <section class="card"><div class="card-h"><h2>Lợi nhuận theo tháng</h2><p>Thu trừ chi, gồm chi phí chung</p></div><div class="card-b">${noMoney?`<p class="sub">Chưa có dữ liệu.</p>`:`<div class="chart-wrap">${chartProfit(months,byM)}</div>`}</div></section>
-    <section class="card"><div class="card-h"><h2>Phễu khách hàng</h2><p>${periodLabel()} · tỷ lệ chốt ${decided?Math.round(signedN/decided*100)+"%":"—"}</p></div>
+    <section class="card"><div class="card-h"><h2>Khách theo tình trạng</h2><p>${periodLabel()} · tỷ lệ chốt ${decided?Math.round(signedN/decided*100)+"%":"—"}</p></div>
       <div class="card-b"><div class="bars">${funnel.filter(f=>f.n||!/^(7|8|9)\./.test(f.s)).map(f=>`<div class="barrow" data-tip="${esc(`<b>${f.s}</b><span>Số khách</span><b class="num">${f.n}</b><span>Giá trị</span><b class="num">${fmt(f.v)}</b>`)}"><span>${esc(f.s.replace(/^\d+\.\s*/,""))}</span><span class="num">${f.n}${f.v?` <span class="sub" style="display:inline">· ${shortM(f.v)}</span>`:""}</span><div class="track"><div class="fill ${SIGNED.has(f.s)?"f-won":/^(9|10)\./.test(f.s)?"f-off":""}" style="width:${(f.n/fmax*100).toFixed(1)}%"></div></div></div>`).join("")}</div></div></section>
   </div>
   <div class="row r-2">
@@ -502,17 +502,17 @@ function taskRow(c,compact){
 function vTasks(){
   const g=taskGroups(S.tOwner);const sec=(k,t,cls)=>g[k].length?`<div class="grp-h ${cls}">${t}<span class="n">${g[k].length}</span></div>${g[k].map(c=>taskRow(c,false)).join("")}`:"";
   const total=Object.values(g).reduce((a,x)=>a+x.length,0);
-  return pageHead("Việc cần làm","Khách đang chăm sóc, sắp theo ngày hẹn liên hệ tiếp",`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
-  `<section class="card">${total?`<div class="tasks">${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Không có việc nào","Khách đang chăm sóc sẽ hiện ở đây kèm ngày hẹn liên hệ tiếp.")}</section>`;
+  return pageHead("Lịch chăm sóc khách","Ai cần liên hệ, khi nào và làm gì — sắp theo ngày hẹn liên hệ tiếp",`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
+  `<section class="card">${total?`<div class="tasks">${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Chưa có lịch liên hệ","Khách đang chăm sóc sẽ hiện ở đây kèm ngày hẹn liên hệ tiếp.")}</section>`;
 }
 
 /* ============ VIEW: Pipeline ============ */
 function vPipeline(){
   const cols=STATUSES.slice(0,7);const closed=STATUSES.slice(7);
   const by=s=>sortedClients().filter(c=>c.status===s&&(!S.fOwner||c.owner===S.fOwner));
-  return pageHead("Pipeline","Kéo thẻ sang cột khác để đổi tình trạng · bấm thẻ để xem chi tiết",`<select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>`+btnClient)+
+  return pageHead("Tiến độ chốt khách","Mỗi cột là một bước từ tiếp nhận đến ký hợp đồng · kéo thẻ sang cột khác để cập nhật tình trạng, bấm thẻ để mở hồ sơ",`<select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>`+btnClient)+
   `<div class="kanban">${cols.map(s=>{const list=by(s);const v=list.reduce((a,c)=>a+(c.contractValue||0),0);return `<section class="col" data-col="${esc(s)}"><div class="col-h"><b>${esc(s.replace(/^\d+\.\s*/,""))}<span class="n">${list.length}</span></b><span class="num">${v?fmtM(v):"—"}</span></div><div class="col-b">${list.map(kcard).join("")}</div></section>`}).join("")}</div>
-  <section class="card"><div class="card-h"><h2>Đã đóng</h2><p>Hoàn thành, tạm dừng, không chốt</p></div><div class="card-b"><div class="filters">${closed.map(s=>`<span class="pill ${stClass(s)}">${esc(s)} · ${by(s).length}</span>`).join("")}<button class="btn sm ghost" type="button" data-goto-closed>Xem danh sách</button></div></div></section>`;
+  <section class="card"><div class="card-h"><h2>Đã kết thúc</h2><p>Hoàn thành, tạm dừng, không chốt</p></div><div class="card-b"><div class="filters">${closed.map(s=>`<span class="pill ${stClass(s)}">${esc(s)} · ${by(s).length}</span>`).join("")}<button class="btn sm ghost" type="button" data-goto-closed>Xem danh sách</button></div></div></section>`;
 }
 function kcard(c){const d=dueInfo(c.nextDate);return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:(c.service||c.model||""))}</div><div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
 
@@ -520,17 +520,17 @@ function kcard(c){const d=dueInfo(c.nextDate);return `<article class="kcard" dra
 function vClients(){
   const at=allTime();const q=S.q.trim().toLowerCase();
   const list=sortedClients().filter(c=>(!S.fStatus||(S.fStatus==="_open"?!CLOSED.has(c.status):S.fStatus==="_closed"?CLOSED.has(c.status):c.status===S.fStatus))&&(!S.fOwner||c.owner===S.fOwner)&&(!S.fPri||c.priority===S.fPri)&&(!S.fSvc||c.service===S.fSvc)&&(!q||[c.id,c.contact,c.facility,c.phone,c.zalo,c.service,c.model,c.address,c.note].join(" ").toLowerCase().includes(q)));
-  return pageHead("Khách hàng",`${S.clients.size} khách · bấm một dòng để mở hồ sơ`,btnClient)+
+  return pageHead("Hồ sơ khách hàng",`${S.clients.size} khách · bấm một dòng để mở hồ sơ`,btnClient)+
   `<section class="card"><div class="card-b" style="padding-bottom:0"><div class="filters">
     <input class="ctl grow" id="q" type="search" placeholder="Tìm tên, cơ sở, SĐT, địa chỉ, mã KH…" value="${esc(S.q)}">
-    <select class="ctl" id="fStatus"><option value="">Mọi tình trạng</option><option value="_open"${S.fStatus==="_open"?" selected":""}>Đang chăm sóc / triển khai</option><option value="_closed"${S.fStatus==="_closed"?" selected":""}>Đã đóng</option>${STATUSES.map(s=>`<option${s===S.fStatus?" selected":""}>${s}</option>`).join("")}</select>
+    <select class="ctl" id="fStatus"><option value="">Mọi tình trạng</option><option value="_open"${S.fStatus==="_open"?" selected":""}>Đang chăm sóc / triển khai</option><option value="_closed"${S.fStatus==="_closed"?" selected":""}>Đã kết thúc</option>${STATUSES.map(s=>`<option${s===S.fStatus?" selected":""}>${s}</option>`).join("")}</select>
     <select class="ctl" id="fSvc"><option value="">Mọi dịch vụ</option>${SERVICES.map(s=>`<option${s===S.fSvc?" selected":""}>${s}</option>`).join("")}</select>
     <select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>
     <select class="ctl" id="fPri"><option value="">Mọi mức ưu tiên</option>${PRIORITIES.map(o=>`<option${o===S.fPri?" selected":""}>${o}</option>`).join("")}</select>
   </div></div>
-  ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:900px"><thead><tr><th>Khách / cơ sở</th><th>Tình trạng</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn tiếp</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
+  ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:900px"><thead><tr><th>Khách / cơ sở</th><th>Tình trạng</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn liên hệ</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
   ${list.map(c=>{const v=at[c.id]||{thu:0,chi:0};const p=v.thu-v.chi;const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span><span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span></div></div></td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="8" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
-  </tbody></table></div>`:emptyBox("users","Chưa có khách nào","Thêm khách bằng tay hoặc nhập file CSV từ Google Sheets ở mục Nhập / xuất file.",btnClient)}</section>`;
+  </tbody></table></div>`:emptyBox("users","Chưa có khách nào","Thêm khách bằng tay hoặc nhập file CSV từ Google Sheets ở mục Nhập / xuất dữ liệu.",btnClient)}</section>`;
 }
 
 /* ============ VIEW: Sổ thu chi ============ */
@@ -577,7 +577,7 @@ function vReports(){
 /* ============ VIEW: Nhập / xuất ============ */
 function vIO(){
   const box=(kind,title,steps,extra="")=>`<section class="card"><div class="card-h"><h2>${title}</h2></div><div class="card-b" style="display:flex;flex-direction:column;gap:12px"><ol class="steps">${steps}</ol><div class="drop" data-drop="${kind}"><span>Kéo file CSV vào đây</span><div class="filters" style="justify-content:center"><label class="btn sm">Chọn file<input type="file" accept=".csv,text/csv" data-file="${kind}" hidden></label>${extra}</div></div></div></section>`;
-  return pageHead("Nhập / xuất file","Đưa dữ liệu từ Google Sheets vào, hoặc xuất báo cáo ra Excel")+`
+  return pageHead("Nhập / xuất dữ liệu","Đưa dữ liệu từ Google Sheets vào, hoặc xuất báo cáo ra Excel")+`
   <div class="row r-2">
     ${box("clients","Nhập danh sách khách",`<li>Mở file <b>Khách Hàng Pháp Lý HPG</b> trên Google Sheets, chọn sheet <b>Khách hàng</b>.</li><li>Tệp → Tải xuống → <b>CSV</b>, rồi kéo file vào ô dưới.</li><li>Khách trùng mã KH được cập nhật, không tạo trùng.</li>`)}
     ${box("acts","Nhập nhật ký chăm sóc",`<li>Trong cùng file, chọn sheet <b>Nhật ký chăm sóc</b> → tải CSV.</li><li>Cần có cột <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Hình thức</code> <code class="k">Nội dung trao đổi</code>.</li><li>Nhập khách trước, nhật ký sau.</li><li>Hoặc tách thẳng cột <b>Ghi chú</b> của mọi khách thành nhật ký theo từng ngày:</li>`,`<button class="btn sm pri" type="button" data-act="sync-notes">Tạo nhật ký từ ghi chú</button>`)}
@@ -602,7 +602,7 @@ function clientDetail(id){
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
       ${c.facility?`<div style="font-weight:600;font-size:15px">${esc(c.facility)}</div>`:""}
       <div class="facts"><div><span>Giá trị HĐ</span><b class="num">${c.contractValue?fmt(c.contractValue):"—"}</b></div><div><span>Đã thu</span><b class="num" style="color:var(--c-thu)">${fmt(thu)}</b></div><div><span>Chi phí</span><b class="num" style="color:var(--gold-ink)">${fmt(chi)}</b></div><div><span>Lợi nhuận${thu?" · "+(p/thu*100).toFixed(0)+"%":""}</span><b class="num ${p<0?"neg":""}">${fmt(p)}</b></div>${owe!=null?`<div style="grid-column:1/-1"><span>Còn phải thu</span><b class="num ${owe?"neg":""}">${fmt(owe)}</b></div>`:""}</div>
-      ${!CLOSED.has(c.status)?`<div class="next"><span class="lbl">Việc tiếp theo</span><div>${esc(c.nextAction||"Chưa ghi việc cần làm")}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="sub" style="display:inline">Chưa hẹn ngày</span>`}${S.canWrite&&!S.needMigration?`<button class="btn sm pri" type="button" data-log="${esc(id)}" style="margin-left:auto">${ico("chat")}Ghi chăm sóc</button>`:""}</div></div>`:""}
+      ${!CLOSED.has(c.status)?`<div class="next"><span class="lbl">Việc cần làm tiếp theo</span><div>${esc(c.nextAction||"Chưa ghi việc cần làm")}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="sub" style="display:inline">Chưa hẹn ngày</span>`}${S.canWrite&&!S.needMigration?`<button class="btn sm pri" type="button" data-log="${esc(id)}" style="margin-left:auto">${ico("chat")}Ghi chăm sóc</button>`:""}</div></div>`:""}
       <dl class="info">${info.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
       ${c.note?(acts.some(a=>a.by===NOTE_MARK)?`<details><summary class="sub" style="cursor:pointer">Xem ghi chú gốc</summary><div class="note" style="margin-top:8px">${esc(c.note)}</div></details>`:`<div class="note">${esc(c.note)}</div>`):""}
     </div>
