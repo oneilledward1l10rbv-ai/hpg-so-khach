@@ -83,6 +83,28 @@ button{cursor:pointer}
 .jdel{border:0;background:none;color:var(--faint);font-size:16px;line-height:1;padding:2px 4px;border-radius:4px}
 .jdel:hover{color:var(--neg);background:var(--neg-soft)}
 .jadd{display:flex;gap:8px;margin-top:8px}
+.doc-grid{display:flex;flex-direction:column;gap:14px}
+.doc-cat{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--gold-ink);font-weight:700;display:flex;gap:8px;align-items:center}
+.doc-cat .n{color:var(--muted);font-weight:600}
+.docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.doc{border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;min-width:0;position:relative}
+.doc .th{aspect-ratio:4/3;max-width:100%;background:var(--sunk);display:grid;place-items:center;color:var(--faint);cursor:pointer;overflow:hidden}
+.doc .th img{width:100%;height:100%;object-fit:cover;display:block}
+.doc .th .ext{font-family:var(--f-code);font-size:12px;font-weight:600;color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:6px 10px}
+.doc .dm{padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.doc .dn{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc .ds{font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc .da{display:flex;gap:2px;padding:0 6px 6px}
+.doc .da .btn{padding:2px 8px;font-size:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line-2);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12.5px;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.chip b{font-weight:600;margin-left:4px}
+.upl-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto}
+.upl-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;font-size:13px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;align-items:center}
+.upl-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.upl-item .st{font-size:12px;color:var(--muted)}.upl-item .st.ok{color:var(--pos)}.upl-item .st.err{color:var(--neg)}
+.detail .docs{grid-template-columns:repeat(auto-fill,minmax(118px,1fr))}.detail .doc .th{aspect-ratio:3/2}
 .side{background:var(--navy);color:var(--navy-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
 .logo{display:flex;align-items:center;gap:12px;padding:4px 8px 22px;color:#fff;text-decoration:none}
 .logo svg{width:26px;height:40px;color:var(--gold);flex:none}
@@ -362,9 +384,21 @@ const newJourney=(svc,signed)=>JOURNEY_TPL[tplKey(svc)].map((t,i)=>({k:jid(),t,s
 const jOf=c=>Array.isArray(c&&c.journey)?c.journey:[];
 function jState(c){const j=jOf(c),done=j.filter(s=>s.st==="done").length,cur=j.find(s=>s.st!=="done");return {j,total:j.length,done,cur,pct:j.length?Math.round(done/j.length*100):0}}
 const progHtml=st=>`<div class="prog"><div class="bar"><i class="${st.pct===100?"full":""}" style="width:${st.pct}%"></i></div><span>${st.done}/${st.total}</span></div>`;
+const DOC_CATS=["Hợp đồng & phụ lục","Hoá đơn / chứng từ thanh toán","Biên bản bàn giao / nghiệm thu","Giấy tờ pháp lý cơ sở (ĐKKD, GPKD)","Chứng chỉ hành nghề / hồ sơ nhân sự","Bản vẽ & sơ đồ mặt bằng","Hồ sơ nộp Sở Y tế","Biên bản thẩm định","Giấy phép đã cấp","Hình ảnh cơ sở","Khác"];
+function guessDocCat(name,mime){const n=norm(name);
+  if(/hop.?dong|\bhd\b|hdong|phu.?luc|contract/.test(n))return DOC_CATS[0];if(/hoa.?don|chung.?tu|uy.?nhiem|chuyen.?khoan|bien.?lai|phieu.?thu|invoice/.test(n))return DOC_CATS[1];
+  if(/nghiem.?thu|ban.?giao/.test(n))return DOC_CATS[2];if(/dkkd|gpkd|dang.?ky.?kinh.?doanh|giay.?phep.?kinh|ma.?so.?thue|cccd|can.?cuoc/.test(n))return DOC_CATS[3];
+  if(/chung.?chi|cchn|bang.?cap|van.?bang|so.?yeu|nhan.?su|hanh.?nghe/.test(n))return DOC_CATS[4];if(/ban.?ve|so.?do|mat.?bang|layout|dwg|thiet.?ke/.test(n))return DOC_CATS[5];
+  if(/tham.?dinh/.test(n))return DOC_CATS[7];if(/giay.?phep.?hoat.?dong|gphd|giay.?phep/.test(n))return DOC_CATS[8];if(/ho.?so|syt|so.?y.?te|don.?de.?nghi/.test(n))return DOC_CATS[6];
+  if(/^image\//.test(mime||""))return DOC_CATS[9];return DOC_CATS[10]}
+const docCats=()=>[...new Set([...DOC_CATS,...S.docs.map(d=>d.category).filter(Boolean)])];
+const fsize=b=>b>=1048576?(b/1048576).toFixed(1).replace(".",",")+" MB":Math.max(1,Math.round(b/1024))+" KB";
+const isImg=d=>/^image\//.test(d.mime||"")||/\.(jpe?g|png|webp|gif|heic)$/i.test(d.name||"");
+const extOf=n=>(String(n).split(".").pop()||"FILE").slice(0,4).toUpperCase();
+const safeKey=n=>norm(n).replace(/[^a-z0-9._-]+/g,"-").replace(/-+/g,"-").slice(-80)||"file";
 const CAT_CHI=["Lệ phí nhà nước / hồ sơ","Ngân sách quảng cáo","Hoa hồng / chi phí đối tác","Chi phí nội bộ (lương, đi lại, in ấn)","Thuế / VAT","Chi khác"];
 
-const S={view:"dashboard",period:"all",clients:new Map(),entries:[],acts:[],q:"",fStatus:"",fOwner:"",fPri:"",fSvc:"",tOwner:"",lf:{type:"",cat:"",client:""},
+const S={view:"dashboard",period:"all",clients:new Map(),entries:[],acts:[],docs:[],dq:"",dCat:"",dClient:"",needDocs:false,q:"",fStatus:"",fOwner:"",fPri:"",fSvc:"",tOwner:"",lf:{type:"",cat:"",client:""},
   db:null,uid:null,canWrite:true,names:{},needLogin:false,setup:false,needMigration:false,quiet:false};
 
 /* ============ tiện ích ============ */
@@ -385,6 +419,7 @@ const ICON={
   ledger:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
   report:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
   io:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/>',
+  folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
   route:'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
@@ -437,7 +472,7 @@ function periodSelect(){
 }
 
 /* ============ khung & điều hướng ============ */
-const NAV=[["Điều hành",[["dashboard","Tổng quan","dash"],["tasks","Theo dõi khách hàng","task"]]],["Khách hàng",[["journeys","Hành trình hồ sơ","route"],["pipeline","Tiến độ chốt khách","pipe"],["clients","Hồ sơ khách hàng","users"]]],["Tài chính",[["ledger","Sổ thu chi","ledger"],["reports","Báo cáo lợi nhuận","report"]]],["Dữ liệu",[["io","Nhập / xuất dữ liệu","io"]]]];
+const NAV=[["Điều hành",[["dashboard","Tổng quan","dash"],["tasks","Theo dõi khách hàng","task"]]],["Khách hàng",[["journeys","Hành trình hồ sơ","route"],["docs","Kho tài liệu","folder"],["pipeline","Tiến độ chốt khách","pipe"],["clients","Hồ sơ khách hàng","users"]]],["Tài chính",[["ledger","Sổ thu chi","ledger"],["reports","Báo cáo lợi nhuận","report"]]],["Dữ liệu",[["io","Nhập / xuất dữ liệu","io"]]]];
 function render(){
   const root=$("#root");
   if(S.setup){root.innerHTML=`<div class="page"><div class="card empty"><b>Chưa cấu hình cơ sở dữ liệu</b><span>Điền SUPABASE_URL và SUPABASE_ANON_KEY vào file config.js theo hướng dẫn trong README.</span></div></div>`;return}
@@ -448,7 +483,8 @@ function render(){
   $("#nav").innerHTML=NAV.map(([grp,items])=>`<div class="grp">${grp}</div>`+items.map(([v,l,i])=>`<button type="button" data-view="${v}" ${S.view===v?'aria-current="page"':""}>${ico(i)}<span>${l}</span>${v==="tasks"&&due?`<span class="badge">${due}</span>`:""}</button>`).join("")).join("")+`<button type="button" class="m-only" id="btnLogoutM">Đăng xuất</button>`;
   $("#who").textContent=S.uid||"";
   const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy lần lượt <code class="k">supabase/migration-2.sql</code> và <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:S.needJourney?`<div class="banner"><b>Cần nâng cấp để bật Hành trình hồ sơ.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:"";
-  $("#page").innerHTML=banner+({dashboard:vDashboard,tasks:vTasks,journeys:vJourneys,pipeline:vPipeline,clients:vClients,ledger:vLedger,reports:vReports,io:vIO}[S.view]||vDashboard)();
+  setTimeout(fillThumbs,0);
+  $("#page").innerHTML=banner+({dashboard:vDashboard,tasks:vTasks,journeys:vJourneys,docs:vDocs,pipeline:vPipeline,clients:vClients,ledger:vLedger,reports:vReports,io:vIO}[S.view]||vDashboard)();
 }
 function renderLogin(){
   $("#root").innerHTML=`<div class="login-wrap"><section class="login-brand">${mark("bgmark")}<div>${mark("mark")}<h2>Quản lý khách hàng, hợp đồng và lợi nhuận ở một nơi.</h2><p>Hệ thống nội bộ của H&amp;P Group cho dịch vụ pháp lý y tế và marketing phòng khám.</p></div><div class="word">H&amp;P GROUP</div></section>
@@ -648,7 +684,7 @@ function vIO(){
 }
 
 /* ============ modal ============ */
-function openModal(html,wide){$("#modal").innerHTML=`<div class="overlay" data-close><div class="sheet${wide?" wide":""}" role="dialog" aria-modal="true">${html}</div></div>`;const f=$("#modal").querySelector("[autofocus]");f&&f.focus()}
+function openModal(html,wide){$("#modal").innerHTML=`<div class="overlay" data-close><div class="sheet${wide?" wide":""}" role="dialog" aria-modal="true">${html}</div></div>`;const f=$("#modal").querySelector("[autofocus]");f&&f.focus();fillThumbs()}
 function closeModal(){$("#modal").innerHTML="";if(closeModal.dirty){closeModal.dirty=false;render()}}
 
 function clientDetail(id){
@@ -669,10 +705,106 @@ function clientDetail(id){
       ${c.note?(acts.some(a=>a.by===NOTE_MARK)?`<details><summary class="sub" style="cursor:pointer">Xem ghi chú gốc</summary><div class="note" style="margin-top:8px">${esc(c.note)}</div></details>`:`<div class="note">${esc(c.note)}</div>`):""}
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      ${docsBlock(c)}
       <p class="h3">Nhật ký chăm sóc & thu chi<span class="r">${S.canWrite?`<button class="btn sm" type="button" data-add-for="${esc(id)}">${ico("plus")}Thu / chi</button>`:""}</span></p>
       ${evs.length?`<div class="timeline">${evs.map(ev=>ev.k==="a"?`<div class="ev"><span class="dot"></span><div><div class="e-h"><b>${esc(ev.a.channel||"Chăm sóc")}</b><span>${dmy(ev.a.date)}</span>${ev.a.by&&ev.a.by!==NOTE_MARK?`<span>${esc(ev.a.by)}</span>`:""}</div><div class="e-b">${esc(ev.a.content||"")}</div>${ev.a.result?`<div class="e-r">→ ${esc(ev.a.result)}</div>`:""}</div></div>`:`<div class="ev"><span class="dot money"></span><div><div class="e-h"><b style="color:${ev.e.type==="thu"?"var(--c-thu)":"var(--gold-ink)"}">${ev.e.type==="thu"?"Thu":"Chi"} ${fmt(ev.e.amount)} đ</b><span>${dmy(ev.e.date)}</span><span>${esc(ev.e.category||"")}</span>${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(ev.e.id)}" style="padding:0 6px">Sửa</button>`:""}</div>${ev.e.note?`<div class="e-r">${esc(ev.e.note)}</div>`:""}</div></div>`).join("")}</div>`:`<p class="sub">Chưa có lần chăm sóc hay khoản thu chi nào.</p>`}
     </div>
   </div></div>`,true);
+}
+
+/* ============ Kho tài liệu ============ */
+function docCard(d,showClient){
+  return `<div class="doc"><div class="th" data-dopen="${esc(d.id)}" title="Mở ${esc(d.name)}">${isImg(d)?`<img alt="" data-thumb="${esc(d.path)}" loading="lazy">`:`<span class="ext">${esc(extOf(d.name))}</span>`}</div>
+  <div class="dm"><span class="dn" title="${esc(d.name)}">${esc(d.name)}</span><span class="ds">${showClient?(d.clientId?esc(d.clientId+" · "+clientName(d.clientId)):"Tài liệu chung"):esc(d.docDate?dmy(d.docDate):dmy(new Date(Number(d.createdAt)||Date.now()).toISOString()))} · ${fsize(Number(d.size)||0)}</span>${d.note?`<span class="ds" title="${esc(d.note)}">${esc(d.note)}</span>`:""}</div>
+  <div class="da"><button class="btn sm ghost" type="button" data-dopen="${esc(d.id)}">Xem</button><button class="btn sm ghost" type="button" data-ddl="${esc(d.id)}">Tải</button>${S.canWrite?`<button class="btn sm ghost" type="button" data-dedit="${esc(d.id)}">Sửa</button>`:""}</div></div>`;
+}
+function docGroups(list,showClient){
+  const by={};list.forEach(d=>{(by[d.category||"Khác"]??=[]).push(d)});
+  const order=docCats();return `<div class="doc-grid">${Object.keys(by).sort((a,b)=>order.indexOf(a)-order.indexOf(b)).map(k=>`<div style="display:flex;flex-direction:column;gap:8px"><div class="doc-cat">${esc(k)}<span class="n">${by[k].length}</span></div><div class="docs">${by[k].map(d=>docCard(d,showClient)).join("")}</div></div>`).join("")}</div>`;
+}
+function vDocs(){
+  if(S.needDocs)return pageHead("Kho tài liệu","")+`<section class="card">${emptyBox("folder","Cần nâng cấp cơ sở dữ liệu","Chạy đoạn SQL nâng cấp Kho tài liệu trong Supabase → SQL Editor để bật mục này.")}</section>`;
+  const q=norm(S.dq);const base=S.docs.filter(d=>(S.dClient===""||(S.dClient==="_none"?!d.clientId:d.clientId===S.dClient))&&(!q||norm([d.name,d.note,d.clientId,clientName(d.clientId)].join(" ")).includes(q)));
+  const list=base.filter(d=>!S.dCat||d.category===S.dCat);const cnt={};base.forEach(d=>cnt[d.category]=(cnt[d.category]||0)+1);
+  const total=S.docs.reduce((a,d)=>a+(Number(d.size)||0),0);
+  return pageHead("Kho tài liệu",`${S.docs.length} tài liệu · ${fsize(total)} · hợp đồng, chứng từ, giấy phép, hình ảnh theo từng khách`,S.canWrite?`<button class="btn pri" type="button" data-dupload="">${ico("plus")}Tải tài liệu lên</button>`:"")+
+  `<section class="card"><div class="card-b" style="display:flex;flex-direction:column;gap:12px">
+    <div class="filters"><input class="ctl grow" id="dq" type="search" placeholder="Tìm tên file, ghi chú, khách…" value="${esc(S.dq)}"><select class="ctl" id="dClient"><option value="">Mọi khách</option><option value="_none"${S.dClient==="_none"?" selected":""}>Tài liệu chung</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===S.dClient?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></div>
+    <div class="chips"><button class="chip" type="button" data-dcat="" aria-pressed="${!S.dCat}">Tất cả<b>${base.length}</b></button>${docCats().filter(k=>cnt[k]).map(k=>`<button class="chip" type="button" data-dcat="${esc(k)}" aria-pressed="${S.dCat===k}">${esc(k)}<b>${cnt[k]}</b></button>`).join("")}</div>
+    ${list.length?docGroups(list,true):emptyBox("folder",S.docs.length?"Không có tài liệu khớp bộ lọc":"Chưa có tài liệu nào","Tải lên hợp đồng, hoá đơn, giấy phép hay hình ảnh cơ sở. Hệ thống tự gợi ý mục theo tên file.",S.canWrite&&!S.docs.length?`<button class="btn pri" type="button" data-dupload="">Tải tài liệu lên</button>`:"")}
+  </div></section>`;
+}
+function docsBlock(c){
+  if(S.needDocs)return "";const list=S.docs.filter(d=>d.clientId===c.id);
+  return `<div style="display:flex;flex-direction:column;gap:10px"><p class="h3">Tài liệu<span class="r">${S.canWrite?`<button class="btn sm" type="button" data-dupload="${esc(c.id)}">${ico("plus")}Tải lên</button>`:""}</span></p>
+  ${list.length?docGroups(list,false):`<div class="drop" data-drop="docs:${esc(c.id)}" style="padding:14px"><span>Kéo ảnh / bản scan hợp đồng vào đây</span></div>`}</div>`;
+}
+async function fillThumbs(){
+  const imgs=[...document.querySelectorAll("img[data-thumb]:not([src])")];if(!imgs.length||!sb)return;
+  const paths=[...new Set(imgs.map(i=>i.dataset.thumb))].slice(0,100);
+  const {data}=await sb.storage.from("documents").createSignedUrls(paths,3600);if(!data)return;
+  const m=Object.fromEntries(data.filter(x=>x.signedUrl).map(x=>[x.path,x.signedUrl]));imgs.forEach(i=>{if(m[i.dataset.thumb])i.src=m[i.dataset.thumb]});
+}
+async function openDoc(id,download){
+  const d=S.docs.find(x=>x.id===id);if(!d)return;const w=download?null:window.open("","_blank");
+  const {data,error}=await sb.storage.from("documents").createSignedUrl(d.path,600,download?{download:d.name}:undefined);
+  if(error||!data){w&&w.close();toast("Chưa mở được file, thử lại sau");return}
+  if(w)w.location=data.signedUrl;else{const a=document.createElement("a");a.href=data.signedUrl;a.download=d.name;document.body.appendChild(a);a.click();a.remove()}
+}
+let pendingFiles=[];
+function uploadForm(clientId,files){
+  pendingFiles=[...(files||[])];
+  const cats=docCats();const sug=pendingFiles[0]?guessDocCat(pendingFiles[0].name,pendingFiles[0].type):"";
+  openModal(`<div class="sheet-h"><h3>Tải tài liệu lên</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  <form id="fDocs" class="sheet-b"><div class="form">
+    <label>Khách<select class="ctl" id="dfClient"><option value="">— Tài liệu chung (không gắn khách) —</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===clientId?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></label>
+    <label>Mục<select class="ctl" id="dfCat"><option value="_auto">Tự phân theo tên file</option>${cats.map(k=>`<option${k===sug&&pendingFiles.length===1?" selected":""}>${esc(k)}</option>`).join("")}<option value="_new">+ Tạo mục mới…</option></select></label>
+    <label class="full" id="dfNewWrap" hidden>Tên mục mới<input class="ctl" id="dfNew" placeholder="vd Hồ sơ PCCC"></label>
+    <label>Ngày trên tài liệu<input class="ctl" type="date" id="dfDate"><span class="hint">Không bắt buộc, vd ngày ký hợp đồng</span></label>
+    <label>Ghi chú<input class="ctl" id="dfNote" placeholder="vd HĐ2 bản đã ký, đóng dấu"></label>
+    <div class="full drop" data-drop="docsform"><span>Kéo ảnh, PDF, bản scan vào đây</span><label class="btn sm">Chọn file<input type="file" id="dfFiles" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.dwg,.zip" hidden></label><span class="hint">Mỗi file tối đa 50 MB. Chụp bằng điện thoại cũng được.</span></div>
+    <div class="full upl-list" id="dfList"></div>
+  </div></form>
+  <div class="sheet-f"><button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fDocs" id="dfGo">Tải lên</button></div>`);
+  renderPending();
+}
+function renderPending(){const el=$("#dfList");if(!el)return;el.innerHTML=pendingFiles.map((f,i)=>`<div class="upl-item" id="upl${i}"><span>${esc(f.name)} <span class="sub" style="display:inline">· ${fsize(f.size)} · ${esc(guessDocCat(f.name,f.type))}</span></span><span class="st">${f.size>52428800?'<span class="st err">Quá 50 MB</span>':"Chờ tải"}</span></div>`).join("")}
+async function doUpload(){
+  if(!pendingFiles.length){toast("Chọn ít nhất một file");return}
+  let cat=val("dfCat");if(cat==="_new"){cat=val("dfNew").trim();if(!cat){toast("Nhập tên mục mới");return}}
+  const clientId=val("dfClient"),docDate=val("dfDate"),note=val("dfNote").trim();$("#dfGo").disabled=true;let ok=0;S.quiet=true;
+  for(const [i,f] of pendingFiles.entries()){const st=$(`#upl${i} .st`);if(f.size>52428800)continue;st.textContent="Đang tải…";
+    const path=`${clientId||"chung"}/${jid()}-${safeKey(f.name)}`;
+    const up=await sb.storage.from("documents").upload(path,f,{contentType:f.type||undefined,upsert:false});
+    if(up.error){st.textContent="Lỗi";st.className="st err";console.error(up.error);continue}
+    const {error}=await sb.from("documents").insert({client_id:clientId||null,category:cat==="_auto"?guessDocCat(f.name,f.type):cat,name:f.name,path,size:f.size,mime:f.type||"",note,doc_date:docDate||null,created_at:Date.now()+i});
+    if(error){st.textContent="Lỗi";st.className="st err";await sb.storage.from("documents").remove([path]);console.error(error);continue}
+    st.textContent="Xong";st.className="st ok";ok++}
+  S.quiet=false;await reload();$("#dfGo").disabled=false;
+  if(ok===pendingFiles.length){closeModal();if(clientId)clientDetail(clientId);toast(`Đã tải lên ${ok} tài liệu`)}else toast(`Đã tải ${ok}/${pendingFiles.length} file, các file lỗi giữ lại để thử lại`);
+}
+function docEditForm(id){
+  const d=S.docs.find(x=>x.id===id);if(!d)return;
+  openModal(`<div class="sheet-h"><h3>Sửa tài liệu</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  <form id="fDocEdit" class="sheet-b" data-id="${esc(id)}"><div class="form">
+    <label class="full">Tên file<input class="ctl" id="deName" value="${esc(d.name)}"></label>
+    <label>Khách<select class="ctl" id="deClient"><option value="">— Tài liệu chung —</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===d.clientId?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></label>
+    <label>Mục<input class="ctl" id="deCat" value="${esc(d.category)}" list="deCats"><datalist id="deCats">${docCats().map(k=>`<option>${esc(k)}</option>`).join("")}</datalist></label>
+    <label>Ngày trên tài liệu<input class="ctl" type="date" id="deDate" value="${esc(String(d.docDate||"").slice(0,10))}"></label>
+    <label>Ghi chú<input class="ctl" id="deNote" value="${esc(d.note)}"></label>
+  </div></form>
+  <div class="sheet-f"><button class="btn danger" type="button" data-ddel="${esc(id)}" style="margin-right:auto">Xoá tài liệu</button><button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fDocEdit">Lưu</button></div>`);
+}
+async function saveDocEdit(form){
+  const id=form.dataset.id;const d=S.docs.find(x=>x.id===id)||{};
+  const {error}=await sb.from("documents").update({name:val("deName").trim()||d.name,client_id:val("deClient")||null,category:val("deCat").trim()||"Khác",doc_date:val("deDate")||null,note:val("deNote").trim()}).eq("id",id);
+  if(error){writeErr(dbErr(error));return}await reload();closeModal();toast("Đã lưu tài liệu");
+}
+async function deleteDoc(id,btn){
+  if(!btn.classList.contains("arm")){btn.classList.add("arm");btn.dataset.label=btn.textContent;btn.textContent="Bấm lần nữa để xoá";setTimeout(()=>{if(btn.isConnected){btn.classList.remove("arm");btn.textContent=btn.dataset.label}},3500);return}
+  const d=S.docs.find(x=>x.id===id);if(!d)return;
+  const r1=await sb.storage.from("documents").remove([d.path]);if(r1.error){toast("Chưa xoá được file");return}
+  await sb.from("documents").delete().eq("id",id);await reload();closeModal();toast("Đã xoá tài liệu");
 }
 
 function journeyBlock(c){
@@ -889,6 +1021,12 @@ document.addEventListener("click",e=>{
   if(t.matches("[data-close]")){closeModal();return}
   const ty=t.closest("[data-type]");if(ty){const v=ty.dataset.type;$("#eType").value=v;ty.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.type===v?"on-"+v:"");$("#eCat").innerHTML=opt(v==="thu"?CAT_THU:CAT_CHI);return}
   const act=t.closest("[data-act]");if(act){const a=act.dataset.act;if(a==="add-entry")entryForm();else if(a==="add-client")clientForm();else if(a==="sync-notes")syncAllNotes(act);else if(a==="note-today"){const ta=$("#cNote");const t=noteDate(todayISO(),val("cDate"));ta.value=(ta.value.trimEnd()?ta.value.trimEnd()+"\n":"")+t+": ";ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length)}else exportAct(a);return}
+  const du=t.closest("[data-dupload]");if(du){uploadForm(du.dataset.dupload||(S.view==="docs"&&S.dClient&&S.dClient!=="_none"?S.dClient:""));return}
+  const dop=t.closest("[data-dopen]");if(dop){openDoc(dop.dataset.dopen,false);return}
+  const ddl=t.closest("[data-ddl]");if(ddl){openDoc(ddl.dataset.ddl,true);return}
+  const ded=t.closest("[data-dedit]");if(ded){docEditForm(ded.dataset.dedit);return}
+  const ddx=t.closest("[data-ddel]");if(ddx){deleteDoc(ddx.dataset.ddel,ddx);return}
+  const dct=t.closest("[data-dcat]");if(dct){S.dCat=dct.dataset.dcat;render();return}
   const jt=t.closest("[data-jtoggle]");if(jt){jUpdate(jt.dataset.jtoggle,(j,i)=>{const d=j[i].st==="done";j[i].st=d?"todo":"done";j[i].done=d?"":todayISO()});toast("Đã cập nhật hành trình");return}
   const jd=t.closest("[data-jdel]");if(jd){jUpdate(jd.dataset.jdel,(j,i)=>j.splice(i,1));return}
   const jn=t.closest("[data-jnew]");if(jn){const c=S.clients.get(jn.dataset.jnew);if(c)saveJourney(c.id,newJourney(c.service,SIGNED.has(c.status)?(c.signedDate||todayISO()):""));return}
@@ -898,15 +1036,19 @@ document.addEventListener("click",e=>{
   const ec=t.closest("[data-edit-client]");if(ec){clientForm(S.clients.get(ec.dataset.editClient));return}
   const af=t.closest("[data-add-for]");if(af){entryForm(null,af.dataset.addFor);return}
   const de=t.closest("[data-del-entry]");if(de){del("entries",de.dataset.delEntry,de,"Đã xoá khoản");return}
-  const dc=t.closest("[data-del-client]");if(dc){if(S.entries.some(x=>x.clientId===dc.dataset.delClient)){toast("Khách còn khoản thu chi, xoá các khoản đó trước");return}del("clients",dc.dataset.delClient,dc,"Đã xoá khách");return}
+  const dc=t.closest("[data-del-client]");if(dc){if(S.entries.some(x=>x.clientId===dc.dataset.delClient)){toast("Khách còn khoản thu chi, xoá các khoản đó trước");return}if(S.docs.some(x=>x.clientId===dc.dataset.delClient)){toast("Khách còn tài liệu trong Kho tài liệu, xoá hoặc chuyển tài liệu trước");return}del("clients",dc.dataset.delClient,dc,"Đã xoá khách");return}
   const cl=t.closest("[data-client]");if(cl){clientDetail(cl.dataset.client);return}
 });
-document.addEventListener("submit",e=>{e.preventDefault();const id=e.target.id;if(id==="fLogin")login();if(id==="fEntry")saveEntry(e.target);if(id==="fClient")saveClient(e.target);if(id==="fLog")saveLog(e.target)});
+document.addEventListener("submit",e=>{e.preventDefault();const id=e.target.id;if(id==="fLogin")login();if(id==="fEntry")saveEntry(e.target);if(id==="fClient")saveClient(e.target);if(id==="fLog")saveLog(e.target);if(id==="fDocs")doUpload();if(id==="fDocEdit")saveDocEdit(e.target)});
 document.addEventListener("input",e=>{
+  if(e.target.id==="dq"){S.dq=e.target.value;const pos=e.target.selectionStart;render();const q=$("#dq");q.focus();q.setSelectionRange(pos,pos);return}
   if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}
   if(e.target.id==="eAmt"){const v=parseMoney(e.target.value);$("#eAmtHint").textContent=v?fmt(v)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ"}
 });
 document.addEventListener("change",e=>{const id=e.target.id,v=e.target.value;
+  if(id==="dfFiles"){pendingFiles=[...pendingFiles,...e.target.files];renderPending();const c=$("#dfCat");if(c&&c.value==="_auto"&&pendingFiles.length===1)c.value=guessDocCat(pendingFiles[0].name,pendingFiles[0].type);return}
+  if(id==="dfCat"){$("#dfNewWrap").hidden=v!=="_new";if(v==="_new")$("#dfNew").focus();return}
+  if(id==="dClient"){S.dClient=v;render();return}
   const map={period:"period",fStatus:"fStatus",fOwner:"fOwner",fPri:"fPri",fSvc:"fSvc",tOwner:"tOwner"};
   if(map[id]){S[map[id]]=v;render()}
   if(id==="lfType"){S.lf.type=v;render()}if(id==="lfCat"){S.lf.cat=v;render()}if(id==="lfClient"){S.lf.client=v;render()}
@@ -925,7 +1067,10 @@ document.addEventListener("drop",async e=>{
   if(col&&dragId){e.preventDefault();const id=dragId;dragId=null;col.classList.remove("over");const c=S.clients.get(id);const st=col.dataset.col;if(!c||c.status===st)return;
     const patch={status:st,updatedAt:Date.now()};if(!S.needMigration&&SIGNED.has(st)&&!c.signedDate)patch.signedDate=todayISO();if(!S.needJourney&&SIGNED.has(st)&&!jOf(c).length){patch.journey=newJourney(c.service,patch.signedDate||c.signedDate||todayISO());c.journey=patch.journey}
     c.status=st;render();try{await db.update("clients",id,patch);toast(`${id} → ${st}`)}catch(err){writeErr(err);reload()}return}
-  const d=e.target.closest?.("[data-drop]");if(d){e.preventDefault();d.classList.remove("over");handleFile(d.dataset.drop,e.dataTransfer.files[0])}
+  const d=e.target.closest?.("[data-drop]");if(d){e.preventDefault();d.classList.remove("over");const k=d.dataset.drop;
+    if(k==="docsform"){pendingFiles=[...pendingFiles,...e.dataTransfer.files];renderPending();return}
+    if(k.startsWith("docs:")){uploadForm(k.slice(5),e.dataTransfer.files);return}
+    handleFile(k,e.dataTransfer.files[0])}
 });
 /* tooltip biểu đồ */
 const tipEl=$("#tip");
@@ -950,10 +1095,10 @@ const db={
 };
 async function reload(){
   if(S.quiet||!S.db)return;
-  const [c,e,a]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000),sb.from("activities").select("*").order("date",{ascending:false}).limit(5000)]);
+  const [c,e,a,dc]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000),sb.from("activities").select("*").order("date",{ascending:false}).limit(5000),sb.from("documents").select("*").order("created_at",{ascending:false}).limit(5000)]);
   if(c.error||e.error){toast("Chưa tải được dữ liệu, thử tải lại trang");return}
   S.needMigration=!!a.error||!c.data.length?!!a.error:!("next_date" in c.data[0]);S.needJourney=S.needMigration||(c.data.length?!("journey" in c.data[0]):false);
-  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);
+  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);S.needDocs=!!dc.error;S.docs=dc.error?[]:dc.data.map(r=>({...fromRow(r),docDate:r.doc_date||"",size:Number(r.size)||0}));
   if($("#modal").innerHTML){closeModal.dirty=true;return}
   render();
 }
@@ -961,7 +1106,7 @@ let rt=null,rtTimer=null;
 async function onSession(session){
   if(session){S.db=db;S.needLogin=false;S.uid=session.user.email;await reload();render();
     if(!rt)rt=sb.channel("hpg").on("postgres_changes",{event:"*",schema:"public"},()=>{clearTimeout(rtTimer);rtTimer=setTimeout(reload,500)}).subscribe();}
-  else{S.db=null;S.needLogin=true;S.clients=new Map();S.entries=[];S.acts=[];if(rt){sb.removeChannel(rt);rt=null}$("#modal").innerHTML="";$("#root").innerHTML="";render()}
+  else{S.db=null;S.needLogin=true;S.clients=new Map();S.entries=[];S.acts=[];S.docs=[];if(rt){sb.removeChannel(rt);rt=null}$("#modal").innerHTML="";$("#root").innerHTML="";render()}
 }
 async function login(){const err=$("#lErr");err.textContent="";const {error}=await sb.auth.signInWithPassword({email:$("#lEmail").value.trim(),password:$("#lPass").value});if(error)err.textContent=/invalid/i.test(error.message)?"Sai email hoặc mật khẩu.":"Chưa đăng nhập được: "+error.message}
 (async()=>{
