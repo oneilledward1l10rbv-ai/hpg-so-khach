@@ -14,6 +14,9 @@ HPG CRM: web quản lý khách hàng, thu chi và dashboard cho dịch vụ phá
 4. **Authentication → Users → Add user → Create new user**: tạo tài khoản cho mình và từng nhân viên (email + mật khẩu), tick **Auto Confirm User**.
 5. **Project Settings → API**: copy **Project URL** và **anon public key**.
 
+### 1b. Đã cài từ trước? Chạy nâng cấp
+Nếu cơ sở dữ liệu tạo trước ngày 24/10/2026: SQL Editor → New query → dán `supabase/migration-2.sql` → Run (thêm Nhật ký chăm sóc, Việc cần làm, các trường khách mới).
+
 ### 2. Điền cấu hình
 Mở file `config.js` trên GitHub (bấm biểu tượng bút chì), thay `DIEN_SUPABASE_URL` và `DIEN_SUPABASE_ANON_KEY` bằng 2 giá trị vừa copy → **Commit changes**.
 

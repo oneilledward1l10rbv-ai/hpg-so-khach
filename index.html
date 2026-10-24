@@ -4,646 +4,845 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>HPG CRM</title>
+<meta name="theme-color" content="#13284F">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2313284F'/%3E%3Cg transform='translate(14 10) scale(0.081)' fill='%23C4986A'%3E%3Cpath d='M7 9H116V598L7 675Z M187 87H262V415L187 468Z M336 9H444V364L336 441Z'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: sổ cái văn phòng — thanh trên cố định, tab theo việc, bảng số canh cột; số tiền là nhân vật chính */
+/* Layout: sidebar navy cố định + vùng làm việc sáng; vàng gold chỉ dùng cho nhận diện và điểm nhấn */
 :root{
-  --bg:#F3F5F4; --surface:#FFFFFF; --sunk:#E9EDEB; --line:#D7DEDA;
-  --ink:#15211C; --muted:#5A6862; --accent:#0F5B4A; --accent-ink:#FFFFFF; --accent-soft:#DDEBE6;
-  --thu:#17784F; --thu-soft:#DFF1E8; --chi:#B5432C; --chi-soft:#F8E4DE; --warn:#9A6A00; --warn-soft:#F7EDD3; --idle:#6E7772; --idle-soft:#E6E9E7;
+  --bg:#F4F6FA; --surface:#FFFFFF; --sunk:#EEF1F6; --line:#DDE3EC; --line-2:#C9D2DF;
+  --ink:#0F1B33; --muted:#5B6780; --faint:#8A94A8;
+  --navy:#13284F; --navy-2:#1B3463; --navy-ink:#C9D3E6;
+  --accent:#1F3F7A; --accent-ink:#FFFFFF; --accent-soft:#E3EAF6;
+  --gold:#C4986A; --gold-ink:#8A6230; --gold-soft:#F6EEE3;
+  --pos:#1E7A4F; --pos-soft:#E1F2E9; --neg:#B4382A; --neg-soft:#F9E3E0;
+  --warn:#9A6500; --warn-soft:#FBF0D9; --idle:#6B7488; --idle-soft:#E9ECF2;
+  --c-thu:#2F5597; --c-chi:#C08A4E;
+  --shadow:0 1px 2px rgba(15,27,51,.05),0 2px 8px rgba(15,27,51,.04);
   --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --f-code:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:8px;
+  --r:10px; --side:236px;
+  color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#101614; --surface:#18201D; --sunk:#0C1110; --line:#2A3531;
-  --ink:#E6EEEA; --muted:#97A59F; --accent:#5FC0A3; --accent-ink:#0B1A15; --accent-soft:#1E3A32;
-  --thu:#5BCB94; --thu-soft:#173328; --chi:#EE8A72; --chi-soft:#3A221C; --warn:#E3B54E; --warn-soft:#352A12; --idle:#9AA39F; --idle-soft:#242C29;
+  --bg:#0B1220; --surface:#121C30; --sunk:#0E1728; --line:#22304A; --line-2:#2E3E5C;
+  --ink:#E6EBF5; --muted:#93A0B8; --faint:#6D7A93;
+  --navy:#0A1630; --navy-2:#13254A; --navy-ink:#AEBBD3;
+  --accent:#7FA2E0; --accent-ink:#0B1220; --accent-soft:#1A2A4A;
+  --gold:#D2A877; --gold-ink:#D9B285; --gold-soft:#2E2516;
+  --pos:#4FC08A; --pos-soft:#12301F; --neg:#EE8A7A; --neg-soft:#3A1E1B;
+  --warn:#E2B44F; --warn-soft:#33280F; --idle:#97A0B3; --idle-soft:#1E2738;
+  --c-thu:#5F8BD6; --c-chi:#C2853F;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#101614; --surface:#18201D; --sunk:#0C1110; --line:#2A3531;
-  --ink:#E6EEEA; --muted:#97A59F; --accent:#5FC0A3; --accent-ink:#0B1A15; --accent-soft:#1E3A32;
-  --thu:#5BCB94; --thu-soft:#173328; --chi:#EE8A72; --chi-soft:#3A221C; --warn:#E3B54E; --warn-soft:#352A12; --idle:#9AA39F; --idle-soft:#242C29;
+  --bg:#0B1220; --surface:#121C30; --sunk:#0E1728; --line:#22304A; --line-2:#2E3E5C;
+  --ink:#E6EBF5; --muted:#93A0B8; --faint:#6D7A93;
+  --navy:#0A1630; --navy-2:#13254A; --navy-ink:#AEBBD3;
+  --accent:#7FA2E0; --accent-ink:#0B1220; --accent-soft:#1A2A4A;
+  --gold:#D2A877; --gold-ink:#D9B285; --gold-soft:#2E2516;
+  --pos:#4FC08A; --pos-soft:#12301F; --neg:#EE8A7A; --neg-soft:#3A1E1B;
+  --warn:#E2B44F; --warn-soft:#33280F; --idle:#97A0B3; --idle-soft:#1E2738;
+  --c-thu:#5F8BD6; --c-chi:#C2853F;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
   color-scheme:dark}
 *{box-sizing:border-box}
-html{color-scheme:light}body{margin:0}[hidden]{display:none!important}
-.who{font-size:12px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.login{max-width:380px;margin:40px auto;width:100%}
-.login form{display:flex;flex-direction:column;gap:12px}
-.login label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500}
-.login .err{color:var(--chi);font-size:13px;min-height:1em}
-body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5}
-.num{font-variant-numeric:tabular-nums;white-space:nowrap}
-.code{font-family:var(--f-code);font-size:12px;color:var(--muted)}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.code{font-family:var(--f-code);font-size:11.5px;color:var(--muted);letter-spacing:.02em}
+.sub{display:block;font-size:12px;color:var(--muted)}
+.pos{color:var(--pos)} .neg{color:var(--neg)}
 
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
-.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:12px}
-.brand{display:flex;flex-direction:column;margin-right:auto;min-width:0}
-.brand b{font-size:16px;font-weight:700;letter-spacing:-.01em}
-.brand span{font-size:12px;color:var(--muted)}
-.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
-.tabs button{border:0;background:none;padding:10px 14px;border-bottom:2px solid transparent;color:var(--muted);font-weight:500;white-space:nowrap}
-.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+/* ---------- khung ---------- */
+.app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100%}
+.side{background:var(--navy);color:var(--navy-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
+.logo{display:flex;align-items:center;gap:12px;padding:4px 8px 22px;color:#fff;text-decoration:none}
+.logo svg{width:26px;height:40px;color:var(--gold);flex:none}
+.logo b{display:block;font-size:14px;letter-spacing:.28em;font-weight:700;color:var(--gold)}
+.logo span{display:block;font-size:11px;letter-spacing:.16em;color:var(--navy-ink);text-transform:uppercase;margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:rgba(201,211,230,.55);padding:14px 10px 6px;font-weight:600}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;border:0;background:none;color:var(--navy-ink);padding:9px 10px;border-radius:8px;text-align:left;font-weight:500;position:relative}
+.nav button svg{width:18px;height:18px;flex:none;opacity:.85}
+.nav button:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav button[aria-current="page"]{background:var(--navy-2);color:#fff}
+.nav button[aria-current="page"]::before{content:"";position:absolute;left:-14px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:var(--gold)}
+.nav .badge{margin-left:auto;background:var(--gold);color:var(--navy);font-size:11px;font-weight:700;border-radius:999px;padding:0 7px;line-height:18px}
+.side-foot{margin-top:auto;border-top:1px solid rgba(255,255,255,.08);padding:14px 8px 0;display:flex;flex-direction:column;gap:8px}
+.side-foot .who{font-size:12px;color:var(--navy-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.side-foot button{border:1px solid rgba(255,255,255,.14);background:none;color:var(--navy-ink);border-radius:8px;padding:6px 10px;font-size:12.5px;text-align:left}
+.side-foot button:hover{color:#fff;border-color:rgba(255,255,255,.3)}
 
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:8px 14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.main{min-width:0;display:flex;flex-direction:column}
+.page{width:100%;max-width:1240px;margin:0 auto;padding-block:26px 56px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:20px}
+.ph{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.ph h1{margin:0;font-size:22px;font-weight:700;letter-spacing:-.015em;text-wrap:balance}
+.ph p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.ph .act{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:sticky;top:0;z-index:15;height:auto;flex-direction:row;align-items:center;gap:6px;padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));overflow:hidden}
+  .logo{padding:0 6px 0 0}.logo svg{width:18px;height:28px}.logo span{display:none}.logo b{font-size:12px;letter-spacing:.22em}
+  .nav{flex-direction:row;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+  .nav .grp{display:none}
+  .nav button{width:auto;white-space:nowrap;padding:7px 10px;font-size:13px}
+  .nav button svg{display:none}
+  .nav button[aria-current="page"]::before{left:10px;right:10px;top:auto;bottom:0;width:auto;height:2px;border-radius:2px}
+  .side-foot{display:none}
+  .page{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 48px}
+  .ph h1{font-size:19px}
+  .m-only{display:inline-flex!important}
+}
+.m-only{display:none!important}
+
+/* ---------- controls ---------- */
+.btn{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:8px 14px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;line-height:1.3}
 .btn:hover{border-color:var(--muted)}
 .btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn.pri:hover{filter:brightness(1.08)}
-.btn.sm{padding:4px 10px;font-size:13px}
-.btn.danger{color:var(--chi)}
-.btn.danger.arm{background:var(--chi);border-color:var(--chi);color:#fff}
+.btn.pri:hover{filter:brightness(1.1)}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#1A1205}
+.btn.sm{padding:4px 10px;font-size:12.5px}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted)}
+.btn.ghost:hover{color:var(--ink);background:var(--sunk)}
+.btn.danger{color:var(--neg)}
+.btn.danger.arm{background:var(--neg);border-color:var(--neg);color:#fff}
 .btn:disabled{opacity:.5;cursor:not-allowed}
-select.ctl,input.ctl,textarea.ctl{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:8px 10px;min-width:0}
-textarea.ctl{resize:vertical;min-height:64px}
+.btn svg{width:15px;height:15px}
+.ctl{border:1px solid var(--line-2);background:var(--surface);border-radius:8px;padding:8px 10px;min-width:0;width:100%}
+select.ctl{width:auto}
+textarea.ctl{resize:vertical;min-height:70px}
+.ctl:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.filters .ctl{flex:1 1 170px;width:auto}
+.filters .grow{flex:3 1 240px}
 
-main{padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
-h2{font-size:15px;font-weight:600;margin:0}
-.sec{display:flex;flex-direction:column;gap:10px}
-.sec-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-.sec-h p{margin:0;color:var(--muted);font-size:13px}
-.sec-h .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+/* ---------- surfaces ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px 0}
+.card-h h2{margin:0;font-size:14.5px;font-weight:600}
+.card-h p{margin:0;color:var(--muted);font-size:12.5px}
+.card-h .r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.card-b{padding:14px 18px 18px}
+.row{display:grid;gap:20px;align-items:start}
+.r-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.r-21{grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.r-12{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
+@media (max-width:1060px){.r-2,.r-21,.r-12{grid-template-columns:minmax(0,1fr)}}
 
-.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.kpi{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
-.kpi .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.kpis.k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.kpi{padding:16px 18px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden}
+.kpi .l{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
 .kpi .v{font-size:24px;font-weight:700;letter-spacing:-.02em}
 .kpi .s{font-size:12px;color:var(--muted)}
-.pos{color:var(--thu)} .neg{color:var(--chi)}
-@media (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi .v{font-size:20px}}
+.kpi.hl{background:var(--navy);border-color:color-mix(in srgb,var(--gold) 35%,var(--navy));color:#fff}
+.kpi.hl .l,.kpi.hl .s{color:var(--navy-ink)}
+.kpi.hl .v{color:var(--gold)}
+.delta{font-size:11.5px;font-weight:600;border-radius:999px;padding:1px 7px;margin-left:6px;vertical-align:middle}
+.delta.up{background:var(--pos-soft);color:var(--pos)} .delta.dn{background:var(--neg-soft);color:var(--neg)}
+.kpi.alert .v{color:var(--neg)}
+@media (max-width:1100px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:640px){.kpis,.kpis.k4{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis>:last-child:nth-child(odd){grid-column:1/-1}.kpi .v{font-size:19px}}
 
-.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:20px}
-@media (max-width:900px){.grid2{grid-template-columns:minmax(0,1fr)}}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
-
-.bars{display:flex;flex-direction:column;gap:12px}
-.barrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:13px}
-.barrow .track{grid-column:1/-1;height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
-.barrow .fill{height:100%;background:var(--chi);border-radius:4px}
-
-.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
-table{border-collapse:collapse;width:100%;min-width:640px}
-th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;background:var(--sunk);position:sticky;top:0}
+/* ---------- tables ---------- */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;background:var(--sunk);white-space:nowrap}
 td.r,th.r{text-align:right}
 tbody tr:last-child td{border-bottom:0}
 tbody tr.click{cursor:pointer}
 tbody tr.click:hover td{background:var(--accent-soft)}
-tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
-.sub{display:block;font-size:12px;color:var(--muted)}
+tfoot td{font-weight:700;border-top:1px solid var(--line-2);border-bottom:0;background:var(--sunk)}
+.card .tbl-wrap{border-top:1px solid var(--line);margin-top:14px}
+.card .tbl-wrap:first-child{border-top:0;margin-top:0}
+.cell-main{font-weight:500}
 
-.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;background:var(--idle-soft);color:var(--idle)}
+/* ---------- chips ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;background:var(--idle-soft);color:var(--idle)}
 .pill.st-new{background:var(--accent-soft);color:var(--accent)}
 .pill.st-wait{background:var(--warn-soft);color:var(--warn)}
-.pill.st-won{background:var(--thu-soft);color:var(--thu)}
-.pill.thu{background:var(--thu-soft);color:var(--thu)}
-.pill.chi{background:var(--chi-soft);color:var(--chi)}
+.pill.st-won{background:var(--pos-soft);color:var(--pos)}
+.pill.thu{background:var(--accent-soft);color:var(--accent)}
+.pill.chi{background:var(--gold-soft);color:var(--gold-ink)}
+.pri-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--idle);flex:none}
+.pri-dot.p-hot{background:var(--neg)}.pri-dot.p-warm{background:var(--warn)}.pri-dot.p-cold{background:var(--c-thu)}
+.due{font-size:12px;font-weight:600;white-space:nowrap}
+.due.over{color:var(--neg)}.due.today{color:var(--warn)}.due.soon{color:var(--accent)}
 
-.filters{display:flex;gap:8px;flex-wrap:wrap}
-.filters .ctl{flex:1 1 160px}
+/* ---------- bars ---------- */
+.bars{display:flex;flex-direction:column;gap:11px}
+.barrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;font-size:13px}
+.barrow .track{grid-column:1/-1;height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.barrow .fill{height:100%;border-radius:4px;background:var(--accent)}
+.fill.f-won{background:var(--pos)}.fill.f-off{background:var(--idle)}.fill.f-chi{background:var(--c-chi)}.fill.f-gold{background:var(--gold)}
 
-.empty{padding:28px 16px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+/* ---------- charts ---------- */
+.chart-wrap{overflow-x:auto}.chart{width:100%;min-width:520px;height:auto;display:block}
+.chart .grid{stroke:var(--line);stroke-width:1}.chart .grid.base{stroke:var(--line-2)}
+.chart .ax{fill:var(--faint);font-size:10px;font-variant-numeric:tabular-nums}.chart .lbl{fill:var(--ink);font-size:11px;font-weight:600}
+.s-thu{fill:var(--c-thu);background:var(--c-thu)}.s-chi{fill:var(--c-chi);background:var(--c-chi)}.s-pos{fill:var(--accent)}.s-neg{fill:var(--neg)}
+.chart .hit{fill:transparent}.chart .hit:hover{fill:var(--ink);fill-opacity:.04}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}
+i.k{display:inline-block;width:10px;height:10px;border-radius:3px}
+.tip{position:fixed;z-index:60;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);border-radius:8px;padding:8px 11px;font-size:12px;display:grid;grid-template-columns:auto auto;gap:3px 16px;box-shadow:0 6px 20px rgba(15,27,51,.16);max-width:270px}
+.tip>b:first-child{grid-column:1/-1;margin-bottom:2px}.tip span{color:var(--muted);display:inline-flex;align-items:center;gap:6px}.tip .num{text-align:right}
+
+/* ---------- tasks ---------- */
+.tasks{display:flex;flex-direction:column}
+.task{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line)}
+.task:first-child{border-top:0}
+.task .t-main{min-width:0}
+.task .t-main b{font-weight:600}
+.task .t-what{font-size:13px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.task .t-meta{display:flex;gap:6px 12px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:2px}
+.task .t-act{display:flex;gap:6px;align-items:center}
+.grp-h{display:flex;align-items:center;gap:8px;padding:12px 18px;background:var(--sunk);border-top:1px solid var(--line);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.grp-h:first-child{border-top:0;border-radius:var(--r) var(--r) 0 0}
+.grp-h .n{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:11px}
+.grp-h.over{color:var(--neg)}.grp-h.today{color:var(--warn)}
+
+/* ---------- kanban ---------- */
+.kanban{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:14px;overflow-x:auto;padding-bottom:8px;align-items:start}
+.col{background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;min-height:200px}
+.col-h{padding:12px 14px 10px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line)}
+.col-h b{font-size:13px;display:flex;align-items:center;gap:8px}
+.col-h b .n{font-size:11px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:0 7px}
+.col-h span{font-size:12px;color:var(--muted)}
+.col-b{padding:10px;display:flex;flex-direction:column;gap:8px;flex:1}
+.col.over{border-color:var(--accent);background:var(--accent-soft)}
+.kcard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;cursor:grab;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow)}
+.kcard:hover{border-color:var(--line-2)}
+.kcard.drag{opacity:.5}
+.kcard .k1{display:flex;align-items:center;gap:7px;font-weight:600;font-size:13px;min-width:0}
+.kcard .k1 span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kcard .k2{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kcard .k3{display:flex;justify-content:space-between;gap:8px;font-size:12px;align-items:center}
+.kcard .k3 b{font-weight:600}
+
+/* ---------- empty ---------- */
+.empty{padding:34px 18px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
 .empty b{color:var(--ink);font-size:15px}
+.empty .ico{width:44px;height:44px;border-radius:12px;background:var(--gold-soft);color:var(--gold-ink);display:grid;place-items:center}
+.empty .ico svg{width:22px;height:22px}
 
-.overlay{position:fixed;inset:0;background:rgba(10,20,16,.45);z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:max(24px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 24px max(12px,env(safe-area-inset-left,0px))}
-.sheet{background:var(--surface);border-radius:12px;width:100%;max-width:640px;border:1px solid var(--line);display:flex;flex-direction:column}
-.sheet.wide{max-width:860px}
-.sheet-h{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line)}
-.sheet-h h3{margin:0;font-size:16px;margin-right:auto}
-.sheet-b{padding:18px;display:flex;flex-direction:column;gap:14px}
-.sheet-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+/* ---------- modal ---------- */
+.overlay{position:fixed;inset:0;background:rgba(8,16,32,.5);z-index:30;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:max(28px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 28px max(12px,env(safe-area-inset-left,0px))}
+.sheet{background:var(--surface);border-radius:14px;width:100%;max-width:640px;border:1px solid var(--line);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(8,16,32,.3)}
+.sheet.wide{max-width:980px}
+.sheet-h{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sheet-h h3{margin:0;font-size:16px;margin-right:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sheet-b{padding:20px;display:flex;flex-direction:column;gap:16px}
+.sheet-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;background:var(--sunk);border-radius:0 0 14px 14px}
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
 .form .full{grid-column:1/-1}
-.form label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;min-width:0}
-.form .hint{font-size:12px;color:var(--muted);font-weight:400}
-@media (max-width:520px){.form{grid-template-columns:minmax(0,1fr)}}
-.seg{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.seg button{flex:1;border:0;background:var(--surface);padding:8px;font-weight:600;color:var(--muted)}
-.seg button.on-thu{background:var(--thu-soft);color:var(--thu)}
-.seg button.on-chi{background:var(--chi-soft);color:var(--chi)}
-.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.facts div{display:flex;flex-direction:column;gap:2px;min-width:0}
-.facts span{font-size:12px;color:var(--muted)}
-.facts b{font-size:17px}
-@media (max-width:600px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}}
-.meta{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--muted)}
-.meta strong{color:var(--ink);font-weight:500}
-.note{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:var(--r);padding:10px 12px;white-space:pre-wrap}
+.form label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted);min-width:0}
+.form label .ctl{color:var(--ink);font-weight:400;font-size:14px}
+.form .hint{font-size:12px;color:var(--faint);font-weight:400}
+.form .sec-t{grid-column:1/-1;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-ink);font-weight:700;padding-top:6px;border-top:1px solid var(--line);margin-top:4px}
+.form .sec-t:first-child{border-top:0;padding-top:0;margin-top:0}
+@media (max-width:560px){.form{grid-template-columns:minmax(0,1fr)}}
+.seg{display:flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;background:var(--surface);padding:9px;font-weight:600;color:var(--muted)}
+.seg button.on-thu{background:var(--accent-soft);color:var(--accent)}
+.seg button.on-chi{background:var(--gold-soft);color:var(--gold-ink)}
 
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:var(--r);z-index:30;font-size:13px;max-width:calc(100% - 32px)}
-.banner{background:var(--warn-soft);color:var(--warn);border-radius:var(--r);padding:10px 14px;font-size:13px}
-.drop{border:2px dashed var(--line);border-radius:var(--r);padding:22px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
+.detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:20px}
+@media (max-width:820px){.detail{grid-template-columns:minmax(0,1fr)}}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.facts div{background:var(--surface);padding:10px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.facts span{font-size:11.5px;color:var(--muted)}
+.facts b{font-size:16px}
+.info{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 14px;font-size:13px}
+.info dt{color:var(--muted)}.info dd{margin:0;overflow-wrap:anywhere}
+.next{border:1px solid var(--gold);background:var(--gold-soft);border-radius:var(--r);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.next .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-ink);font-weight:700}
+.note{font-size:13px;color:var(--muted);background:var(--sunk);border-radius:8px;padding:10px 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;margin:0;display:flex;align-items:center;gap:8px}
+.h3 .r{margin-left:auto}
+.timeline{display:flex;flex-direction:column;gap:0;position:relative}
+.ev{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;padding-bottom:14px;position:relative}
+.ev::before{content:"";position:absolute;left:6px;top:14px;bottom:0;width:1px;background:var(--line-2)}
+.ev:last-child::before{display:none}
+.ev .dot{width:13px;height:13px;border-radius:50%;border:3px solid var(--surface);background:var(--accent);box-shadow:0 0 0 1px var(--line-2);margin-top:3px}
+.ev .dot.money{background:var(--gold)}
+.ev .e-h{display:flex;gap:8px;flex-wrap:wrap;align-items:baseline;font-size:12px;color:var(--muted)}
+.ev .e-h b{color:var(--ink);font-size:13px}
+.ev .e-b{font-size:13px;overflow-wrap:anywhere}
+.ev .e-r{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));background:var(--navy);color:#fff;padding:10px 16px;border-radius:8px;z-index:70;font-size:13px;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(8,16,32,.3)}
+.banner{background:var(--warn-soft);color:var(--warn);border-radius:var(--r);padding:12px 16px;font-size:13px;border:1px solid color-mix(in srgb,var(--warn) 25%,transparent)}
+.drop{border:2px dashed var(--line-2);border-radius:var(--r);padding:24px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
 .drop.over{border-color:var(--accent);background:var(--accent-soft)}
 .steps{margin:0;padding-left:20px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:4px}
-code.k{font-family:var(--f-code);font-size:12px;background:var(--sunk);padding:1px 5px;border-radius:4px}
-@media (prefers-reduced-motion:no-preference){.overlay .sheet{animation:up .16s ease-out}@keyframes up{from{transform:translateY(8px);opacity:.6}}}
+code.k{font-family:var(--f-code);font-size:11.5px;background:var(--sunk);padding:1px 5px;border-radius:4px;color:var(--ink)}
 
-/* dashboard */
-:root{--c-thu:#2A6FB5;--c-chi:#D2731C}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c-thu:#4F92D8;--c-chi:#C47030}}
-:root[data-theme="dark"]{--c-thu:#4F92D8;--c-chi:#C47030}
-.chart-wrap{overflow-x:auto}.chart{width:100%;min-width:520px;height:auto;display:block}
-.chart .grid{stroke:var(--line);stroke-width:1}.chart .grid.base{stroke:var(--muted)}
-.chart .ax{fill:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}.chart .lbl{fill:var(--ink);font-size:12px;font-weight:600}
-.s-thu{fill:var(--c-thu);background:var(--c-thu)}.s-chi{fill:var(--c-chi);background:var(--c-chi)}.s-pos{fill:var(--accent)}.s-neg{fill:var(--chi)}
-.chart .hit{fill:transparent}.chart .hit:hover{fill:var(--ink);fill-opacity:.05}
-.legend{display:flex;gap:14px;margin-left:auto;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}
-i.k{display:inline-block;width:10px;height:10px;border-radius:2px}
-.fill.f-open{background:var(--accent)}.fill.f-won{background:var(--thu)}.fill.f-off{background:var(--idle)}
-.tip{position:fixed;z-index:40;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font-size:12px;display:grid;grid-template-columns:auto auto;gap:2px 14px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:260px}
-.tip>b:first-child{grid-column:1/-1;margin-bottom:2px}.tip span{color:var(--muted);display:inline-flex;align-items:center;gap:6px}.tip .num{text-align:right}
-@media (max-width:760px){.grid2[style*="repeat(2"]{grid-template-columns:minmax(0,1fr)!important}}
+/* ---------- login ---------- */
+.login-wrap{min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.login-brand{background:var(--navy);color:var(--navy-ink);display:flex;flex-direction:column;justify-content:space-between;padding:48px max(40px,env(safe-area-inset-left,0px));position:relative;overflow:hidden}
+.login-brand .mark{width:74px;height:114px;color:var(--gold)}
+.login-brand h2{color:#fff;font-size:30px;line-height:1.25;margin:28px 0 10px;font-weight:700;letter-spacing:-.01em;max-width:440px;text-wrap:balance}
+.login-brand p{margin:0;max-width:420px;font-size:14px}
+.login-brand .word{font-size:15px;letter-spacing:.42em;color:var(--gold);font-weight:700}
+.login-brand .bgmark{position:absolute;right:-60px;bottom:-80px;width:380px;height:580px;color:rgba(196,152,106,.07)}
+.login-form{display:flex;align-items:center;justify-content:center;padding:40px max(24px,env(safe-area-inset-right,0px)) 40px 24px;background:var(--bg)}
+.login-form form{width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px}
+.login-form h1{margin:0;font-size:22px}
+.login-form label{display:flex;flex-direction:column;gap:5px;font-size:12.5px;font-weight:600;color:var(--muted)}
+.login-form .err{color:var(--neg);font-size:13px;min-height:1.2em}
+.login-form .btn{justify-content:center;padding:11px}
+@media (max-width:820px){.login-wrap{grid-template-columns:minmax(0,1fr)}.login-brand{padding:28px 20px}.login-brand h2{font-size:22px;margin-top:16px}.login-brand .bgmark{display:none}.login-brand .mark{width:40px;height:62px}}
+@media (prefers-reduced-motion:no-preference){.overlay .sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(10px);opacity:.6}}}
 </style>
 </head>
 <body>
-
-
-<header class="top">
-  <div class="wrap bar">
-    <div class="brand"><b>HPG CRM</b><span>H&amp;P Group · Pháp lý y tế &amp; Marketing</span></div>
-    <select class="ctl" id="period" aria-label="Kỳ báo cáo"></select>
-    <button class="btn pri" id="btnAddEntry" type="button" hidden>+ Ghi thu / chi</button>
-    <span class="who" id="who" hidden></span>
-    <button class="btn sm" id="btnLogout" type="button" hidden>Đăng xuất</button>
-  </div>
-  <div class="wrap">
-    <nav class="tabs" role="tablist" id="tabs">
-      <button role="tab" data-tab="overview" aria-selected="true">Tổng quan</button>
-      <button role="tab" data-tab="dashboard" aria-selected="false">Dashboard</button>
-      <button role="tab" data-tab="clients" aria-selected="false">Khách hàng</button>
-      <button role="tab" data-tab="ledger" aria-selected="false">Sổ thu chi</button>
-      <button role="tab" data-tab="io" aria-selected="false">Nhập / xuất file</button>
-    </nav>
-  </div>
-</header>
-
-<main class="wrap" id="main">
-  <div class="empty"><b>Đang mở sổ…</b><span>Danh sách khách và các khoản thu chi sẽ hiện ở đây.</span></div>
-</main>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="hpg-mark" viewBox="770 330 452 682"><path fill="currentColor" d="M777 339H886V928L777 1005Z M957 417H1032V745L957 798Z M1106 339H1214V694L1106 771Z"/></symbol>
+</svg>
+<div id="root"></div>
 <div id="modal"></div>
 <div id="toast" class="toast" hidden></div>
+<div id="tip" class="tip" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script>
+/* ============ danh mục ============ */
 const STATUSES=["1. Mới tiếp nhận","2. Đã liên hệ","3. Đang tư vấn","4. Đã gửi báo giá","5. Chờ quyết định","6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành","9. Tạm dừng","10. Không chốt"];
 const SIGNED=new Set(["6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành"]);
+const CLOSED=new Set(["8. Hoàn thành","9. Tạm dừng","10. Không chốt"]);
+const OPEN_DEAL=s=>/^[1-5]\./.test(s||"");
 const MODELS=["Phòng khám chuyên khoa","Phòng khám đa khoa","Phòng khám thẩm mỹ","Bệnh viện thẩm mỹ","Spa / Thẩm mỹ viện","Nha khoa","Phòng chẩn trị YHCT","Phòng khám YHCT","Phòng khám da liễu","Bác sĩ cá nhân","Nhà đầu tư (chưa có cơ sở)","Khác"];
 const SERVICES=["Pháp lý - Thành lập cơ sở","Pháp lý - Giấy phép hoạt động","Pháp lý + Marketing","Bác sĩ đứng tên chuyên môn","Cố vấn pháp lý sau thành lập","Marketing Facebook","Marketing TikTok","Marketing FB + TikTok","Gói lẻ / Gói tuần Marketing","Kèm cặp / Cố vấn Marketing","Kế toán - Thuế","Khác"];
 const OWNERS=["Sake","Anh Kiên","Nhân viên 1","Nhân viên 2","Nhân viên 3"];
+const PRIORITIES=["Nóng","Ấm","Lạnh"];
+const ROLES=["Chủ phòng khám","Bác sĩ","Nhà đầu tư","Chủ spa","Quản lý","Khác"];
+const REGIONS=["TP.HCM","Hà Nội","Đà Nẵng","Cần Thơ","Đồng Nai","Tây Ninh","An Giang","Vũng Tàu","Tỉnh khác"];
+const SOURCES=["Facebook Ads","TikTok","Fanpage / Inbox","Zalo","Website","Giới thiệu","Khách cũ","Sự kiện / Hội thảo","Telesale","Khác"];
+const CHANNELS=["Gọi điện","Zalo","Gặp trực tiếp","Inbox Facebook","Email","Họp online"];
 const CAT_THU=["Đặt cọc / tạm ứng","Thanh toán theo đợt","Tất toán hợp đồng","Phí phát sinh thêm","Thu khác"];
 const CAT_CHI=["Lệ phí nhà nước / hồ sơ","Ngân sách quảng cáo","Hoa hồng / chi phí đối tác","Chi phí nội bộ (lương, đi lại, in ấn)","Thuế / VAT","Chi khác"];
 
-const S={clients:new Map(),entries:[],tab:"overview",period:"all",q:"",st:"",lf:{type:"",cat:"",client:""},
-  db:null,user:null,dl:null,uid:null,canWrite:true,names:{},loaded:{c:false,e:false},offline:false};
+const S={view:"dashboard",period:"all",clients:new Map(),entries:[],acts:[],q:"",fStatus:"",fOwner:"",fPri:"",fSvc:"",tOwner:"",lf:{type:"",cat:"",client:""},
+  db:null,uid:null,canWrite:true,names:{},needLogin:false,setup:false,needMigration:false,quiet:false};
 
+/* ============ tiện ích ============ */
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt=n=>Math.round(n||0).toLocaleString("vi-VN");
 const fmtM=n=>{const a=Math.abs(n||0);if(a>=1e9)return (n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:2})+" tỷ";if(a>=1e6)return (n/1e6).toLocaleString("vi-VN",{maximumFractionDigits:1})+" tr";return fmt(n)+" đ"};
+const shortM=n=>{const a=Math.abs(n);if(a>=1e9)return (n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:1})+" tỷ";if(a>=1e6)return Math.round(n/1e6).toLocaleString("vi-VN")+" tr";if(a>=1e3)return Math.round(n/1e3)+"k";return String(Math.round(n))};
 const todayISO=()=>{const d=new Date();return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
-const dmy=iso=>iso?iso.split("-").reverse().join("/"):"";
+const addDays=(iso,n)=>{const d=new Date(iso+"T00:00:00");d.setDate(d.getDate()+n);return new Date(d-d.getTimezoneOffset()*6e4).toISOString().slice(0,10)};
+const dmy=iso=>iso?String(iso).slice(0,10).split("-").reverse().join("/"):"";
+const dm=iso=>iso?dmy(iso).slice(0,5):"";
+const ICON={
+  dash:'<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>',
+  task:'<path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/>',
+  pipe:'<rect x="3" y="4" width="5" height="16" rx="1"/><rect x="10" y="4" width="5" height="11" rx="1"/><rect x="17" y="4" width="4" height="7" rx="1"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+  ledger:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
+  report:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
+  io:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
+  chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'
+};
+const ico=(n,cls="")=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="${cls}">${ICON[n]}</svg>`;
+const mark=cls=>`<svg class="${cls}" aria-hidden="true"><use href="#hpg-mark"/></svg>`;
 
 function parseMoney(v){
   if(typeof v==="number")return v;
-  let s=String(v||"").toLowerCase().replace(/\s|đ|vnđ|vnd/g,"");
-  if(!s)return 0;
+  let s=String(v||"").toLowerCase().replace(/\s|đ|vnđ|vnd/g,"");if(!s)return 0;
   const m=s.match(/^([\d.,]+)(tỷ|ty|tr|triệu|trieu|m|k|nghìn|ngàn)?$/);
   if(m&&m[2]){const n=parseFloat(m[1].replace(",","."));const mul={"tỷ":1e9,"ty":1e9,"tr":1e6,"triệu":1e6,"trieu":1e6,"m":1e6,"k":1e3,"nghìn":1e3,"ngàn":1e3}[m[2]];return isNaN(n)?0:Math.round(n*mul)}
-  const d=s.replace(/[^\d-]/g,"");return d?Math.abs(parseInt(d,10)):0;
+  const d=s.replace(/[^\d]/g,"");return d?parseInt(d,10):0;
 }
-function parseDate(v){
-  v=String(v||"").trim();if(!v)return "";
-  let m=v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(m)return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
-  m=v.match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[0];return "";
-}
-function stClass(s){if(SIGNED.has(s))return "st-won";if(/^[45]\./.test(s))return "st-wait";if(/^(9|10)\./.test(s))return "";return "st-new"}
-function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
-function clientName(id){if(!id)return "Chi phí chung";const c=S.clients.get(id);return c?(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:c.contact)||id:id}
+function parseDate(v){v=String(v||"").trim();if(!v)return "";let m=v.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/);if(m)return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;m=v.match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[0]:""}
+function stClass(s){if(SIGNED.has(s))return "st-won";if(/^[45]\./.test(s||""))return "st-wait";if(/^(9|10)\./.test(s||""))return "";return "st-new"}
+const priCls=p=>p==="Nóng"?"p-hot":p==="Ấm"?"p-warm":p==="Lạnh"?"p-cold":"";
+function dueInfo(d){if(!d)return null;const t=todayISO();if(d<t)return {cls:"over",txt:"Quá hạn "+dm(d)};if(d===t)return {cls:"today",txt:"Hôm nay"};if(d<=addDays(t,7))return {cls:"soon",txt:dm(d)};return {cls:"",txt:dm(d)}}
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2800)}
+function clientName(id){if(!id)return "Chi phí chung";const c=S.clients.get(id);if(!c)return id;return (c.facility&&!/chưa có tên/i.test(c.facility))?c.facility:(c.contact||id)}
+const opt=(arr,v,blank)=>(blank!==undefined?`<option value="">${blank}</option>`:"")+arr.map(x=>`<option${x===v?" selected":""}>${esc(x)}</option>`).join("");
+const sortedClients=()=>[...S.clients.values()].sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
 
-/* ---------- tính toán ---------- */
-function inPeriod(e){if(S.period==="all")return true;return (e.date||"").startsWith(S.period)}
-function aggregate(){
-  const per={},cats={};let thu=0,chi=0;
-  for(const e of S.entries){if(!inPeriod(e))continue;const k=e.clientId||"";per[k]??={thu:0,chi:0};
-    if(e.type==="thu"){per[k].thu+=e.amount;thu+=e.amount}else{per[k].chi+=e.amount;chi+=e.amount;cats[e.category||"Chi khác"]=(cats[e.category||"Chi khác"]||0)+e.amount}}
-  return {per,cats,thu,chi};
-}
+/* ============ tính toán ============ */
+const inPeriod=d=>S.period==="all"||String(d||"").startsWith(S.period);
+function aggregate(){const per={},cats={};let thu=0,chi=0;for(const e of S.entries){if(!inPeriod(e.date))continue;const k=e.clientId||"";per[k]??={thu:0,chi:0};if(e.type==="thu"){per[k].thu+=e.amount;thu+=e.amount}else{per[k].chi+=e.amount;chi+=e.amount;const c=e.category||"Chi khác";cats[c]=(cats[c]||0)+e.amount}}return {per,cats,thu,chi}}
 function allTime(){const per={};for(const e of S.entries){const k=e.clientId||"";per[k]??={thu:0,chi:0};per[k][e.type==="thu"?"thu":"chi"]+=e.amount}return per}
-function receivable(at){let r=0;for(const c of S.clients.values()){if(!SIGNED.has(c.status))continue;r+=Math.max(0,(c.contractValue||0)-(at[c.id]?.thu||0))}return r}
-
-/* ---------- render ---------- */
-function render(){
-  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===S.tab)));
-  renderPeriod();
-  const m=$("#main");
-  const authed=!!S.db;["#btnAddEntry","#who","#btnLogout","#tabs","#period"].forEach(q=>$(q).hidden=!authed);
-  if(S.setup){m.innerHTML=`<div class="panel empty"><b>Chưa cấu hình cơ sở dữ liệu</b><span>Điền SUPABASE_URL và SUPABASE_ANON_KEY vào file config.js theo hướng dẫn trong README.</span></div>`;return}
-  if(S.needLogin){m.innerHTML=`<section class="panel login"><form id="fLogin"><h2>Đăng nhập HPG CRM</h2><label>Email<input class="ctl" id="lEmail" type="email" autocomplete="username" required></label><label>Mật khẩu<input class="ctl" id="lPass" type="password" autocomplete="current-password" required></label><span class="err" id="lErr"></span><button class="btn pri" type="submit">Đăng nhập</button><span class="sub">Tài khoản do quản trị viên cấp. Quên mật khẩu thì nhắn quản trị viên đặt lại.</span></form></section>`;return}
-  if(!S.db){m.innerHTML=`<div class="empty"><b>Đang mở sổ…</b><span>Danh sách khách và các khoản thu chi sẽ hiện ở đây.</span></div>`;return}
-  const banner=S.canWrite?"":`<div class="banner">Bạn đang ở quyền chỉ xem. Nhờ chủ sổ cấp quyền Contributor để ghi thu chi.</div>`;
-  m.innerHTML=banner+({overview:vOverview,dashboard:vDashboard,clients:vClients,ledger:vLedger,io:vIO}[S.tab])();
-  $("#btnAddEntry").disabled=!S.canWrite;
-}
-function renderPeriod(){
-  const sel=$("#period");const months=[...new Set(S.entries.map(e=>(e.date||"").slice(0,7)).filter(Boolean))].sort().reverse();
-  const years=[...new Set(months.map(m=>m.slice(0,4)))];
-  const cur=todayISO().slice(0,7);if(!months.includes(cur))months.unshift(cur);
-  const opts=[["all","Toàn bộ thời gian"],...years.map(y=>[y,"Năm "+y]),...months.map(m=>[m,"Tháng "+m.slice(5)+"/"+m.slice(0,4)])];
-  const html=opts.map(([v,l])=>`<option value="${v}"${v===S.period?" selected":""}>${l}</option>`).join("");
-  if(sel.innerHTML!==html)sel.innerHTML=html;
+function oweList(){const at=allTime();return [...S.clients.values()].filter(c=>SIGNED.has(c.status)&&(c.contractValue||0)>(at[c.id]?.thu||0)).map(c=>({c,paid:at[c.id]?.thu||0,left:(c.contractValue||0)-(at[c.id]?.thu||0)})).sort((a,b)=>b.left-a.left)}
+function monthSum(m){let thu=0,chi=0;for(const e of S.entries){if(!String(e.date).startsWith(m))continue;e.type==="thu"?thu+=e.amount:chi+=e.amount}return {thu,chi}}
+const prevMonth=m=>{let [y,mo]=m.split("-").map(Number);mo--;if(!mo){mo=12;y--}return `${y}-${String(mo).padStart(2,"0")}`};
+function taskGroups(owner){
+  const t=todayISO(),wk=addDays(t,7);const g={over:[],today:[],week:[],later:[],none:[]};
+  for(const c of S.clients.values()){if(CLOSED.has(c.status))continue;if(owner&&(c.owner||"")!==owner)continue;
+    const d=c.nextDate;if(!d)g.none.push(c);else if(d<t)g.over.push(c);else if(d===t)g.today.push(c);else if(d<=wk)g.week.push(c);else g.later.push(c)}
+  const byD=(a,b)=>(a.nextDate||"").localeCompare(b.nextDate||"")||a.id.localeCompare(b.id);Object.values(g).forEach(a=>a.sort(byD));return g;
 }
 const periodLabel=()=>S.period==="all"?"toàn bộ thời gian":S.period.length===4?"năm "+S.period:"tháng "+S.period.slice(5)+"/"+S.period.slice(0,4);
-
-function vOverview(){
-  const a=aggregate(),at=allTime();const profit=a.thu-a.chi;const margin=a.thu?profit/a.thu*100:null;
-  const rec=receivable(at);
-  const signedVal=[...S.clients.values()].filter(c=>SIGNED.has(c.status)).reduce((s,c)=>s+(c.contractValue||0),0);
-  const pipeVal=[...S.clients.values()].filter(c=>/^[1-5]\./.test(c.status)).reduce((s,c)=>s+(c.contractValue||0),0);
-  const catRows=Object.entries(a.cats).sort((x,y)=>y[1]-x[1]);const maxCat=catRows[0]?.[1]||1;
-  const rows=Object.entries(a.per).map(([k,v])=>({k,...v,p:v.thu-v.chi,c:S.clients.get(k)})).sort((x,y)=>y.p-x.p);
-  const noEntries=!S.entries.length;
-  return `
-  <section class="kpis" aria-label="Chỉ số ${periodLabel()}">
-    <div class="kpi"><span class="l">Đã thu</span><span class="v num pos">${fmtM(a.thu)}</span><span class="s num">${fmt(a.thu)} đ</span></div>
-    <div class="kpi"><span class="l">Tổng chi phí</span><span class="v num neg">${fmtM(a.chi)}</span><span class="s num">${fmt(a.chi)} đ</span></div>
-    <div class="kpi"><span class="l">Lợi nhuận</span><span class="v num ${profit<0?"neg":""}">${fmtM(profit)}</span><span class="s">${margin==null?"Chưa có khoản thu":"Biên lợi nhuận "+margin.toLocaleString("vi-VN",{maximumFractionDigits:1})+"%"}</span></div>
-    <div class="kpi"><span class="l">Còn phải thu</span><span class="v num">${fmtM(rec)}</span><span class="s">Từ khách đã ký · mọi thời điểm</span></div>
-  </section>
-  <p class="sec-h" style="margin:-8px 0 0"><span class="code">Kỳ: ${periodLabel()} · Giá trị đã ký ${fmtM(signedVal)} · Đang đàm phán ${fmtM(pipeVal)}</span></p>
-  ${noEntries?`<div class="panel empty"><b>Chưa có khoản thu chi nào</b><span>Ghi khoản đầu tiên, ví dụ tiền cọc của một khách đã ký hoặc lệ phí nộp Sở Y tế. Lợi nhuận từng khách sẽ tự tính.</span><button class="btn pri" type="button" data-act="add-entry" ${S.canWrite?"":"disabled"}>+ Ghi thu / chi</button></div>`:`
-  <div class="grid2">
-    <section class="panel sec"><div class="sec-h"><h2>Chi phí theo hạng mục</h2></div>
-      ${catRows.length?`<div class="bars">${catRows.map(([k,v])=>`<div class="barrow"><span>${esc(k)}</span><span class="num">${fmt(v)} đ <span class="sub" style="display:inline">· ${(v/a.chi*100).toFixed(0)}%</span></span><div class="track"><div class="fill" style="width:${(v/maxCat*100).toFixed(1)}%"></div></div></div>`).join("")}</div>`:`<p class="sub">Chưa có khoản chi trong kỳ này.</p>`}
-    </section>
-    <section class="sec"><div class="sec-h"><h2>Lợi nhuận theo khách</h2><p>${periodLabel()}</p></div>
-      <div class="tbl-wrap"><table><thead><tr><th>Khách</th><th class="r">Đã thu</th><th class="r">Chi phí</th><th class="r">Lợi nhuận</th><th class="r">Biên</th></tr></thead><tbody>
-      ${rows.map(r=>`<tr class="${r.k?"click":""}" ${r.k?`data-client="${esc(r.k)}"`:""}><td>${r.k?`<span class="code">${esc(r.k)}</span> `:""}${esc(clientName(r.k))}${r.c?`<span class="sub">${esc(r.c.service||"")}</span>`:`<span class="sub">Không gắn khách cụ thể</span>`}</td><td class="r num">${fmt(r.thu)}</td><td class="r num">${fmt(r.chi)}</td><td class="r num ${r.p<0?"neg":"pos"}">${fmt(r.p)}</td><td class="r num">${r.thu?(r.p/r.thu*100).toFixed(0)+"%":"—"}</td></tr>`).join("")||`<tr><td colspan="5" class="sub">Không có khoản nào trong kỳ này.</td></tr>`}
-      </tbody>${rows.length?`<tfoot><tr><td>Tổng</td><td class="r num">${fmt(a.thu)}</td><td class="r num">${fmt(a.chi)}</td><td class="r num ${profit<0?"neg":""}">${fmt(profit)}</td><td class="r num">${margin==null?"—":margin.toFixed(0)+"%"}</td></tr></tfoot>`:""}</table></div>
-    </section>
-  </div>`}`;
+function periodSelect(){
+  const months=[...new Set([...S.entries.map(e=>String(e.date||"").slice(0,7)),...[...S.clients.values()].map(c=>String(c.date||"").slice(0,7))].filter(Boolean))].sort().reverse();
+  const cur=todayISO().slice(0,7);if(!months.includes(cur))months.unshift(cur);const years=[...new Set(months.map(m=>m.slice(0,4)))];
+  const o=[["all","Toàn bộ thời gian"],...years.map(y=>[y,"Năm "+y]),...months.map(m=>[m,"Tháng "+m.slice(5)+"/"+m.slice(0,4)])];
+  return `<select class="ctl" id="period" aria-label="Kỳ báo cáo">${o.map(([v,l])=>`<option value="${v}"${v===S.period?" selected":""}>${l}</option>`).join("")}</select>`;
 }
 
-function vClients(){
-  const at=allTime();const q=S.q.trim().toLowerCase();
-  const list=[...S.clients.values()].filter(c=>(!S.st||c.status===S.st)&&(!q||[c.id,c.contact,c.facility,c.phone,c.service,c.model].join(" ").toLowerCase().includes(q))).sort((a,b)=>a.id.localeCompare(b.id));
-  return `<section class="sec">
-    <div class="sec-h"><h2>Khách hàng</h2><p>${S.clients.size} khách · bấm một dòng để xem thu chi của khách</p><div class="sp"><button class="btn pri" type="button" data-act="add-client" ${S.canWrite?"":"disabled"}>+ Thêm khách</button></div></div>
-    <div class="filters"><input class="ctl" id="q" type="search" placeholder="Tìm tên, cơ sở, SĐT, mã KH…" value="${esc(S.q)}"><select class="ctl" id="st"><option value="">Mọi tình trạng</option>${STATUSES.map(s=>`<option${s===S.st?" selected":""}>${s}</option>`).join("")}</select></div>
-    ${S.clients.size?`<div class="tbl-wrap"><table><thead><tr><th>Mã</th><th>Khách / cơ sở</th><th>Tình trạng</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Chi phí</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
-    ${list.map(c=>{const v=at[c.id]||{thu:0,chi:0};const p=v.thu-v.chi;return `<tr class="click" data-client="${esc(c.id)}"><td class="code">${esc(c.id)}</td><td>${esc(c.contact||"—")}<span class="sub">${esc(c.facility||"")}${c.service?" · "+esc(c.service):""}</span></td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num">${v.chi?fmt(v.chi):"—"}</td><td class="r num ${p<0?"neg":p>0?"pos":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="7" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
-    </tbody></table></div>`:`<div class="panel empty"><b>Chưa có khách nào</b><span>Thêm khách bằng tay, hoặc nhập thẳng file CSV tải từ Google Sheets ở tab Nhập / xuất file.</span></div>`}
-  </section>`;
+/* ============ khung & điều hướng ============ */
+const NAV=[["Tổng quan",[["dashboard","Dashboard","dash"],["tasks","Việc cần làm","task"]]],["Bán hàng",[["pipeline","Pipeline","pipe"],["clients","Khách hàng","users"]]],["Tài chính",[["ledger","Sổ thu chi","ledger"],["reports","Báo cáo lợi nhuận","report"]]],["Dữ liệu",[["io","Nhập / xuất file","io"]]]];
+function render(){
+  const root=$("#root");
+  if(S.setup){root.innerHTML=`<div class="page"><div class="card empty"><b>Chưa cấu hình cơ sở dữ liệu</b><span>Điền SUPABASE_URL và SUPABASE_ANON_KEY vào file config.js theo hướng dẫn trong README.</span></div></div>`;return}
+  if(S.needLogin){renderLogin();return}
+  if(!S.db){root.innerHTML=`<div class="page"><div class="empty"><b>Đang mở HPG CRM…</b></div></div>`;return}
+  const g=taskGroups("");const due=g.over.length+g.today.length;
+  if(!$(".app")){root.innerHTML=`<div class="app"><aside class="side"><a class="logo" href="#" data-view="dashboard">${mark("")}<div><b>H&amp;P GROUP</b><span>CRM</span></div></a><nav class="nav" id="nav"></nav><div class="side-foot"><span class="who" id="who"></span><button type="button" id="btnLogout">Đăng xuất</button></div></aside><main class="main"><div class="page" id="page"></div></main></div>`}
+  $("#nav").innerHTML=NAV.map(([grp,items])=>`<div class="grp">${grp}</div>`+items.map(([v,l,i])=>`<button type="button" data-view="${v}" ${S.view===v?'aria-current="page"':""}>${ico(i)}<span>${l}</span>${v==="tasks"&&due?`<span class="badge">${due}</span>`:""}</button>`).join("")).join("")+`<button type="button" class="m-only" id="btnLogoutM">Đăng xuất</button>`;
+  $("#who").textContent=S.uid||"";
+  const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-2.sql</code> trong kho GitHub để bật Nhật ký chăm sóc, Việc cần làm và các trường mới.</div>`:"";
+  $("#page").innerHTML=banner+({dashboard:vDashboard,tasks:vTasks,pipeline:vPipeline,clients:vClients,ledger:vLedger,reports:vReports,io:vIO}[S.view]||vDashboard)();
 }
-
-function vLedger(){
-  const f=S.lf;const list=S.entries.filter(e=>inPeriod(e)&&(!f.type||e.type===f.type)&&(!f.cat||e.category===f.cat)&&(f.client===""||(f.client==="_none"?!e.clientId:e.clientId===f.client)));
-  const thu=list.filter(e=>e.type==="thu").reduce((s,e)=>s+e.amount,0),chi=list.filter(e=>e.type==="chi").reduce((s,e)=>s+e.amount,0);
-  const cats=[...CAT_THU,...CAT_CHI];
-  return `<section class="sec">
-    <div class="sec-h"><h2>Sổ thu chi</h2><p>${list.length} khoản · ${periodLabel()}</p><div class="sp"><button class="btn pri" type="button" data-act="add-entry" ${S.canWrite?"":"disabled"}>+ Ghi thu / chi</button></div></div>
-    <div class="filters">
-      <select class="ctl" id="lfType"><option value="">Thu và chi</option><option value="thu"${f.type==="thu"?" selected":""}>Chỉ thu</option><option value="chi"${f.type==="chi"?" selected":""}>Chỉ chi</option></select>
-      <select class="ctl" id="lfCat"><option value="">Mọi hạng mục</option>${cats.map(c=>`<option${c===f.cat?" selected":""}>${c}</option>`).join("")}</select>
-      <select class="ctl" id="lfClient"><option value="">Mọi khách</option><option value="_none"${f.client==="_none"?" selected":""}>Chi phí chung</option>${[...S.clients.values()].sort((a,b)=>a.id.localeCompare(b.id)).map(c=>`<option value="${esc(c.id)}"${c.id===f.client?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select>
-    </div>
-    ${list.length?`<div class="tbl-wrap"><table><thead><tr><th>Ngày</th><th>Khách</th><th>Hạng mục</th><th>Nội dung</th><th class="r">Số tiền</th><th></th></tr></thead><tbody>
-    ${list.map(e=>`<tr><td class="num">${dmy(e.date)}</td><td>${e.clientId?`<span class="code">${esc(e.clientId)}</span> `:""}${esc(clientName(e.clientId))}</td><td><span class="pill ${e.type}">${e.type==="thu"?"Thu":"Chi"}</span> ${esc(e.category||"")}</td><td>${esc(e.note||"")}${e.by&&S.names[e.by]?`<span class="sub">Ghi bởi ${esc(S.names[e.by])}</span>`:""}</td><td class="r num ${e.type==="thu"?"pos":"neg"}">${e.type==="thu"?"+":"−"}${fmt(e.amount)}</td><td class="r">${S.canWrite?`<button class="btn sm" type="button" data-edit="${esc(e.id)}">Sửa</button>`:""}</td></tr>`).join("")}
-    </tbody><tfoot><tr><td colspan="4">Thu ${fmt(thu)} · Chi ${fmt(chi)}</td><td class="r num ${thu-chi<0?"neg":""}">${fmt(thu-chi)}</td><td></td></tr></tfoot></table></div>`:`<div class="panel empty"><b>Không có khoản nào</b><span>${S.entries.length?"Thử đổi kỳ báo cáo hoặc bộ lọc.":"Ghi khoản thu hoặc chi đầu tiên, hoặc nhập file CSV."}</span></div>`}
-  </section>`;
+function renderLogin(){
+  $("#root").innerHTML=`<div class="login-wrap"><section class="login-brand">${mark("bgmark")}<div>${mark("mark")}<h2>Quản lý khách hàng, hợp đồng và lợi nhuận ở một nơi.</h2><p>Hệ thống nội bộ của H&amp;P Group cho dịch vụ pháp lý y tế và marketing phòng khám.</p></div><div class="word">H&amp;P GROUP</div></section>
+  <section class="login-form"><form id="fLogin"><h1>Đăng nhập HPG CRM</h1><label>Email<input class="ctl" id="lEmail" type="email" autocomplete="username" required></label><label>Mật khẩu<input class="ctl" id="lPass" type="password" autocomplete="current-password" required></label><span class="err" id="lErr"></span><button class="btn pri" type="submit">Đăng nhập</button><span class="sub">Tài khoản do quản trị viên cấp. Quên mật khẩu, nhắn quản trị viên để đặt lại.</span></form></section></div>`;
 }
+const pageHead=(title,sub,act="")=>`<header class="ph"><div><h1>${title}</h1>${sub?`<p>${sub}</p>`:""}</div><div class="act">${act}</div></header>`;
+const btnEntry=`<button class="btn" type="button" data-act="add-entry">${ico("plus")}Ghi thu / chi</button>`;
+const btnClient=`<button class="btn pri" type="button" data-act="add-client">${ico("plus")}Thêm khách</button>`;
+const emptyBox=(icon,title,text,btn="")=>`<div class="empty"><div class="ico">${ico(icon)}</div><b>${title}</b><span>${text}</span>${btn}</div>`;
 
-function vIO(){
-  return `<div class="grid2" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
-  <section class="panel sec"><div class="sec-h"><h2>Nhập danh sách khách</h2></div>
-    <ol class="steps"><li>Mở file <b>Khách Hàng Pháp Lý HPG</b> trên Google Sheets, chọn sheet <b>Khách hàng</b>.</li><li>Tệp → Tải xuống → <b>CSV</b>.</li><li>Kéo file vào ô dưới. Khách trùng mã KH sẽ được cập nhật, không tạo trùng.</li></ol>
-    <div class="drop" data-drop="clients"><span>Kéo file CSV vào đây</span><label class="btn sm">Chọn file<input type="file" accept=".csv,text/csv" data-file="clients" hidden></label></div>
-  </section>
-  <section class="panel sec"><div class="sec-h"><h2>Nhập thu chi từ file</h2></div>
-    <ol class="steps"><li>File CSV có các cột: <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Loại</code> (Thu/Chi) <code class="k">Hạng mục</code> <code class="k">Số tiền</code> <code class="k">Nội dung</code>.</li><li>Mã KH để trống nghĩa là chi phí chung. Số tiền ghi <code class="k">38000000</code>, <code class="k">38.000.000</code> hay <code class="k">38tr</code> đều được.</li></ol>
-    <div class="drop" data-drop="entries"><span>Kéo file CSV vào đây</span><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><label class="btn sm">Chọn file<input type="file" accept=".csv,text/csv" data-file="entries" hidden></label><button class="btn sm" type="button" data-act="tpl">Tải file mẫu</button></div></div>
-  </section>
-  <section class="panel sec" style="grid-column:1/-1"><div class="sec-h"><h2>Xuất báo cáo</h2><p>File CSV mở được bằng Excel hoặc Google Sheets</p></div>
-    <div class="filters"><button class="btn" type="button" data-act="exp-ledger">Sổ thu chi (${periodLabel()})</button><button class="btn" type="button" data-act="exp-profit">Lợi nhuận theo khách (${periodLabel()})</button><button class="btn" type="button" data-act="exp-clients">Danh sách khách</button></div>
-  </section></div>`;
-}
-
-
-/* ---------- dashboard ---------- */
-const shortM=n=>{const a=Math.abs(n);if(a>=1e9)return (n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:1})+" tỷ";if(a>=1e6)return Math.round(n/1e6).toLocaleString("vi-VN")+" tr";if(a>=1e3)return Math.round(n/1e3)+"k";return String(Math.round(n))};
+/* ============ charts ============ */
 function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
-function last12(){const end=todayISO().slice(0,7);const latest=S.entries.reduce((m,e)=>e.date&&e.date.slice(0,7)>m?e.date.slice(0,7):m,end);let [y,m]=latest.split("-").map(Number);const out=[];for(let i=0;i<12;i++){out.unshift(`${y}-${String(m).padStart(2,"0")}`);m--;if(!m){m=12;y--}}return out}
+function last12(){const end=todayISO().slice(0,7);const latest=S.entries.reduce((m,e)=>e.date&&String(e.date).slice(0,7)>m?String(e.date).slice(0,7):m,end);let [y,m]=latest.split("-").map(Number);const out=[];for(let i=0;i<12;i++){out.unshift(`${y}-${String(m).padStart(2,"0")}`);m--;if(!m){m=12;y--}}return out}
 const barPath=(x,y,w,h,up)=>{const r=Math.min(4,w/2,Math.abs(h));if(h<=0)return "";return up?`M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`:`M${x},${y}V${y+h-r}Q${x},${y+h} ${x+r},${y+h}H${x+w-r}Q${x+w},${y+h} ${x+w},${y+h-r}V${y}Z`};
 function chartMonthly(months,byM){
-  const W=720,H=240,L=54,R=8,T=12,B=28,pw=W-L-R,ph=H-T-B;
-  const max=niceMax(Math.max(1,...months.map(m=>Math.max(byM[m].thu,byM[m].chi))));
-  const gw=pw/months.length,bw=Math.min(18,(gw-10)/2);
-  let g="";for(let i=0;i<=4;i++){const v=max*i/4,y=T+ph-ph*i/4;g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" class="grid${i?"":" base"}"/><text x="${L-8}" y="${y+4}" text-anchor="end" class="ax">${shortM(v)}</text>`}
-  let bars="",hits="";months.forEach((m,i)=>{const cx=L+gw*i+gw/2,d=byM[m];const h1=ph*d.thu/max,h2=ph*d.chi/max;
-    bars+=`<path d="${barPath(cx-bw-1,T+ph-h1,bw,h1,true)}" class="s-thu"/><path d="${barPath(cx+1,T+ph-h2,bw,h2,true)}" class="s-chi"/>`;
-    bars+=`<text x="${cx}" y="${H-8}" text-anchor="middle" class="ax">${m.slice(5)}/${m.slice(2,4)}</text>`;
+  const W=760,H=250,L=50,R=20,T=14,B=26,pw=W-L-R,ph=H-T-B;const max=niceMax(Math.max(1,...months.map(m=>Math.max(byM[m].thu,byM[m].chi))));
+  const gw=pw/months.length,bw=Math.min(16,(gw-12)/2);let g="";
+  for(let i=0;i<=4;i++){const v=max*i/4,y=T+ph-ph*i/4;g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" class="grid${i?"":" base"}"/><text x="${L-8}" y="${y+3.5}" text-anchor="end" class="ax">${shortM(v)}</text>`}
+  let bars="",hits="";months.forEach((m,i)=>{const cx=L+gw*i+gw/2,d=byM[m],h1=ph*d.thu/max,h2=ph*d.chi/max;
+    bars+=`<path d="${barPath(cx-bw-1,T+ph-h1,bw,h1,true)}" class="s-thu"/><path d="${barPath(cx+1,T+ph-h2,bw,h2,true)}" class="s-chi"/><text x="${cx}" y="${H-7}" text-anchor="middle" class="ax">${m.slice(5)}/${m.slice(2,4)}</text>`;
     hits+=`<rect x="${L+gw*i}" y="${T}" width="${gw}" height="${ph}" class="hit" data-tip="${esc(`<b>Tháng ${m.slice(5)}/${m.slice(0,4)}</b><span><i class="k s-thu"></i>Thu</span><b class="num">${fmt(d.thu)}</b><span><i class="k s-chi"></i>Chi</span><b class="num">${fmt(d.chi)}</b><span>Lợi nhuận</span><b class="num">${fmt(d.thu-d.chi)}</b>`)}"/>`});
   return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Thu và chi theo tháng">${g}${bars}${hits}</svg>`;
 }
 function chartProfit(months,byM){
-  const W=720,H=170,L=54,R=8,T=12,B=28,pw=W-L-R,ph=H-T-B;
-  const vals=months.map(m=>byM[m].thu-byM[m].chi);const mx=niceMax(Math.max(1,...vals.map(Math.abs)));const hasNeg=vals.some(v=>v<0);
-  const lo=hasNeg?-mx:0,span=mx-lo,yOf=v=>T+ph*(mx-v)/span,zero=yOf(0);
-  let g="";const ticks=hasNeg?[-mx,0,mx]:[0,mx/2,mx];ticks.forEach(v=>{g+=`<line x1="${L}" x2="${W-R}" y1="${yOf(v)}" y2="${yOf(v)}" class="grid${v===0?" base":""}"/><text x="${L-8}" y="${yOf(v)+4}" text-anchor="end" class="ax">${shortM(v)}</text>`});
-  const gw=pw/months.length,bw=Math.min(26,gw-12);let bars="",hits="";
-  months.forEach((m,i)=>{const v=vals[i],cx=L+gw*i+gw/2,h=Math.abs(yOf(v)-zero);
-    bars+=v>=0?`<path d="${barPath(cx-bw/2,zero-h,bw,h,true)}" class="s-pos"/>`:`<path d="${barPath(cx-bw/2,zero,bw,h,false)}" class="s-neg"/>`;
-    if(i===months.length-1&&v)bars+=`<text x="${cx}" y="${v>=0?zero-h-6:zero+h+14}" text-anchor="middle" class="lbl">${shortM(v)}</text>`;
-    bars+=`<text x="${cx}" y="${H-8}" text-anchor="middle" class="ax">${m.slice(5)}/${m.slice(2,4)}</text>`;
+  const W=560,H=230,L=46,R=22,T=16,B=26,pw=W-L-R,ph=H-T-B;const vals=months.map(m=>byM[m].thu-byM[m].chi);const mx=niceMax(Math.max(1,...vals.map(Math.abs)));const neg=vals.some(v=>v<0);
+  const lo=neg?-mx:0,yOf=v=>T+ph*(mx-v)/(mx-lo),zero=yOf(0);let g="";(neg?[-mx,0,mx]:[0,mx/2,mx]).forEach(v=>{g+=`<line x1="${L}" x2="${W-R}" y1="${yOf(v)}" y2="${yOf(v)}" class="grid${v===0?" base":""}"/><text x="${L-8}" y="${yOf(v)+3.5}" text-anchor="end" class="ax">${shortM(v)}</text>`});
+  const gw=pw/months.length,bw=Math.min(22,gw-12);let bars="",hits="";
+  months.forEach((m,i)=>{const v=vals[i],cx=L+gw*i+gw/2,h=Math.abs(yOf(v)-zero);bars+=v>=0?`<path d="${barPath(cx-bw/2,zero-h,bw,h,true)}" class="s-pos"/>`:`<path d="${barPath(cx-bw/2,zero,bw,h,false)}" class="s-neg"/>`;
+    if(i===months.length-1&&v)bars+=`<text x="${cx}" y="${v>=0?zero-h-6:zero+h+13}" text-anchor="middle" class="lbl">${shortM(v)}</text>`;
+    bars+=`<text x="${cx}" y="${H-7}" text-anchor="middle" class="ax">${m.slice(5)}/${m.slice(2,4)}</text>`;
     hits+=`<rect x="${L+gw*i}" y="${T}" width="${gw}" height="${ph}" class="hit" data-tip="${esc(`<b>Tháng ${m.slice(5)}/${m.slice(0,4)}</b><span>Lợi nhuận</span><b class="num">${fmt(v)}</b><span>Biên</span><b class="num">${byM[m].thu?(v/byM[m].thu*100).toFixed(0)+"%":"—"}</b>`)}"/>`});
   return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Lợi nhuận theo tháng">${g}${bars}${hits}</svg>`;
 }
-function inPeriodClient(c){if(S.period==="all")return true;return (c.date||"").startsWith(S.period)}
+
+/* ============ VIEW: Dashboard ============ */
 function vDashboard(){
-  const months=last12();const byM=Object.fromEntries(months.map(m=>[m,{thu:0,chi:0}]));
-  for(const e of S.entries){const m=(e.date||"").slice(0,7);if(byM[m])byM[m][e.type==="thu"?"thu":"chi"]+=e.amount}
-  const tot=months.reduce((a,m)=>(a.thu+=byM[m].thu,a.chi+=byM[m].chi,a),{thu:0,chi:0});
-  const at=allTime(),ag=aggregate();
-  const cl=[...S.clients.values()].filter(inPeriodClient);
-  // phễu
-  const funnel=STATUSES.map(s=>{const g=cl.filter(c=>c.status===s);return {s,n:g.length,v:g.reduce((a,c)=>a+(c.contractValue||0),0)}});const fmax=Math.max(1,...funnel.map(f=>f.n));
-  const signedN=cl.filter(c=>SIGNED.has(c.status)).length;const closedN=cl.filter(c=>SIGNED.has(c.status)||/^10\./.test(c.status)).length;
-  // nguồn
+  const cur=todayISO().slice(0,7),ms=monthSum(cur),mp=monthSum(prevMonth(cur));
+  const dRev=mp.thu?Math.round((ms.thu-mp.thu)/mp.thu*100):null;
+  const openDeals=[...S.clients.values()].filter(c=>OPEN_DEAL(c.status));const pipeVal=openDeals.reduce((a,c)=>a+(c.contractValue||0),0);
+  const owe=oweList(),oweSum=owe.reduce((a,o)=>a+o.left,0);const g=taskGroups("");
+  const months=last12();const byM=Object.fromEntries(months.map(m=>[m,{thu:0,chi:0}]));for(const e of S.entries){const m=String(e.date||"").slice(0,7);if(byM[m])byM[m][e.type==="thu"?"thu":"chi"]+=e.amount}
+  const cl=[...S.clients.values()].filter(c=>inPeriod(c.date));
+  const funnel=STATUSES.map(s=>{const a=cl.filter(c=>c.status===s);return {s,n:a.length,v:a.reduce((x,c)=>x+(c.contractValue||0),0)}});const fmax=Math.max(1,...funnel.map(f=>f.n));
+  const signedN=cl.filter(c=>SIGNED.has(c.status)).length,decided=cl.filter(c=>SIGNED.has(c.status)||/^10\./.test(c.status||"")).length;
   const src={};cl.forEach(c=>{const k=c.source||"Chưa rõ";src[k]??={n:0,won:0,v:0};src[k].n++;if(SIGNED.has(c.status)){src[k].won++;src[k].v+=c.contractValue||0}});
-  const srcRows=Object.entries(src).sort((a,b)=>b[1].n-a[1].n);
-  // dịch vụ
-  const svc={};cl.forEach(c=>{const k=c.service||"Chưa rõ";svc[k]??={n:0,v:0};svc[k].n++;if(SIGNED.has(c.status))svc[k].v+=c.contractValue||0});const svcRows=Object.entries(svc).sort((a,b)=>b[1].n-a[1].n);const smax=Math.max(1,...svcRows.map(r=>r[1].n));
-  // người phụ trách
-  const own={};cl.forEach(c=>{const k=c.owner||"Chưa phân công";own[k]??={n:0,won:0,v:0,thu:0,chi:0};own[k].n++;if(SIGNED.has(c.status)){own[k].won++;own[k].v+=c.contractValue||0}const p=ag.per[c.id];if(p){own[k].thu+=p.thu;own[k].chi+=p.chi}});
-  const ownRows=Object.entries(own).sort((a,b)=>(b[1].thu-b[1].chi)-(a[1].thu-a[1].chi)||b[1].n-a[1].n);
-  // công nợ
-  const owe=[...S.clients.values()].filter(c=>SIGNED.has(c.status)&&(c.contractValue||0)>(at[c.id]?.thu||0)).map(c=>({c,paid:at[c.id]?.thu||0,left:(c.contractValue||0)-(at[c.id]?.thu||0)})).sort((a,b)=>b.left-a.left);
-  const noMoney=!S.entries.length;
-  return `
-  <section class="kpis" aria-label="12 tháng gần nhất">
-    <div class="kpi"><span class="l">Thu 12 tháng</span><span class="v num">${fmtM(tot.thu)}</span><span class="s">${months[0].slice(5)}/${months[0].slice(0,4)} – ${months[11].slice(5)}/${months[11].slice(0,4)}</span></div>
-    <div class="kpi"><span class="l">Lợi nhuận 12 tháng</span><span class="v num ${tot.thu-tot.chi<0?"neg":""}">${fmtM(tot.thu-tot.chi)}</span><span class="s">${tot.thu?"Biên "+((tot.thu-tot.chi)/tot.thu*100).toFixed(0)+"%":"Chưa có khoản thu"}</span></div>
-    <div class="kpi"><span class="l">Tỷ lệ chốt</span><span class="v num">${closedN?Math.round(signedN/closedN*100)+"%":"—"}</span><span class="s">${signedN} ký / ${closedN} khách đã có kết quả</span></div>
-    <div class="kpi"><span class="l">Khách mới</span><span class="v num">${cl.length}</span><span class="s">Tiếp nhận ${periodLabel()}</span></div>
+  const ag=aggregate();const own={};cl.forEach(c=>{const k=c.owner||"Chưa phân công";own[k]??={n:0,won:0,v:0,thu:0,chi:0};own[k].n++;if(SIGNED.has(c.status)){own[k].won++;own[k].v+=c.contractValue||0}const p=ag.per[c.id];if(p){own[k].thu+=p.thu;own[k].chi+=p.chi}});
+  const todo=[...g.over,...g.today].slice(0,7);const noMoney=!S.entries.length;
+  return pageHead("Dashboard",`Hôm nay ${dmy(todayISO())} · ${S.clients.size} khách trong hệ thống`,periodSelect()+btnEntry+btnClient)+`
+  <section class="kpis">
+    <div class="card kpi hl"><span class="l">Doanh thu tháng ${cur.slice(5)}</span><span class="v num">${fmtM(ms.thu)}</span><span class="s">${dRev==null?"Tháng trước chưa có thu":`So với tháng trước <span class="delta ${dRev>=0?"up":"dn"}">${dRev>=0?"+":""}${dRev}%</span>`}</span></div>
+    <div class="card kpi"><span class="l">Lợi nhuận tháng ${cur.slice(5)}</span><span class="v num ${ms.thu-ms.chi<0?"neg":""}">${fmtM(ms.thu-ms.chi)}</span><span class="s">Chi ${fmtM(ms.chi)}</span></div>
+    <div class="card kpi"><span class="l">Pipeline đang mở</span><span class="v num">${fmtM(pipeVal)}</span><span class="s">${openDeals.length} cơ hội chưa chốt</span></div>
+    <div class="card kpi"><span class="l">Còn phải thu</span><span class="v num">${fmtM(oweSum)}</span><span class="s">${owe.length} hợp đồng chưa thu đủ</span></div>
+    <div class="card kpi ${g.over.length?"alert":""}"><span class="l">Việc quá hạn</span><span class="v num">${g.over.length}</span><span class="s">${g.today.length} việc hôm nay</span></div>
   </section>
-  <div class="grid2" style="grid-template-columns:minmax(0,1fr)">
-    <section class="panel sec"><div class="sec-h"><h2>Thu và chi theo tháng</h2><div class="legend"><span><i class="k s-thu"></i>Thu</span><span><i class="k s-chi"></i>Chi</span></div></div>
-      ${noMoney?`<p class="sub">Biểu đồ sẽ hiện khi có khoản thu chi đầu tiên.</p>`:`<div class="chart-wrap">${chartMonthly(months,byM)}</div>`}</section>
-    <section class="panel sec"><div class="sec-h"><h2>Lợi nhuận theo tháng</h2><p>Thu trừ chi, mọi khách và chi phí chung</p></div>
-      ${noMoney?`<p class="sub">Chưa có dữ liệu.</p>`:`<div class="chart-wrap">${chartProfit(months,byM)}</div>`}</section>
+  <div class="row r-21">
+    <section class="card"><div class="card-h"><h2>Thu và chi theo tháng</h2><p>12 tháng gần nhất</p><div class="r legend"><span><i class="k s-thu"></i>Thu</span><span><i class="k s-chi"></i>Chi</span></div></div>
+      <div class="card-b">${noMoney?emptyBox("ledger","Chưa có khoản thu chi","Ghi khoản đầu tiên, biểu đồ sẽ tự hiện.",`<button class="btn pri" type="button" data-act="add-entry">Ghi thu / chi</button>`):`<div class="chart-wrap">${chartMonthly(months,byM)}</div>`}</div></section>
+    <section class="card"><div class="card-h"><h2>Cần xử lý</h2><p>Quá hạn và hôm nay</p><div class="r"><button class="btn sm ghost" type="button" data-view="tasks">Xem tất cả</button></div></div>
+      ${todo.length?`<div class="tasks" style="margin-top:10px">${todo.map(c=>taskRow(c,true)).join("")}</div>`:`<div class="card-b">${emptyBox("task","Không có việc gấp","Mọi khách đều đã được hẹn lịch hợp lý.")}</div>`}</section>
   </div>
-  <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-    <section class="panel sec"><div class="sec-h"><h2>Phễu khách hàng</h2><p>${periodLabel()}</p></div>
-      <div class="bars">${funnel.map(f=>`<div class="barrow" data-tip="${esc(`<b>${f.s}</b><span>Số khách</span><b class="num">${f.n}</b><span>Giá trị HĐ</span><b class="num">${fmt(f.v)}</b>`)}"><span>${esc(f.s)}</span><span class="num">${f.n}${f.v?` <span class="sub" style="display:inline">· ${shortM(f.v)}</span>`:""}</span><div class="track"><div class="fill ${SIGNED.has(f.s)?"f-won":/^(9|10)\./.test(f.s)?"f-off":"f-open"}" style="width:${(f.n/fmax*100).toFixed(1)}%"></div></div></div>`).join("")}</div></section>
-    <section class="panel sec"><div class="sec-h"><h2>Khách theo dịch vụ</h2><p>${periodLabel()}</p></div>
-      <div class="bars">${svcRows.map(([k,v])=>`<div class="barrow" data-tip="${esc(`<b>${k}</b><span>Số khách</span><b class="num">${v.n}</b><span>Đã ký</span><b class="num">${fmt(v.v)}</b>`)}"><span>${esc(k)}</span><span class="num">${v.n}${v.v?` <span class="sub" style="display:inline">· ký ${shortM(v.v)}</span>`:""}</span><div class="track"><div class="fill f-open" style="width:${(v.n/smax*100).toFixed(1)}%"></div></div></div>`).join("")||`<p class="sub">Chưa có khách.</p>`}</div></section>
+  <div class="row r-2">
+    <section class="card"><div class="card-h"><h2>Lợi nhuận theo tháng</h2><p>Thu trừ chi, gồm chi phí chung</p></div><div class="card-b">${noMoney?`<p class="sub">Chưa có dữ liệu.</p>`:`<div class="chart-wrap">${chartProfit(months,byM)}</div>`}</div></section>
+    <section class="card"><div class="card-h"><h2>Phễu khách hàng</h2><p>${periodLabel()} · tỷ lệ chốt ${decided?Math.round(signedN/decided*100)+"%":"—"}</p></div>
+      <div class="card-b"><div class="bars">${funnel.filter(f=>f.n||!/^(7|8|9)\./.test(f.s)).map(f=>`<div class="barrow" data-tip="${esc(`<b>${f.s}</b><span>Số khách</span><b class="num">${f.n}</b><span>Giá trị</span><b class="num">${fmt(f.v)}</b>`)}"><span>${esc(f.s.replace(/^\d+\.\s*/,""))}</span><span class="num">${f.n}${f.v?` <span class="sub" style="display:inline">· ${shortM(f.v)}</span>`:""}</span><div class="track"><div class="fill ${SIGNED.has(f.s)?"f-won":/^(9|10)\./.test(f.s)?"f-off":""}" style="width:${(f.n/fmax*100).toFixed(1)}%"></div></div></div>`).join("")}</div></div></section>
   </div>
-  <section class="sec"><div class="sec-h"><h2>Theo người phụ trách</h2><p>Khách tiếp nhận và lợi nhuận ${periodLabel()}</p></div>
-    <div class="tbl-wrap"><table><thead><tr><th>Người phụ trách</th><th class="r">Khách</th><th class="r">Đã ký</th><th class="r">Giá trị đã ký</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
-    ${ownRows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="r num">${v.n}</td><td class="r num">${v.won}</td><td class="r num">${fmt(v.v)}</td><td class="r num">${fmt(v.thu)}</td><td class="r num ${v.thu-v.chi<0?"neg":""}">${fmt(v.thu-v.chi)}</td></tr>`).join("")||`<tr><td colspan="6" class="sub">Chưa có khách trong kỳ.</td></tr>`}</tbody></table></div></section>
-  <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
-    <section class="sec"><div class="sec-h"><h2>Nguồn khách</h2><p>Nguồn nào ra hợp đồng</p></div>
-      <div class="tbl-wrap"><table style="min-width:420px"><thead><tr><th>Nguồn</th><th class="r">Khách</th><th class="r">Ký</th><th class="r">Tỷ lệ</th><th class="r">Giá trị</th></tr></thead><tbody>
-      ${srcRows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="r num">${v.n}</td><td class="r num">${v.won}</td><td class="r num">${Math.round(v.won/v.n*100)}%</td><td class="r num">${shortM(v.v)}</td></tr>`).join("")||`<tr><td colspan="5" class="sub">Chưa có khách.</td></tr>`}</tbody></table></div></section>
-    <section class="sec"><div class="sec-h"><h2>Cần thu tiền</h2><p>Khách đã ký, chưa thu đủ</p></div>
-      <div class="tbl-wrap"><table style="min-width:420px"><thead><tr><th>Khách</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Còn lại</th></tr></thead><tbody>
-      ${owe.map(o=>`<tr class="click" data-client="${esc(o.c.id)}"><td><span class="code">${esc(o.c.id)}</span> ${esc(clientName(o.c.id))}</td><td class="r num">${fmt(o.c.contractValue)}</td><td class="r num">${fmt(o.paid)}</td><td class="r num neg">${fmt(o.left)}</td></tr>`).join("")||`<tr><td colspan="4" class="sub">Không còn khoản nào phải thu.</td></tr>`}</tbody>
-      ${owe.length?`<tfoot><tr><td>Tổng</td><td></td><td></td><td class="r num">${fmt(owe.reduce((a,o)=>a+o.left,0))}</td></tr></tfoot>`:""}</table></div></section>
+  <div class="row r-2">
+    <section class="card"><div class="card-h"><h2>Nguồn khách</h2><p>Nguồn nào ra hợp đồng · ${periodLabel()}</p></div>
+      <div class="tbl-wrap"><table style="min-width:440px"><thead><tr><th>Nguồn</th><th class="r">Khách</th><th class="r">Ký</th><th class="r">Tỷ lệ</th><th class="r">Giá trị ký</th></tr></thead><tbody>
+      ${Object.entries(src).sort((a,b)=>b[1].n-a[1].n).map(([k,v])=>`<tr><td class="cell-main">${esc(k)}</td><td class="r num">${v.n}</td><td class="r num">${v.won}</td><td class="r num">${Math.round(v.won/v.n*100)}%</td><td class="r num">${shortM(v.v)}</td></tr>`).join("")||`<tr><td colspan="5" class="sub">Chưa có khách.</td></tr>`}</tbody></table></div></section>
+    <section class="card"><div class="card-h"><h2>Cần thu tiền</h2><p>Hợp đồng đã ký, chưa thu đủ</p></div>
+      <div class="tbl-wrap"><table style="min-width:440px"><thead><tr><th>Khách</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Còn lại</th></tr></thead><tbody>
+      ${owe.map(o=>`<tr class="click" data-client="${esc(o.c.id)}"><td><span class="code">${esc(o.c.id)}</span> <span class="cell-main">${esc(clientName(o.c.id))}</span></td><td class="r num">${fmt(o.c.contractValue)}</td><td class="r num">${fmt(o.paid)}</td><td class="r num neg">${fmt(o.left)}</td></tr>`).join("")||`<tr><td colspan="4" class="sub">Không còn khoản phải thu.</td></tr>`}</tbody>
+      ${owe.length?`<tfoot><tr><td>Tổng</td><td></td><td></td><td class="r num">${fmt(oweSum)}</td></tr></tfoot>`:""}</table></div></section>
+  </div>
+  <section class="card"><div class="card-h"><h2>Hiệu quả theo người phụ trách</h2><p>${periodLabel()}</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Người phụ trách</th><th class="r">Khách</th><th class="r">Đã ký</th><th class="r">Giá trị đã ký</th><th class="r">Đã thu</th><th class="r">Lợi nhuận trực tiếp</th></tr></thead><tbody>
+    ${Object.entries(own).sort((a,b)=>b[1].v-a[1].v||b[1].n-a[1].n).map(([k,v])=>`<tr><td class="cell-main">${esc(k)}</td><td class="r num">${v.n}</td><td class="r num">${v.won}</td><td class="r num">${fmt(v.v)}</td><td class="r num">${fmt(v.thu)}</td><td class="r num ${v.thu-v.chi<0?"neg":""}">${fmt(v.thu-v.chi)}</td></tr>`).join("")||`<tr><td colspan="6" class="sub">Chưa có khách.</td></tr>`}</tbody></table></div></section>`;
+}
+
+/* ============ VIEW: Việc cần làm ============ */
+function taskRow(c,compact){
+  const d=dueInfo(c.nextDate);
+  return `<div class="task"><span class="pri-dot ${priCls(c.priority)}" title="${esc(c.priority||"")}"></span>
+    <div class="t-main"><div><span class="code">${esc(c.id)}</span> <b class="click-name" data-client="${esc(c.id)}" style="cursor:pointer">${esc(c.contact||clientName(c.id))}</b>${!compact&&c.facility?` <span class="sub" style="display:inline">· ${esc(c.facility)}</span>`:""}</div>
+      <div class="t-what">${esc(c.nextAction||"Chưa ghi việc cần làm")}</div>
+      <div class="t-meta">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span>Chưa hẹn ngày</span>`}${c.owner?`<span>${esc(c.owner)}</span>`:""}${!compact?`<span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span>`:""}${!compact&&c.phone?`<span class="num">${esc(c.phone)}</span>`:""}</div></div>
+    <div class="t-act">${S.canWrite&&!S.needMigration?`<button class="btn sm" type="button" data-log="${esc(c.id)}">${compact?"Ghi":"Ghi chăm sóc"}</button>`:""}</div></div>`;
+}
+function vTasks(){
+  const g=taskGroups(S.tOwner);const sec=(k,t,cls)=>g[k].length?`<div class="grp-h ${cls}">${t}<span class="n">${g[k].length}</span></div>${g[k].map(c=>taskRow(c,false)).join("")}`:"";
+  const total=Object.values(g).reduce((a,x)=>a+x.length,0);
+  return pageHead("Việc cần làm","Khách đang chăm sóc, sắp theo ngày hẹn liên hệ tiếp",`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${OWNERS.map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
+  `<section class="card">${total?`<div class="tasks">${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Không có việc nào","Khách đang chăm sóc sẽ hiện ở đây kèm ngày hẹn liên hệ tiếp.")}</section>`;
+}
+
+/* ============ VIEW: Pipeline ============ */
+function vPipeline(){
+  const cols=STATUSES.slice(0,7);const closed=STATUSES.slice(7);
+  const by=s=>sortedClients().filter(c=>c.status===s&&(!S.fOwner||c.owner===S.fOwner));
+  return pageHead("Pipeline","Kéo thẻ sang cột khác để đổi tình trạng · bấm thẻ để xem chi tiết",`<select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${OWNERS.map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>`+btnClient)+
+  `<div class="kanban">${cols.map(s=>{const list=by(s);const v=list.reduce((a,c)=>a+(c.contractValue||0),0);return `<section class="col" data-col="${esc(s)}"><div class="col-h"><b>${esc(s.replace(/^\d+\.\s*/,""))}<span class="n">${list.length}</span></b><span class="num">${v?fmtM(v):"—"}</span></div><div class="col-b">${list.map(kcard).join("")}</div></section>`}).join("")}</div>
+  <section class="card"><div class="card-h"><h2>Đã đóng</h2><p>Hoàn thành, tạm dừng, không chốt</p></div><div class="card-b"><div class="filters">${closed.map(s=>`<span class="pill ${stClass(s)}">${esc(s)} · ${by(s).length}</span>`).join("")}<button class="btn sm ghost" type="button" data-goto-closed>Xem danh sách</button></div></div></section>`;
+}
+function kcard(c){const d=dueInfo(c.nextDate);return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:(c.service||c.model||""))}</div><div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
+
+/* ============ VIEW: Khách hàng ============ */
+function vClients(){
+  const at=allTime();const q=S.q.trim().toLowerCase();
+  const list=sortedClients().filter(c=>(!S.fStatus||(S.fStatus==="_open"?!CLOSED.has(c.status):S.fStatus==="_closed"?CLOSED.has(c.status):c.status===S.fStatus))&&(!S.fOwner||c.owner===S.fOwner)&&(!S.fPri||c.priority===S.fPri)&&(!S.fSvc||c.service===S.fSvc)&&(!q||[c.id,c.contact,c.facility,c.phone,c.zalo,c.service,c.model,c.address,c.note].join(" ").toLowerCase().includes(q)));
+  return pageHead("Khách hàng",`${S.clients.size} khách · bấm một dòng để mở hồ sơ`,btnClient)+
+  `<section class="card"><div class="card-b" style="padding-bottom:0"><div class="filters">
+    <input class="ctl grow" id="q" type="search" placeholder="Tìm tên, cơ sở, SĐT, địa chỉ, mã KH…" value="${esc(S.q)}">
+    <select class="ctl" id="fStatus"><option value="">Mọi tình trạng</option><option value="_open"${S.fStatus==="_open"?" selected":""}>Đang chăm sóc / triển khai</option><option value="_closed"${S.fStatus==="_closed"?" selected":""}>Đã đóng</option>${STATUSES.map(s=>`<option${s===S.fStatus?" selected":""}>${s}</option>`).join("")}</select>
+    <select class="ctl" id="fSvc"><option value="">Mọi dịch vụ</option>${SERVICES.map(s=>`<option${s===S.fSvc?" selected":""}>${s}</option>`).join("")}</select>
+    <select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${OWNERS.map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>
+    <select class="ctl" id="fPri"><option value="">Mọi mức ưu tiên</option>${PRIORITIES.map(o=>`<option${o===S.fPri?" selected":""}>${o}</option>`).join("")}</select>
+  </div></div>
+  ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:900px"><thead><tr><th>Khách / cơ sở</th><th>Tình trạng</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn tiếp</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
+  ${list.map(c=>{const v=at[c.id]||{thu:0,chi:0};const p=v.thu-v.chi;const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span><span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span></div></div></td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="8" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
+  </tbody></table></div>`:emptyBox("users","Chưa có khách nào","Thêm khách bằng tay hoặc nhập file CSV từ Google Sheets ở mục Nhập / xuất file.",btnClient)}</section>`;
+}
+
+/* ============ VIEW: Sổ thu chi ============ */
+function vLedger(){
+  const f=S.lf;const list=S.entries.filter(e=>inPeriod(e.date)&&(!f.type||e.type===f.type)&&(!f.cat||e.category===f.cat)&&(f.client===""||(f.client==="_none"?!e.clientId:e.clientId===f.client)));
+  const thu=list.filter(e=>e.type==="thu").reduce((s,e)=>s+e.amount,0),chi=list.filter(e=>e.type==="chi").reduce((s,e)=>s+e.amount,0);
+  return pageHead("Sổ thu chi",`${list.length} khoản · ${periodLabel()}`,periodSelect()+`<button class="btn pri" type="button" data-act="add-entry">${ico("plus")}Ghi thu / chi</button>`)+
+  `<section class="kpis k4"><div class="card kpi"><span class="l">Tổng thu</span><span class="v num" style="color:var(--c-thu)">${fmtM(thu)}</span></div><div class="card kpi"><span class="l">Tổng chi</span><span class="v num" style="color:var(--gold-ink)">${fmtM(chi)}</span></div><div class="card kpi"><span class="l">Chênh lệch</span><span class="v num ${thu-chi<0?"neg":""}">${fmtM(thu-chi)}</span></div><div class="card kpi"><span class="l">Số khoản</span><span class="v num">${list.length}</span></div></section>
+  <section class="card"><div class="card-b" style="padding-bottom:0"><div class="filters">
+    <select class="ctl" id="lfType"><option value="">Thu và chi</option><option value="thu"${f.type==="thu"?" selected":""}>Chỉ thu</option><option value="chi"${f.type==="chi"?" selected":""}>Chỉ chi</option></select>
+    <select class="ctl" id="lfCat"><option value="">Mọi hạng mục</option>${[...CAT_THU,...CAT_CHI].map(c=>`<option${c===f.cat?" selected":""}>${c}</option>`).join("")}</select>
+    <select class="ctl" id="lfClient"><option value="">Mọi khách</option><option value="_none"${f.client==="_none"?" selected":""}>Chi phí chung</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===f.client?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select>
+  </div></div>
+  ${list.length?`<div class="tbl-wrap" style="margin-top:14px"><table><thead><tr><th>Ngày</th><th>Khách</th><th>Hạng mục</th><th>Nội dung</th><th class="r">Số tiền</th><th></th></tr></thead><tbody>
+  ${list.map(e=>`<tr><td class="num">${dmy(e.date)}</td><td>${e.clientId?`<span class="code">${esc(e.clientId)}</span> `:""}${esc(clientName(e.clientId))}</td><td><span class="pill ${e.type}">${e.type==="thu"?"Thu":"Chi"}</span> ${esc(e.category||"")}</td><td>${esc(e.note||"")}${e.by?`<span class="sub">${esc(e.by)}</span>`:""}</td><td class="r num" style="font-weight:600;color:${e.type==="thu"?"var(--c-thu)":"var(--gold-ink)"}">${e.type==="thu"?"+":"−"}${fmt(e.amount)}</td><td class="r">${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(e.id)}">Sửa</button>`:""}</td></tr>`).join("")}
+  </tbody></table></div>`:emptyBox("ledger","Không có khoản nào",S.entries.length?"Thử đổi kỳ hoặc bộ lọc.":"Ghi khoản thu hoặc chi đầu tiên, hoặc nhập file CSV.")}</section>`;
+}
+
+/* ============ VIEW: Báo cáo lợi nhuận ============ */
+function vReports(){
+  const a=aggregate(),at=allTime();const profit=a.thu-a.chi;const margin=a.thu?profit/a.thu*100:null;
+  const cats=Object.entries(a.cats).sort((x,y)=>y[1]-x[1]);const mc=cats[0]?.[1]||1;
+  const rows=Object.entries(a.per).map(([k,v])=>({k,...v,p:v.thu-v.chi,c:S.clients.get(k)})).sort((x,y)=>y.p-x.p);
+  const svc={};for(const [k,v] of Object.entries(a.per)){const s=S.clients.get(k)?.service||(k?"Khác":"Chi phí chung");svc[s]??={thu:0,chi:0};svc[s].thu+=v.thu;svc[s].chi+=v.chi}
+  return pageHead("Báo cáo lợi nhuận",periodLabel(),periodSelect())+`
+  <section class="kpis k4">
+    <div class="card kpi hl"><span class="l">Doanh thu</span><span class="v num">${fmtM(a.thu)}</span><span class="s num">${fmt(a.thu)} đ</span></div>
+    <div class="card kpi"><span class="l">Chi phí</span><span class="v num">${fmtM(a.chi)}</span><span class="s num">${fmt(a.chi)} đ</span></div>
+    <div class="card kpi"><span class="l">Lợi nhuận</span><span class="v num ${profit<0?"neg":""}">${fmtM(profit)}</span><span class="s">${margin==null?"Chưa có khoản thu":"Biên "+margin.toLocaleString("vi-VN",{maximumFractionDigits:1})+"%"}</span></div>
+    <div class="card kpi"><span class="l">Còn phải thu</span><span class="v num">${fmtM(oweList().reduce((x,o)=>x+o.left,0))}</span><span class="s">Mọi thời điểm</span></div>
+  </section>
+  <div class="row r-12">
+    <section class="card"><div class="card-h"><h2>Chi phí theo hạng mục</h2></div><div class="card-b">${cats.length?`<div class="bars">${cats.map(([k,v])=>`<div class="barrow"><span>${esc(k)}</span><span class="num">${fmt(v)} <span class="sub" style="display:inline">· ${(v/a.chi*100).toFixed(0)}%</span></span><div class="track"><div class="fill f-chi" style="width:${(v/mc*100).toFixed(1)}%"></div></div></div>`).join("")}</div>`:`<p class="sub">Chưa có khoản chi trong kỳ.</p>`}</div></section>
+    <section class="card"><div class="card-h"><h2>Lợi nhuận theo dịch vụ</h2></div>
+      <div class="tbl-wrap"><table style="min-width:480px"><thead><tr><th>Dịch vụ</th><th class="r">Thu</th><th class="r">Chi</th><th class="r">Lợi nhuận</th><th class="r">Biên</th></tr></thead><tbody>
+      ${Object.entries(svc).sort((x,y)=>(y[1].thu-y[1].chi)-(x[1].thu-x[1].chi)).map(([k,v])=>`<tr><td class="cell-main">${esc(k)}</td><td class="r num">${fmt(v.thu)}</td><td class="r num">${fmt(v.chi)}</td><td class="r num ${v.thu-v.chi<0?"neg":""}">${fmt(v.thu-v.chi)}</td><td class="r num">${v.thu?((v.thu-v.chi)/v.thu*100).toFixed(0)+"%":"—"}</td></tr>`).join("")||`<tr><td colspan="5" class="sub">Chưa có dữ liệu.</td></tr>`}</tbody></table></div></section>
+  </div>
+  <section class="card"><div class="card-h"><h2>Lợi nhuận theo khách</h2><p>${periodLabel()}</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Khách</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Chi phí</th><th class="r">Lợi nhuận</th><th class="r">Biên</th></tr></thead><tbody>
+    ${rows.map(r=>`<tr class="${r.k?"click":""}" ${r.k?`data-client="${esc(r.k)}"`:""}><td>${r.k?`<span class="code">${esc(r.k)}</span> `:""}<span class="cell-main">${esc(clientName(r.k))}</span><span class="sub">${r.c?esc(r.c.service||""):"Không gắn khách cụ thể"}</span></td><td class="r num">${r.c?.contractValue?fmt(r.c.contractValue):"—"}</td><td class="r num">${fmt(r.thu)}</td><td class="r num">${fmt(r.chi)}</td><td class="r num ${r.p<0?"neg":""}" style="font-weight:600">${fmt(r.p)}</td><td class="r num">${r.thu?(r.p/r.thu*100).toFixed(0)+"%":"—"}</td></tr>`).join("")||`<tr><td colspan="6" class="sub">Không có khoản nào trong kỳ.</td></tr>`}
+    </tbody>${rows.length?`<tfoot><tr><td>Tổng</td><td></td><td class="r num">${fmt(a.thu)}</td><td class="r num">${fmt(a.chi)}</td><td class="r num">${fmt(profit)}</td><td class="r num">${margin==null?"—":margin.toFixed(0)+"%"}</td></tr></tfoot>`:""}</table></div></section>`;
+}
+
+/* ============ VIEW: Nhập / xuất ============ */
+function vIO(){
+  const box=(kind,title,steps,extra="")=>`<section class="card"><div class="card-h"><h2>${title}</h2></div><div class="card-b" style="display:flex;flex-direction:column;gap:12px"><ol class="steps">${steps}</ol><div class="drop" data-drop="${kind}"><span>Kéo file CSV vào đây</span><div class="filters" style="justify-content:center"><label class="btn sm">Chọn file<input type="file" accept=".csv,text/csv" data-file="${kind}" hidden></label>${extra}</div></div></div></section>`;
+  return pageHead("Nhập / xuất file","Đưa dữ liệu từ Google Sheets vào, hoặc xuất báo cáo ra Excel")+`
+  <div class="row r-2">
+    ${box("clients","Nhập danh sách khách",`<li>Mở file <b>Khách Hàng Pháp Lý HPG</b> trên Google Sheets, chọn sheet <b>Khách hàng</b>.</li><li>Tệp → Tải xuống → <b>CSV</b>, rồi kéo file vào ô dưới.</li><li>Khách trùng mã KH được cập nhật, không tạo trùng.</li>`)}
+    ${box("acts","Nhập nhật ký chăm sóc",`<li>Trong cùng file, chọn sheet <b>Nhật ký chăm sóc</b> → tải CSV.</li><li>Cần có cột <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Hình thức</code> <code class="k">Nội dung trao đổi</code>.</li><li>Nhập khách trước, nhật ký sau.</li>`)}
+    ${box("entries","Nhập thu chi",`<li>Các cột: <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Loại</code> (Thu/Chi) <code class="k">Hạng mục</code> <code class="k">Số tiền</code> <code class="k">Nội dung</code>.</li><li>Mã KH trống nghĩa là chi phí chung. Số tiền ghi <code class="k">38.000.000</code> hay <code class="k">38tr</code> đều được.</li>`,`<button class="btn sm" type="button" data-act="tpl">Tải file mẫu</button>`)}
+    <section class="card"><div class="card-h"><h2>Xuất báo cáo</h2><p>File CSV mở bằng Excel hoặc Google Sheets</p></div><div class="card-b" style="display:flex;flex-direction:column;gap:12px">${periodSelect()}<div class="filters"><button class="btn" type="button" data-act="exp-clients">Danh sách khách</button><button class="btn" type="button" data-act="exp-ledger">Sổ thu chi</button><button class="btn" type="button" data-act="exp-profit">Lợi nhuận theo khách</button><button class="btn" type="button" data-act="exp-acts">Nhật ký chăm sóc</button></div></div></section>
   </div>`;
 }
-const tipEl=document.createElement("div");tipEl.className="tip";tipEl.hidden=true;document.body.appendChild(tipEl);
-document.addEventListener("mousemove",e=>{const t=e.target.closest?.("[data-tip]");if(!t){tipEl.hidden=true;return}tipEl.innerHTML=t.dataset.tip;tipEl.hidden=false;const r=tipEl.getBoundingClientRect();let x=e.clientX+14,y=e.clientY+14;if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;tipEl.style.left=x+"px";tipEl.style.top=y+"px"});
-document.addEventListener("scroll",()=>tipEl.hidden=true,true);
 
-/* ---------- modal ---------- */
-function openModal(html,wide){$("#modal").innerHTML=`<div class="overlay" data-close><div class="sheet${wide?" wide":""}" role="dialog" aria-modal="true">${html}</div></div>`;const f=$("#modal").querySelector("input:not([type=hidden]):not([readonly]),select,textarea");f&&f.focus()}
-function closeModal(){$("#modal").innerHTML=""}
+/* ============ modal ============ */
+function openModal(html,wide){$("#modal").innerHTML=`<div class="overlay" data-close><div class="sheet${wide?" wide":""}" role="dialog" aria-modal="true">${html}</div></div>`;const f=$("#modal").querySelector("[autofocus]");f&&f.focus()}
+function closeModal(){$("#modal").innerHTML="";if(closeModal.dirty){closeModal.dirty=false;render()}}
+
+function clientDetail(id){
+  const c=S.clients.get(id);if(!c)return;
+  const ent=S.entries.filter(e=>e.clientId===id),acts=S.acts.filter(a=>a.clientId===id);
+  const thu=ent.filter(e=>e.type==="thu").reduce((s,e)=>s+e.amount,0),chi=ent.filter(e=>e.type==="chi").reduce((s,e)=>s+e.amount,0),p=thu-chi;
+  const owe=SIGNED.has(c.status)?Math.max(0,(c.contractValue||0)-thu):null;const d=dueInfo(c.nextDate);
+  const evs=[...acts.map(a=>({k:"a",date:a.date,t:a.createdAt||0,a})),...ent.map(e=>({k:"e",date:e.date,t:e.createdAt||0,e}))].sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.t-x.t);
+  const info=[["Vai trò",c.role],["Điện thoại",c.phone],["Zalo / Email",c.zalo],["Mô hình",c.model],["Dịch vụ",c.service],["Khu vực",[c.region,c.address].filter(Boolean).join(" · ")],["Nguồn",c.source],["Phụ trách",c.owner],["Tiếp nhận",dmy(c.date)],["Ngày ký HĐ",dmy(c.signedDate)],["Liên hệ gần nhất",dmy(c.lastContact)]].filter(x=>x[1]);
+  openModal(`<div class="sheet-h"><h3><span class="pri-dot ${priCls(c.priority)}"></span>${esc(c.contact||c.id)} <span class="code">${esc(c.id)}</span><span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span></h3>${S.canWrite?`<button class="btn sm" type="button" data-edit-client="${esc(id)}">Sửa hồ sơ</button>`:""}<button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  <div class="sheet-b"><div class="detail">
+    <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+      ${c.facility?`<div style="font-weight:600;font-size:15px">${esc(c.facility)}</div>`:""}
+      <div class="facts"><div><span>Giá trị HĐ</span><b class="num">${c.contractValue?fmt(c.contractValue):"—"}</b></div><div><span>Đã thu</span><b class="num" style="color:var(--c-thu)">${fmt(thu)}</b></div><div><span>Chi phí</span><b class="num" style="color:var(--gold-ink)">${fmt(chi)}</b></div><div><span>Lợi nhuận${thu?" · "+(p/thu*100).toFixed(0)+"%":""}</span><b class="num ${p<0?"neg":""}">${fmt(p)}</b></div>${owe!=null?`<div style="grid-column:1/-1"><span>Còn phải thu</span><b class="num ${owe?"neg":""}">${fmt(owe)}</b></div>`:""}</div>
+      ${!CLOSED.has(c.status)?`<div class="next"><span class="lbl">Việc tiếp theo</span><div>${esc(c.nextAction||"Chưa ghi việc cần làm")}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="sub" style="display:inline">Chưa hẹn ngày</span>`}${S.canWrite&&!S.needMigration?`<button class="btn sm pri" type="button" data-log="${esc(id)}" style="margin-left:auto">${ico("chat")}Ghi chăm sóc</button>`:""}</div></div>`:""}
+      <dl class="info">${info.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
+      ${c.note?`<div class="note">${esc(c.note)}</div>`:""}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+      <p class="h3">Lịch sử<span class="r">${S.canWrite?`<button class="btn sm" type="button" data-add-for="${esc(id)}">${ico("plus")}Thu / chi</button>`:""}</span></p>
+      ${evs.length?`<div class="timeline">${evs.map(ev=>ev.k==="a"?`<div class="ev"><span class="dot"></span><div><div class="e-h"><b>${esc(ev.a.channel||"Chăm sóc")}</b><span>${dmy(ev.a.date)}</span>${ev.a.by?`<span>${esc(ev.a.by)}</span>`:""}</div><div class="e-b">${esc(ev.a.content||"")}</div>${ev.a.result?`<div class="e-r">→ ${esc(ev.a.result)}</div>`:""}</div></div>`:`<div class="ev"><span class="dot money"></span><div><div class="e-h"><b style="color:${ev.e.type==="thu"?"var(--c-thu)":"var(--gold-ink)"}">${ev.e.type==="thu"?"Thu":"Chi"} ${fmt(ev.e.amount)} đ</b><span>${dmy(ev.e.date)}</span><span>${esc(ev.e.category||"")}</span>${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(ev.e.id)}" style="padding:0 6px">Sửa</button>`:""}</div>${ev.e.note?`<div class="e-r">${esc(ev.e.note)}</div>`:""}</div></div>`).join("")}</div>`:`<p class="sub">Chưa có lần chăm sóc hay khoản thu chi nào.</p>`}
+    </div>
+  </div></div>`,true);
+}
+
+function logForm(id){
+  const c=S.clients.get(id);if(!c)return;
+  openModal(`<div class="sheet-h"><h3>Ghi chăm sóc · ${esc(c.contact||id)} <span class="code">${esc(id)}</span></h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  <form id="fLog" class="sheet-b" data-id="${esc(id)}"><div class="form">
+    <div class="sec-t">Lần liên hệ này</div>
+    <label>Ngày<input class="ctl" type="date" id="aDate" value="${todayISO()}" required></label>
+    <label>Hình thức<select class="ctl" id="aChannel">${opt(CHANNELS,"Gọi điện")}</select></label>
+    <label class="full">Nội dung trao đổi<textarea class="ctl" id="aContent" required autofocus placeholder="vd Tư vấn lộ trình giấy phép, gửi báo giá qua Zalo"></textarea></label>
+    <label class="full">Kết quả / khách phản hồi<input class="ctl" id="aResult" placeholder="vd Khách cần bàn với đối tác, hẹn trả lời thứ Hai"></label>
+    <div class="sec-t">Bước tiếp theo</div>
+    <label class="full">Việc cần làm tiếp<input class="ctl" id="aNext" value="${esc(c.nextAction||"")}" placeholder="vd Gọi lại chốt hợp đồng"></label>
+    <label>Hẹn liên hệ tiếp<input class="ctl" type="date" id="aNextDate" value="${addDays(todayISO(),3)}"></label>
+    <label>Cập nhật tình trạng<select class="ctl" id="aStatus">${opt(STATUSES,c.status)}</select></label>
+  </div></form>
+  <div class="sheet-f"><button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fLog">Lưu</button></div>`);
+}
 
 function entryForm(e,presetClient){
-  const isNew=!e;e=e||{type:"chi",date:todayISO(),clientId:presetClient||"",category:"",amount:0,note:""};
-  const type=e.type;
-  openModal(`<div class="sheet-h"><h3>${isNew?"Ghi khoản thu / chi":"Sửa khoản "+(type==="thu"?"thu":"chi")}</h3><button class="btn sm" type="button" data-close>Đóng</button></div>
-  <form id="fEntry" class="sheet-b"><input type="hidden" id="eType" value="${type}">
+  const isNew=!e;e=e||{type:"thu",date:todayISO(),clientId:presetClient||"",category:"",amount:0,note:""};const type=e.type;
+  openModal(`<div class="sheet-h"><h3>${isNew?"Ghi khoản thu / chi":"Sửa khoản "+(type==="thu"?"thu":"chi")}</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  <form id="fEntry" class="sheet-b" data-id="${isNew?"":esc(e.id)}"><input type="hidden" id="eType" value="${type}">
     <div class="seg" role="group" aria-label="Loại"><button type="button" data-type="thu" class="${type==="thu"?"on-thu":""}">Thu tiền</button><button type="button" data-type="chi" class="${type==="chi"?"on-chi":""}">Chi tiền</button></div>
     <div class="form">
-      <label>Ngày<input class="ctl" type="date" id="eDate" value="${esc(e.date)}" required></label>
-      <label>Khách<select class="ctl" id="eClient"><option value="">— Chi phí chung (không gắn khách) —</option>${[...S.clients.values()].sort((a,b)=>a.id.localeCompare(b.id)).map(c=>`<option value="${esc(c.id)}"${c.id===e.clientId?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></label>
-      <label>Hạng mục<select class="ctl" id="eCat">${(type==="thu"?CAT_THU:CAT_CHI).map(c=>`<option${c===e.category?" selected":""}>${c}</option>`).join("")}</select></label>
-      <label>Số tiền (VNĐ)<input class="ctl num" id="eAmt" inputmode="decimal" placeholder="vd 3.500.000 hoặc 3,5tr" value="${e.amount?fmt(e.amount):""}" required><span class="hint" id="eAmtHint">${e.amount?fmt(e.amount)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ"}</span></label>
-      <label class="full">Nội dung<input class="ctl" id="eNote" placeholder="vd Lệ phí thẩm định Sở Y tế, cọc HĐ1…" value="${esc(e.note)}"></label>
+      <label>Ngày<input class="ctl" type="date" id="eDate" value="${esc(String(e.date).slice(0,10))}" required></label>
+      <label>Khách<select class="ctl" id="eClient"><option value="">— Chi phí chung (không gắn khách) —</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===e.clientId?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></label>
+      <label>Hạng mục<select class="ctl" id="eCat">${opt(type==="thu"?CAT_THU:CAT_CHI,e.category)}</select></label>
+      <label>Số tiền (VNĐ)<input class="ctl num" id="eAmt" inputmode="decimal" placeholder="vd 3.500.000 hoặc 3,5tr" value="${e.amount?fmt(e.amount):""}" required autofocus><span class="hint" id="eAmtHint">${e.amount?fmt(e.amount)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ"}</span></label>
+      <label class="full">Nội dung<input class="ctl" id="eNote" placeholder="vd Cọc HĐ1, lệ phí thẩm định Sở Y tế…" value="${esc(e.note)}"></label>
     </div>
   </form>
   <div class="sheet-f">${isNew?"":`<button class="btn danger" type="button" data-del-entry="${esc(e.id)}" style="margin-right:auto">Xoá khoản này</button>`}<button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fEntry">${isNew?"Lưu khoản":"Lưu thay đổi"}</button></div>`);
-  const form=$("#fEntry");form.dataset.id=isNew?"":e.id;
 }
 
 function clientForm(c){
   const isNew=!c;
-  if(isNew){const n=Math.max(0,...[...S.clients.keys()].map(k=>parseInt(k.replace(/\D/g,""),10)||0))+1;c={id:"KH"+String(n).padStart(3,"0"),status:STATUSES[0],owner:"Sake",date:todayISO()}}
-  const opt=(arr,v)=>arr.map(x=>`<option${x===v?" selected":""}>${x}</option>`).join("");
-  openModal(`<div class="sheet-h"><h3>${isNew?"Thêm khách":"Sửa thông tin "+esc(c.id)}</h3><button class="btn sm" type="button" data-close>Đóng</button></div>
-  <form id="fClient" class="sheet-b"><div class="form">
-    <label>Mã KH<input class="ctl code" id="cId" value="${esc(c.id)}" ${isNew?"":"readonly"} required pattern="[A-Za-z0-9_-]+"></label>
-    <label>Ngày tiếp nhận<input class="ctl" type="date" id="cDate" value="${esc(c.date||"")}"></label>
-    <label>Người liên hệ<input class="ctl" id="cContact" value="${esc(c.contact)}" required></label>
+  if(isNew){const n=Math.max(0,...[...S.clients.keys()].map(k=>parseInt(String(k).replace(/\D/g,""),10)||0))+1;c={id:"KH"+String(n).padStart(3,"0"),status:STATUSES[0],priority:"Ấm",date:todayISO(),nextDate:addDays(todayISO(),1)}}
+  const nm=S.needMigration;
+  openModal(`<div class="sheet-h"><h3>${isNew?"Thêm khách mới":"Sửa hồ sơ "+esc(c.id)}</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  <form id="fClient" class="sheet-b" data-new="${isNew?"1":""}"><div class="form">
+    <div class="sec-t">Thông tin liên hệ</div>
+    <label>Mã KH<input class="ctl code" id="cId" value="${esc(c.id)}" ${isNew?"":"readonly"} required></label>
+    <label>Ngày tiếp nhận<input class="ctl" type="date" id="cDate" value="${esc(String(c.date||"").slice(0,10))}"></label>
+    <label>Người liên hệ<input class="ctl" id="cContact" value="${esc(c.contact)}" required autofocus></label>
+    ${nm?"":`<label>Vai trò<select class="ctl" id="cRole">${opt(ROLES,c.role,"")}</select></label>`}
     <label>Số điện thoại<input class="ctl" id="cPhone" inputmode="tel" value="${esc(c.phone)}"></label>
+    ${nm?"":`<label>Zalo / Email<input class="ctl" id="cZalo" value="${esc(c.zalo)}"></label>`}
+    <div class="sec-t">Cơ sở</div>
     <label class="full">Tên cơ sở / thương hiệu<input class="ctl" id="cFacility" value="${esc(c.facility)}"></label>
-    <label>Mô hình<select class="ctl" id="cModel"><option value=""></option>${opt(MODELS,c.model)}</select></label>
-    <label>Dịch vụ<select class="ctl" id="cService"><option value=""></option>${opt(SERVICES,c.service)}</select></label>
+    <label>Mô hình<select class="ctl" id="cModel">${opt(MODELS,c.model,"")}</select></label>
+    ${nm?"":`<label>Khu vực<select class="ctl" id="cRegion">${opt(REGIONS,c.region,"")}</select></label>
+    <label class="full">Địa chỉ<input class="ctl" id="cAddress" value="${esc(c.address)}"></label>`}
+    <div class="sec-t">Cơ hội</div>
+    <label>Dịch vụ<select class="ctl" id="cService">${opt(SERVICES,c.service,"")}</select></label>
     <label>Tình trạng<select class="ctl" id="cStatus">${opt(STATUSES,c.status)}</select></label>
-    <label>Người phụ trách<select class="ctl" id="cOwner"><option value=""></option>${opt(OWNERS,c.owner)}</select></label>
-    <label>Giá trị hợp đồng (VNĐ)<input class="ctl num" id="cValue" inputmode="decimal" value="${c.contractValue?fmt(c.contractValue):""}" placeholder="vd 90tr"><span class="hint">Dùng để tính phần còn phải thu</span></label>
-    <label>Nguồn khách<input class="ctl" id="cSource" value="${esc(c.source)}" list="srcList"><datalist id="srcList"><option>Facebook Ads</option><option>TikTok</option><option>Fanpage / Inbox</option><option>Zalo</option><option>Giới thiệu</option><option>Khách cũ</option></datalist></label>
+    ${nm?"":`<label>Mức ưu tiên<select class="ctl" id="cPriority">${opt(PRIORITIES,c.priority,"")}</select></label>`}
+    <label>Người phụ trách<select class="ctl" id="cOwner">${opt(OWNERS,c.owner,"")}</select></label>
+    <label>Giá trị hợp đồng (VNĐ)<input class="ctl num" id="cValue" inputmode="decimal" value="${c.contractValue?fmt(c.contractValue):""}" placeholder="vd 90tr"></label>
+    ${nm?"":`<label>Ngày ký HĐ<input class="ctl" type="date" id="cSigned" value="${esc(String(c.signedDate||"").slice(0,10))}"></label>`}
+    <label>Nguồn khách<select class="ctl" id="cSource">${opt(SOURCES.includes(c.source)||!c.source?SOURCES:[c.source,...SOURCES],c.source,"")}</select></label>
+    ${nm?"":`<div class="sec-t">Chăm sóc</div>
+    <label class="full">Việc cần làm tiếp<input class="ctl" id="cNext" value="${esc(c.nextAction)}"></label>
+    <label>Hẹn liên hệ tiếp<input class="ctl" type="date" id="cNextDate" value="${esc(String(c.nextDate||"").slice(0,10))}"></label>`}
     <label class="full">Ghi chú<textarea class="ctl" id="cNote">${esc(c.note)}</textarea></label>
   </div></form>
-  <div class="sheet-f">${isNew?"":`<button class="btn danger" type="button" data-del-client="${esc(c.id)}" style="margin-right:auto">Xoá khách</button>`}<button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fClient">${isNew?"Thêm khách":"Lưu thay đổi"}</button></div>`);
-  $("#fClient").dataset.new=isNew?"1":"";
+  <div class="sheet-f">${isNew?"":`<button class="btn danger" type="button" data-del-client="${esc(c.id)}" style="margin-right:auto">Xoá khách</button>`}<button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fClient">${isNew?"Thêm khách":"Lưu hồ sơ"}</button></div>`);
 }
 
-function clientDetail(id){
-  const c=S.clients.get(id);if(!c)return;
-  const list=S.entries.filter(e=>e.clientId===id);
-  const thu=list.filter(e=>e.type==="thu").reduce((s,e)=>s+e.amount,0),chi=list.filter(e=>e.type==="chi").reduce((s,e)=>s+e.amount,0);
-  const p=thu-chi;const owe=SIGNED.has(c.status)?Math.max(0,(c.contractValue||0)-thu):null;
-  const byCat={};list.filter(e=>e.type==="chi").forEach(e=>byCat[e.category]=(byCat[e.category]||0)+e.amount);
-  openModal(`<div class="sheet-h"><h3><span class="code">${esc(c.id)}</span> ${esc(c.contact||"")}</h3>${S.canWrite?`<button class="btn sm" type="button" data-edit-client="${esc(id)}">Sửa thông tin</button>`:""}<button class="btn sm" type="button" data-close>Đóng</button></div>
-  <div class="sheet-b">
-    <div class="meta"><span><span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span></span>${c.facility?`<span><strong>${esc(c.facility)}</strong></span>`:""}${c.service?`<span>${esc(c.service)}</span>`:""}${c.model?`<span>${esc(c.model)}</span>`:""}${c.phone?`<span class="num">${esc(c.phone)}</span>`:""}${c.owner?`<span>Phụ trách: <strong>${esc(c.owner)}</strong></span>`:""}</div>
-    <div class="facts"><div><span>Giá trị HĐ</span><b class="num">${c.contractValue?fmt(c.contractValue):"—"}</b></div><div><span>Đã thu</span><b class="num pos">${fmt(thu)}</b></div><div><span>Chi phí</span><b class="num neg">${fmt(chi)}</b></div><div><span>Lợi nhuận${thu?" · "+(p/thu*100).toFixed(0)+"%":""}</span><b class="num ${p<0?"neg":""}">${fmt(p)}</b></div></div>
-    ${owe!=null?`<div class="meta"><span>Còn phải thu: <strong class="num">${fmt(owe)} đ</strong></span>${Object.keys(byCat).length?`<span>Chi lớn nhất: <strong>${esc(Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0][0])}</strong></span>`:""}</div>`:""}
-    ${c.note?`<div class="note">${esc(c.note)}</div>`:""}
-    <div class="sec-h"><h2>Các khoản thu chi</h2><div class="sp">${S.canWrite?`<button class="btn sm pri" type="button" data-add-for="${esc(id)}">+ Ghi khoản cho khách này</button>`:""}</div></div>
-    ${list.length?`<div class="tbl-wrap"><table style="min-width:520px"><thead><tr><th>Ngày</th><th>Hạng mục</th><th>Nội dung</th><th class="r">Số tiền</th><th></th></tr></thead><tbody>${list.map(e=>`<tr><td class="num">${dmy(e.date)}</td><td><span class="pill ${e.type}">${e.type==="thu"?"Thu":"Chi"}</span> ${esc(e.category)}</td><td>${esc(e.note)}</td><td class="r num ${e.type==="thu"?"pos":"neg"}">${e.type==="thu"?"+":"−"}${fmt(e.amount)}</td><td class="r">${S.canWrite?`<button class="btn sm" type="button" data-edit="${esc(e.id)}">Sửa</button>`:""}</td></tr>`).join("")}</tbody></table></div>`:`<p class="sub">Chưa có khoản nào cho khách này.</p>`}
-  </div>`,true);
-}
-
-/* ---------- lưu ---------- */
+/* ============ lưu ============ */
+const val=id=>{const el=document.getElementById(id);return el?el.value:undefined};
 async function saveEntry(form){
-  const amount=parseMoney($("#eAmt").value);const date=$("#eDate").value;
-  if(!amount){toast("Nhập số tiền lớn hơn 0");return}
-  if(!date){toast("Chọn ngày");return}
-  const data={type:$("#eType").value,date,clientId:$("#eClient").value,category:$("#eCat").value,amount,note:$("#eNote").value.trim()};
-  try{
-    if(form.dataset.id){const old=S.entries.find(x=>x.id===form.dataset.id)||{};await S.db.doc("entries/"+form.dataset.id).set({...stripId(old),...data,updatedAt:Date.now()})}
-    else await S.db.collection("entries").add({...data,by:S.uid||"",createdAt:Date.now()});
-    closeModal();toast(form.dataset.id?"Đã lưu thay đổi":"Đã ghi "+(data.type==="thu"?"khoản thu ":"khoản chi ")+fmt(amount)+" đ");
-  }catch(err){writeErr(err)}
+  const amount=parseMoney(val("eAmt")),date=val("eDate");if(!amount){toast("Nhập số tiền lớn hơn 0");return}if(!date){toast("Chọn ngày");return}
+  const data={type:val("eType"),date,clientId:val("eClient"),category:val("eCat"),amount,note:val("eNote").trim()};
+  try{if(form.dataset.id)await db.update("entries",form.dataset.id,{...data,updatedAt:Date.now()});else await db.insert("entries",{...data,by:S.uid,createdAt:Date.now()});
+    closeModal();toast(form.dataset.id?"Đã lưu thay đổi":`Đã ghi ${data.type==="thu"?"khoản thu":"khoản chi"} ${fmt(amount)} đ`)}catch(err){writeErr(err)}
 }
-const stripId=o=>{const {id,...r}=o;return r};
 async function saveClient(form){
-  const id=$("#cId").value.trim().toUpperCase();
-  if(!/^[A-Z0-9_-]+$/.test(id)){toast("Mã KH chỉ gồm chữ, số, - hoặc _");return}
-  if(form.dataset.new&&S.clients.has(id)){toast("Mã "+id+" đã có. Dùng mã khác.");return}
-  const old=S.clients.get(id)||{};
-  const data={...stripId(old),date:$("#cDate").value,contact:$("#cContact").value.trim(),phone:$("#cPhone").value.trim(),facility:$("#cFacility").value.trim(),model:$("#cModel").value,service:$("#cService").value,status:$("#cStatus").value,owner:$("#cOwner").value,contractValue:parseMoney($("#cValue").value),source:$("#cSource").value.trim(),note:$("#cNote").value,updatedAt:Date.now()};
-  try{await S.db.doc("clients/"+id).set(data);closeModal();toast(form.dataset.new?"Đã thêm "+id:"Đã lưu "+id)}catch(err){writeErr(err)}
+  const id=val("cId").trim().toUpperCase();if(!/^[A-Z0-9_-]+$/.test(id)){toast("Mã KH chỉ gồm chữ, số, - hoặc _");return}
+  if(form.dataset.new&&S.clients.has(id)){toast("Mã "+id+" đã có, dùng mã khác");return}
+  const d={date:val("cDate"),contact:val("cContact").trim(),phone:val("cPhone").trim(),facility:val("cFacility").trim(),model:val("cModel"),service:val("cService"),status:val("cStatus"),owner:val("cOwner"),contractValue:parseMoney(val("cValue")),source:val("cSource"),note:val("cNote"),updatedAt:Date.now()};
+  if(!S.needMigration)Object.assign(d,{role:val("cRole"),zalo:val("cZalo").trim(),region:val("cRegion"),address:val("cAddress").trim(),priority:val("cPriority"),signedDate:val("cSigned"),nextAction:val("cNext").trim(),nextDate:val("cNextDate")});
+  if(!S.needMigration&&SIGNED.has(d.status)&&!d.signedDate)d.signedDate=todayISO();
+  try{if(form.dataset.new)await db.insert("clients",{id,...d});else await db.update("clients",id,d);closeModal();toast(form.dataset.new?"Đã thêm "+id:"Đã lưu hồ sơ "+id)}catch(err){writeErr(err)}
 }
-function writeErr(err){
-  if(err?.code==="invalid_argument"&&S.writeUnknown){S.canWrite=false;S.writeUnknown=false;render()}
-  toast(err?.code==="fk"?"Khách này còn khoản thu chi, chưa xoá được":err?.code==="quota_exceeded"?"Sổ đã đầy, hãy xoá bớt khoản cũ":err?.code==="invalid_argument"?"Bạn chưa có quyền ghi vào sổ này":"Chưa lưu được, thử lại sau giây lát");
+async function saveLog(form){
+  const id=form.dataset.id;const content=val("aContent").trim();if(!content){toast("Ghi nội dung trao đổi");return}
+  const date=val("aDate"),nextDate=val("aNextDate"),status=val("aStatus");const c=S.clients.get(id)||{};
+  const patch={lastContact:date,nextAction:val("aNext").trim(),nextDate,status,updatedAt:Date.now()};if(SIGNED.has(status)&&!c.signedDate)patch.signedDate=date;
+  try{S.quiet=true;await db.insert("activities",{clientId:id,date,channel:val("aChannel"),content,result:val("aResult").trim(),nextDate,by:S.uid,createdAt:Date.now()});await db.update("clients",id,patch);S.quiet=false;await reload();closeModal();toast("Đã ghi chăm sóc "+id)}catch(err){S.quiet=false;writeErr(err)}
 }
-async function del(path,btn,msg){
+function writeErr(err){toast(err?.code==="fk"?"Khách này còn dữ liệu liên quan, chưa xoá được":err?.code==="invalid_argument"?"Bạn chưa có quyền ghi dữ liệu này":"Chưa lưu được, thử lại sau giây lát")}
+async function del(tbl,id,btn,msg){
   if(!btn.classList.contains("arm")){btn.classList.add("arm");btn.dataset.label=btn.textContent;btn.textContent="Bấm lần nữa để xoá";setTimeout(()=>{if(btn.isConnected){btn.classList.remove("arm");btn.textContent=btn.dataset.label}},3500);return}
-  try{await S.db.doc(path).delete();closeModal();toast(msg)}catch(err){writeErr(err)}
+  try{await db.remove(tbl,id);closeModal();toast(msg)}catch(err){writeErr(err)}
 }
 
-/* ---------- CSV ---------- */
-function parseCSV(text){
-  text=text.replace(/^﻿/,"");const first=text.split("\n")[0];const sep=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?";":",";
-  const rows=[];let row=[],cur="",q=false;
-  for(let i=0;i<text.length;i++){const ch=text[i];
-    if(q){if(ch==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}
-    else if(ch==='"')q=true;else if(ch===sep){row.push(cur);cur=""}else if(ch==="\n"){row.push(cur.replace(/\r$/,""));rows.push(row);row=[];cur=""}else cur+=ch}
-  if(cur||row.length){row.push(cur);rows.push(row)}
-  return rows;
-}
+/* ============ CSV ============ */
+function parseCSV(text){text=text.replace(/^﻿/,"");const first=text.split("\n")[0];const sep=(first.match(/;/g)||[]).length>(first.match(/,/g)||[]).length?";":",";const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];if(q){if(ch==='"'){if(text[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}else if(ch==='"')q=true;else if(ch===sep){row.push(cur);cur=""}else if(ch==="\n"){row.push(cur.replace(/\r$/,""));rows.push(row);row=[];cur=""}else cur+=ch}
+  if(cur||row.length){row.push(cur);rows.push(row)}return rows}
 const norm=s=>String(s||"").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d");
-function findCol(head,...keys){return head.findIndex(h=>keys.some(k=>norm(h).startsWith(norm(k))))}
+const findCol=(h,...keys)=>h.findIndex(x=>keys.some(k=>norm(x).startsWith(norm(k))));
 async function importClients(text){
-  const rows=parseCSV(text);const hi=rows.findIndex(r=>r.some(c=>norm(c)==="ma kh"));
-  if(hi<0){toast("Không thấy cột “Mã KH” trong file");return}
-  const h=rows[hi];const col={id:findCol(h,"Mã KH"),date:findCol(h,"Ngày tiếp nhận"),contact:findCol(h,"Tên người liên hệ"),status:findCol(h,"Tình trạng"),model:findCol(h,"Mô hình"),facility:findCol(h,"Tên cơ sở"),phone:findCol(h,"Số điện thoại"),service:findCol(h,"Dịch vụ"),value:findCol(h,"Giá trị"),source:findCol(h,"Nguồn"),note:findCol(h,"Ghi chú"),owner:findCol(h,"Người phụ trách")};
-  const g=(r,k)=>col[k]>=0?(r[col[k]]||"").trim():"";
+  const rows=parseCSV(text);const hi=rows.findIndex(r=>r.some(c=>norm(c)==="ma kh"));if(hi<0){toast("Không thấy cột “Mã KH” trong file");return}
+  const h=rows[hi];const C={id:"Mã KH",date:"Ngày tiếp nhận",contact:"Tên người liên hệ",role:"Vai trò",status:"Tình trạng",model:"Mô hình",facility:"Tên cơ sở",phone:"Số điện thoại",priority:"Ưu tiên",zalo:"Zalo",region:"Khu vực",address:"Quận",service:"Dịch vụ",nextAction:"Việc cần làm",lastContact:"Liên hệ gần nhất",nextDate:"Hẹn liên hệ",value:"Giá trị",source:"Nguồn",note:"Ghi chú",owner:"Người phụ trách"};
+  const col=Object.fromEntries(Object.entries(C).map(([k,v])=>[k,findCol(h,v)]));const g=(r,k)=>col[k]>=0?(r[col[k]]||"").trim():"";
   let n=0,u=0;S.quiet=true;
-  for(const r of rows.slice(hi+1)){const id=g(r,"id").toUpperCase();if(!/^[A-Z0-9_-]+$/.test(id))continue;
-    const old=S.clients.get(id);const d={date:parseDate(g(r,"date")),contact:g(r,"contact"),status:g(r,"status"),model:g(r,"model"),facility:g(r,"facility"),phone:g(r,"phone"),service:g(r,"service"),source:g(r,"source"),note:g(r,"note")};
-    if(col.owner>=0)d.owner=g(r,"owner");
-    const v=parseMoney(g(r,"value"));
-    const body=old?{...stripId(old),...Object.fromEntries(Object.entries(d).filter(([,x])=>x)),contractValue:old.contractValue||v,updatedAt:Date.now()}:{...d,contractValue:v,owner:d.owner||"",updatedAt:Date.now()};
-    try{await S.db.doc("clients/"+id).set(body);old?u++:n++}catch(err){writeErr(err);break}}
-  S.quiet=false;await reload();toast(`Đã nhập ${n} khách mới, cập nhật ${u} khách`);
+  try{for(const r of rows.slice(hi+1)){const id=g(r,"id").toUpperCase();if(!/^[A-Z0-9_-]+$/.test(id))continue;
+    const d={date:parseDate(g(r,"date")),contact:g(r,"contact"),status:g(r,"status"),model:g(r,"model"),facility:g(r,"facility"),phone:g(r,"phone"),service:g(r,"service"),source:g(r,"source"),note:g(r,"note"),owner:g(r,"owner"),contractValue:parseMoney(g(r,"value"))};
+    if(!S.needMigration)Object.assign(d,{role:g(r,"role"),priority:g(r,"priority"),zalo:/^đã kết nối/i.test(g(r,"zalo"))?"":g(r,"zalo"),region:g(r,"region"),address:g(r,"address"),nextAction:g(r,"nextAction"),lastContact:parseDate(g(r,"lastContact")),nextDate:parseDate(g(r,"nextDate"))});
+    const old=S.clients.get(id);const clean=Object.fromEntries(Object.entries(d).filter(([,x])=>x!==""&&x!==0));
+    if(old){if(old.contractValue)delete clean.contractValue;await db.update("clients",id,{...clean,updatedAt:Date.now()});u++}else{await db.insert("clients",{id,...d,updatedAt:Date.now()});n++}}}
+  catch(err){writeErr(err)}finally{S.quiet=false;await reload()}
+  toast(`Đã nhập ${n} khách mới, cập nhật ${u} khách`);
+}
+async function importActs(text){
+  if(S.needMigration){toast("Cần chạy file nâng cấp cơ sở dữ liệu trước");return}
+  const rows=parseCSV(text);const hi=rows.findIndex(r=>findCol(r,"Nội dung")>=0&&findCol(r,"Mã KH")>=0);if(hi<0){toast("Không thấy cột “Mã KH” và “Nội dung” trong file");return}
+  const h=rows[hi];const c={date:findCol(h,"Ngày"),id:findCol(h,"Mã KH"),ch:findCol(h,"Hình thức"),content:findCol(h,"Nội dung"),result:findCol(h,"Kết quả"),next:findCol(h,"Hẹn")};const g=(r,k)=>c[k]>=0?(r[c[k]]||"").trim():"";
+  let n=0,skip=0;S.quiet=true;
+  try{for(const r of rows.slice(hi+1)){const id=g(r,"id").toUpperCase();const content=g(r,"content");if(!S.clients.has(id)||!content){if(r.some(x=>x.trim()))skip++;continue}
+    await db.insert("activities",{clientId:id,date:parseDate(g(r,"date"))||S.clients.get(id).date||todayISO(),channel:g(r,"ch"),content,result:g(r,"result"),nextDate:parseDate(g(r,"next")),by:S.uid,createdAt:Date.now()+n});n++}}
+  catch(err){writeErr(err)}finally{S.quiet=false;await reload()}
+  toast(`Đã nhập ${n} lần chăm sóc${skip?`, bỏ qua ${skip} dòng không khớp mã KH`:""}`);
 }
 async function importEntries(text){
-  const rows=parseCSV(text).filter(r=>r.some(c=>c.trim()));const hi=rows.findIndex(r=>findCol(r,"Số tiền")>=0);
-  if(hi<0){toast("Không thấy cột “Số tiền” trong file");return}
-  const h=rows[hi];const c={date:findCol(h,"Ngày"),client:findCol(h,"Mã KH"),type:findCol(h,"Loại"),cat:findCol(h,"Hạng mục"),amt:findCol(h,"Số tiền"),note:findCol(h,"Nội dung","Ghi chú","Diễn giải")};
-  const g=(r,k)=>c[k]>=0?(r[c[k]]||"").trim():"";let n=0,skip=0;S.quiet=true;
-  for(const r of rows.slice(hi+1)){const amount=parseMoney(g(r,"amt"));const date=parseDate(g(r,"date"));if(!amount||!date){skip++;continue}
-    const type=/^thu/.test(norm(g(r,"type")))?"thu":"chi";const cat=g(r,"cat")||(type==="thu"?"Thu khác":"Chi khác");
-    try{await S.db.collection("entries").add({type,date,clientId:g(r,"client").toUpperCase(),category:cat,amount,note:g(r,"note"),by:S.uid||"",createdAt:Date.now()});n++}catch(err){writeErr(err);break}}
-  S.quiet=false;await reload();toast(`Đã nhập ${n} khoản${skip?`, bỏ qua ${skip} dòng thiếu ngày hoặc số tiền`:""}`);
+  const rows=parseCSV(text).filter(r=>r.some(c=>c.trim()));const hi=rows.findIndex(r=>findCol(r,"Số tiền")>=0);if(hi<0){toast("Không thấy cột “Số tiền” trong file");return}
+  const h=rows[hi];const c={date:findCol(h,"Ngày"),client:findCol(h,"Mã KH"),type:findCol(h,"Loại"),cat:findCol(h,"Hạng mục"),amt:findCol(h,"Số tiền"),note:findCol(h,"Nội dung","Ghi chú","Diễn giải")};const g=(r,k)=>c[k]>=0?(r[c[k]]||"").trim():"";
+  let n=0,skip=0;S.quiet=true;
+  try{for(const r of rows.slice(hi+1)){const amount=parseMoney(g(r,"amt")),date=parseDate(g(r,"date"));if(!amount||!date){skip++;continue}const type=/^thu/.test(norm(g(r,"type")))?"thu":"chi";const cid=g(r,"client").toUpperCase();
+    await db.insert("entries",{type,date,clientId:S.clients.has(cid)?cid:"",category:g(r,"cat")||(type==="thu"?"Thu khác":"Chi khác"),amount,note:g(r,"note"),by:S.uid,createdAt:Date.now()+n});n++}}
+  catch(err){writeErr(err)}finally{S.quiet=false;await reload()}
+  toast(`Đã nhập ${n} khoản${skip?`, bỏ qua ${skip} dòng thiếu ngày hoặc số tiền`:""}`);
 }
-function handleFile(kind,file){if(!file)return;if(!S.canWrite){toast("Bạn chưa có quyền ghi vào sổ này");return}const fr=new FileReader();fr.onload=()=>(kind==="clients"?importClients:importEntries)(fr.result);fr.readAsText(file,"utf-8")}
+function handleFile(kind,file){if(!file)return;const fr=new FileReader();fr.onload=()=>({clients:importClients,entries:importEntries,acts:importActs}[kind])(fr.result);fr.readAsText(file,"utf-8")}
 const csvCell=v=>{v=String(v??"");return /[",\n;]/.test(v)?`"${v.replace(/"/g,'""')}"`:v};
-async function saveCSV(name,rows){
-  const blob=new Blob(["\uFEFF"+rows.map(r=>r.map(csvCell).join(",")).join("\n")],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)
-}
+function saveCSV(name,rows){const blob=new Blob(["﻿"+rows.map(r=>r.map(csvCell).join(",")).join("\n")],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000)}
 function exportAct(a){
   const tag=S.period==="all"?"tat-ca":S.period;
-  if(a==="tpl")return saveCSV("mau-thu-chi.csv",[["Ngày","Mã KH","Loại","Hạng mục","Số tiền","Nội dung"],["24/10/2026","KH007","Thu","Đặt cọc / tạm ứng","10.000.000","Cọc HĐ1 Ý Clinic"],["24/10/2026","KH007","Chi","Lệ phí nhà nước / hồ sơ","3.500.000","Lệ phí thành lập công ty"],["24/10/2026","","Chi","Ngân sách quảng cáo","2tr","Ads Facebook tìm khách tuần 43"]]);
-  if(a==="exp-ledger")return saveCSV(`so-thu-chi-${tag}.csv`,[["Ngày","Mã KH","Khách","Loại","Hạng mục","Nội dung","Số tiền"],...S.entries.filter(inPeriod).map(e=>[dmy(e.date),e.clientId,clientName(e.clientId),e.type==="thu"?"Thu":"Chi",e.category,e.note,e.amount])]);
+  if(a==="tpl")return saveCSV("mau-thu-chi.csv",[["Ngày","Mã KH","Loại","Hạng mục","Số tiền","Nội dung"],["24/10/2026","KH007","Thu","Đặt cọc / tạm ứng","10.000.000","Cọc HĐ1"],["24/10/2026","KH007","Chi","Lệ phí nhà nước / hồ sơ","3.500.000","Lệ phí thành lập công ty"],["24/10/2026","","Chi","Ngân sách quảng cáo","2tr","Ads Facebook tuần 43"]]);
+  if(a==="exp-ledger")return saveCSV(`so-thu-chi-${tag}.csv`,[["Ngày","Mã KH","Khách","Loại","Hạng mục","Nội dung","Số tiền","Người ghi"],...S.entries.filter(e=>inPeriod(e.date)).map(e=>[dmy(e.date),e.clientId,clientName(e.clientId),e.type==="thu"?"Thu":"Chi",e.category,e.note,e.amount,e.by])]);
   if(a==="exp-profit"){const ag=aggregate();return saveCSV(`loi-nhuan-${tag}.csv`,[["Mã KH","Khách","Đã thu","Chi phí","Lợi nhuận","Biên %"],...Object.entries(ag.per).map(([k,v])=>[k,clientName(k),v.thu,v.chi,v.thu-v.chi,v.thu?((v.thu-v.chi)/v.thu*100).toFixed(1):""]),["","TỔNG",ag.thu,ag.chi,ag.thu-ag.chi,ag.thu?((ag.thu-ag.chi)/ag.thu*100).toFixed(1):""]])}
-  if(a==="exp-clients"){const at=allTime();return saveCSV("khach-hang.csv",[["Mã KH","Ngày tiếp nhận","Người liên hệ","Cơ sở","SĐT","Mô hình","Dịch vụ","Tình trạng","Phụ trách","Giá trị HĐ","Đã thu","Chi phí","Lợi nhuận","Nguồn","Ghi chú"],...[...S.clients.values()].sort((a,b)=>a.id.localeCompare(b.id)).map(c=>{const v=at[c.id]||{thu:0,chi:0};return [c.id,dmy(c.date),c.contact,c.facility,c.phone,c.model,c.service,c.status,c.owner,c.contractValue||0,v.thu,v.chi,v.thu-v.chi,c.source,c.note]})])}
+  if(a==="exp-acts")return saveCSV(`nhat-ky-cham-soc-${tag}.csv`,[["Ngày","Mã KH","Khách","Hình thức","Nội dung","Kết quả","Hẹn tiếp","Người ghi"],...S.acts.filter(x=>inPeriod(x.date)).map(x=>[dmy(x.date),x.clientId,clientName(x.clientId),x.channel,x.content,x.result,dmy(x.nextDate),x.by])]);
+  if(a==="exp-clients"){const at=allTime();return saveCSV("khach-hang.csv",[["Mã KH","Ngày tiếp nhận","Người liên hệ","Vai trò","Cơ sở","SĐT","Zalo / Email","Mô hình","Khu vực","Địa chỉ","Dịch vụ","Tình trạng","Ưu tiên","Phụ trách","Giá trị HĐ","Ngày ký","Đã thu","Chi phí","Lợi nhuận","Nguồn","Việc cần làm","Hẹn tiếp","Liên hệ gần nhất","Ghi chú"],...sortedClients().map(c=>{const v=at[c.id]||{thu:0,chi:0};return [c.id,dmy(c.date),c.contact,c.role,c.facility,c.phone,c.zalo,c.model,c.region,c.address,c.service,c.status,c.priority,c.owner,c.contractValue||0,dmy(c.signedDate),v.thu,v.chi,v.thu-v.chi,c.source,c.nextAction,dmy(c.nextDate),dmy(c.lastContact),c.note]})])}
 }
 
-/* ---------- sự kiện ---------- */
+/* ============ sự kiện ============ */
 document.addEventListener("click",e=>{
   const t=e.target;
-  if(t.closest("#btnLogout")){sb.auth.signOut();return}
-  const tab=t.closest("[data-tab]");if(tab){S.tab=tab.dataset.tab;render();return}
+  if(t.closest("#btnLogout,#btnLogoutM")){sb.auth.signOut();return}
+  const nv=t.closest("[data-view]");if(nv){e.preventDefault();S.view=nv.dataset.view;render();window.scrollTo(0,0);return}
+  if(t.closest("[data-goto-closed]")){S.fStatus="_closed";S.view="clients";render();return}
   if(t.matches("[data-close]")){closeModal();return}
-  const ty=t.closest("[data-type]");if(ty){const v=ty.dataset.type;$("#eType").value=v;ty.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.type===v?"on-"+v:"");$("#eCat").innerHTML=(v==="thu"?CAT_THU:CAT_CHI).map(c=>`<option>${c}</option>`).join("");return}
-  if(t.closest("#btnAddEntry")||t.closest('[data-act="add-entry"]')){entryForm();return}
-  if(t.closest('[data-act="add-client"]')){clientForm();return}
-  const act=t.closest("[data-act]");if(act){exportAct(act.dataset.act);return}
+  const ty=t.closest("[data-type]");if(ty){const v=ty.dataset.type;$("#eType").value=v;ty.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.type===v?"on-"+v:"");$("#eCat").innerHTML=opt(v==="thu"?CAT_THU:CAT_CHI);return}
+  const act=t.closest("[data-act]");if(act){const a=act.dataset.act;if(a==="add-entry")entryForm();else if(a==="add-client")clientForm();else exportAct(a);return}
+  const lg=t.closest("[data-log]");if(lg){logForm(lg.dataset.log);return}
   const ed=t.closest("[data-edit]");if(ed){const en=S.entries.find(x=>x.id===ed.dataset.edit);en&&entryForm(en);return}
   const ec=t.closest("[data-edit-client]");if(ec){clientForm(S.clients.get(ec.dataset.editClient));return}
   const af=t.closest("[data-add-for]");if(af){entryForm(null,af.dataset.addFor);return}
-  const de=t.closest("[data-del-entry]");if(de){del("entries/"+de.dataset.delEntry,de,"Đã xoá khoản");return}
-  const dc=t.closest("[data-del-client]");if(dc){const has=S.entries.some(x=>x.clientId===dc.dataset.delClient);if(has){toast("Khách này còn khoản thu chi. Xoá hoặc chuyển các khoản đó trước.");return}del("clients/"+dc.dataset.delClient,dc,"Đã xoá khách");return}
-  const row=t.closest("tr[data-client]");if(row){clientDetail(row.dataset.client);return}
+  const de=t.closest("[data-del-entry]");if(de){del("entries",de.dataset.delEntry,de,"Đã xoá khoản");return}
+  const dc=t.closest("[data-del-client]");if(dc){if(S.entries.some(x=>x.clientId===dc.dataset.delClient)){toast("Khách còn khoản thu chi, xoá các khoản đó trước");return}del("clients",dc.dataset.delClient,dc,"Đã xoá khách");return}
+  const cl=t.closest("[data-client]");if(cl){clientDetail(cl.dataset.client);return}
 });
-document.addEventListener("submit",e=>{e.preventDefault();if(e.target.id==="fLogin")login();if(e.target.id==="fEntry")saveEntry(e.target);if(e.target.id==="fClient")saveClient(e.target)});
+document.addEventListener("submit",e=>{e.preventDefault();const id=e.target.id;if(id==="fLogin")login();if(id==="fEntry")saveEntry(e.target);if(id==="fClient")saveClient(e.target);if(id==="fLog")saveLog(e.target)});
 document.addEventListener("input",e=>{
   if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}
   if(e.target.id==="eAmt"){const v=parseMoney(e.target.value);$("#eAmtHint").textContent=v?fmt(v)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ"}
 });
-document.addEventListener("change",e=>{const id=e.target.id;
-  if(id==="period"){S.period=e.target.value;render()}
-  if(id==="st"){S.st=e.target.value;render()}
-  if(id==="lfType"){S.lf.type=e.target.value;render()}
-  if(id==="lfCat"){S.lf.cat=e.target.value;render()}
-  if(id==="lfClient"){S.lf.client=e.target.value;render()}
+document.addEventListener("change",e=>{const id=e.target.id,v=e.target.value;
+  const map={period:"period",fStatus:"fStatus",fOwner:"fOwner",fPri:"fPri",fSvc:"fSvc",tOwner:"tOwner"};
+  if(map[id]){S[map[id]]=v;render()}
+  if(id==="lfType"){S.lf.type=v;render()}if(id==="lfCat"){S.lf.cat=v;render()}if(id==="lfClient"){S.lf.client=v;render()}
   if(e.target.dataset.file)handleFile(e.target.dataset.file,e.target.files[0]);
 });
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modal").innerHTML)closeModal()});
-document.addEventListener("dragover",e=>{const d=e.target.closest?.("[data-drop]");if(d){e.preventDefault();d.classList.add("over")}});
+/* kéo thả: file CSV + thẻ pipeline */
+let dragId=null;
+document.addEventListener("dragstart",e=>{const c=e.target.closest?.("[data-card]");if(c){dragId=c.dataset.card;c.classList.add("drag");e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",dragId)}});
+document.addEventListener("dragend",e=>{const c=e.target.closest?.("[data-card]");c&&c.classList.remove("drag");document.querySelectorAll(".col.over").forEach(x=>x.classList.remove("over"))});
+document.addEventListener("dragover",e=>{const col=e.target.closest?.("[data-col]");if(col&&dragId){e.preventDefault();document.querySelectorAll(".col.over").forEach(x=>x!==col&&x.classList.remove("over"));col.classList.add("over");return}const d=e.target.closest?.("[data-drop]");if(d){e.preventDefault();d.classList.add("over")}});
 document.addEventListener("dragleave",e=>{const d=e.target.closest?.("[data-drop]");d&&d.classList.remove("over")});
-document.addEventListener("drop",e=>{const d=e.target.closest?.("[data-drop]");if(d){e.preventDefault();d.classList.remove("over");handleFile(d.dataset.drop,e.dataTransfer.files[0])}});
+document.addEventListener("drop",async e=>{
+  const col=e.target.closest?.("[data-col]");
+  if(col&&dragId){e.preventDefault();const id=dragId;dragId=null;col.classList.remove("over");const c=S.clients.get(id);const st=col.dataset.col;if(!c||c.status===st)return;
+    const patch={status:st,updatedAt:Date.now()};if(!S.needMigration&&SIGNED.has(st)&&!c.signedDate)patch.signedDate=todayISO();
+    c.status=st;render();try{await db.update("clients",id,patch);toast(`${id} → ${st}`)}catch(err){writeErr(err);reload()}return}
+  const d=e.target.closest?.("[data-drop]");if(d){e.preventDefault();d.classList.remove("over");handleFile(d.dataset.drop,e.dataTransfer.files[0])}
+});
+/* tooltip biểu đồ */
+const tipEl=$("#tip");
+document.addEventListener("mousemove",e=>{const t=e.target.closest?.("[data-tip]");if(!t){tipEl.hidden=true;return}tipEl.innerHTML=t.dataset.tip;tipEl.hidden=false;const r=tipEl.getBoundingClientRect();let x=e.clientX+14,y=e.clientY+14;if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;tipEl.style.left=x+"px";tipEl.style.top=y+"px"});
+document.addEventListener("scroll",()=>tipEl.hidden=true,true);
 
-/* ---------- kết nối Supabase ---------- */
-const CFG=window.HPG_CONFIG||{};
-let sb=null;
-const COLS={clients:["id","date","contact","phone","facility","model","service","status","owner","contract_value","source","note","updated_at"],
-  entries:["id","type","date","client_id","category","amount","note","created_by_email","created_at","updated_at"]};
-const MAP={contractValue:"contract_value",updatedAt:"updated_at",clientId:"client_id",createdAt:"created_at",by:"created_by_email"};
+/* ============ kết nối Supabase ============ */
+const CFG=window.HPG_CONFIG||{};let sb=null;
+const COLS_BASE={clients:["id","date","contact","phone","facility","model","service","status","owner","contract_value","source","note","updated_at"],entries:["id","type","date","client_id","category","amount","note","created_by_email","created_at","updated_at"],activities:["id","client_id","date","channel","content","result","next_date","created_by_email","created_at"]};
+const COLS_NEW={clients:["role","zalo","region","address","priority","signed_date","next_action","next_date","last_contact"]};
+const colsFor=t=>S.needMigration?COLS_BASE[t]:[...COLS_BASE[t],...(COLS_NEW[t]||[])];
+const MAP={contractValue:"contract_value",updatedAt:"updated_at",clientId:"client_id",createdAt:"created_at",by:"created_by_email",signedDate:"signed_date",nextAction:"next_action",nextDate:"next_date",lastContact:"last_contact"};
 const INV=Object.fromEntries(Object.entries(MAP).map(([a,b])=>[b,a]));
-function toRow(tbl,o){const r={};for(const [k,v] of Object.entries(o)){if(k==="id")continue;const c=MAP[k]||k;if(!COLS[tbl].includes(c))continue;r[c]=(v===""&&(c==="date"||c==="client_id"))?null:v}return r}
+const DATE_COLS=new Set(["date","signed_date","next_date","last_contact","client_id"]);
+function toRow(t,o){const r={},cols=colsFor(t);for(const [k,v] of Object.entries(o)){if(v===undefined)continue;const c=MAP[k]||k;if(!cols.includes(c))continue;r[c]=(v===""&&DATE_COLS.has(c))?null:v}return r}
 function fromRow(r){const o={};for(const [k,v] of Object.entries(r))o[INV[k]||k]=v??"";o.amount=Number(r.amount||0);o.contractValue=Number(r.contract_value||0);return o}
 function dbErr(error){console.error(error);if(error.code==="23503")return {code:"fk"};if(error.code==="42501"||/row-level security|permission/i.test(error.message||""))return {code:"invalid_argument"};return {code:"unavailable"}}
-const adapter={
-  doc(path){const [tbl,id]=path.split("/");return{
-    async set(d){const {error}=await sb.from(tbl).upsert({id,...toRow(tbl,d)});if(error)throw dbErr(error);await reload()},
-    async delete(){const {error}=await sb.from(tbl).delete().eq("id",id);if(error)throw dbErr(error);await reload()}}},
-  collection(tbl){return{async add(d){const {error}=await sb.from(tbl).insert(toRow(tbl,d));if(error)throw dbErr(error);await reload()}}}
+const db={
+  async insert(t,d){const {error}=await sb.from(t).insert(toRow(t,d));if(error)throw dbErr(error);await reload()},
+  async update(t,id,d){const {error}=await sb.from(t).update(toRow(t,d)).eq("id",id);if(error)throw dbErr(error);await reload()},
+  async remove(t,id){const {error}=await sb.from(t).delete().eq("id",id);if(error)throw dbErr(error);await reload()}
 };
 async function reload(){
   if(S.quiet||!S.db)return;
-  const [c,e]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000)]);
+  const [c,e,a]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000),sb.from("activities").select("*").order("date",{ascending:false}).limit(5000)]);
   if(c.error||e.error){toast("Chưa tải được dữ liệu, thử tải lại trang");return}
-  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));
-  S.entries=e.data.map(fromRow);S.entries.forEach(x=>{if(x.by)S.names[x.by]=x.by});
-  if(!$("#modal").innerHTML)render();
+  S.needMigration=!!a.error||!c.data.length?!!a.error:!("next_date" in c.data[0]);
+  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);
+  if($("#modal").innerHTML){closeModal.dirty=true;return}
+  render();
 }
 let rt=null,rtTimer=null;
 async function onSession(session){
-  if(session){
-    S.db=adapter;S.needLogin=false;S.uid=session.user.email;S.canWrite=true;$("#who").textContent=session.user.email;
-    await reload();render();
-    if(!rt)rt=sb.channel("hpg").on("postgres_changes",{event:"*",schema:"public"},()=>{clearTimeout(rtTimer);rtTimer=setTimeout(reload,400)}).subscribe();
-  }else{
-    S.db=null;S.needLogin=true;S.clients=new Map();S.entries=[];if(rt){sb.removeChannel(rt);rt=null}closeModal();render();
-  }
+  if(session){S.db=db;S.needLogin=false;S.uid=session.user.email;await reload();render();
+    if(!rt)rt=sb.channel("hpg").on("postgres_changes",{event:"*",schema:"public"},()=>{clearTimeout(rtTimer);rtTimer=setTimeout(reload,500)}).subscribe();}
+  else{S.db=null;S.needLogin=true;S.clients=new Map();S.entries=[];S.acts=[];if(rt){sb.removeChannel(rt);rt=null}$("#modal").innerHTML="";$("#root").innerHTML="";render()}
 }
-async function login(){
-  const err=$("#lErr");err.textContent="";
-  const {error}=await sb.auth.signInWithPassword({email:$("#lEmail").value.trim(),password:$("#lPass").value});
-  if(error)err.textContent=/invalid/i.test(error.message)?"Sai email hoặc mật khẩu.":"Chưa đăng nhập được: "+error.message;
-}
+async function login(){const err=$("#lErr");err.textContent="";const {error}=await sb.auth.signInWithPassword({email:$("#lEmail").value.trim(),password:$("#lPass").value});if(error)err.textContent=/invalid/i.test(error.message)?"Sai email hoặc mật khẩu.":"Chưa đăng nhập được: "+error.message}
 (async()=>{
   if(!CFG.SUPABASE_URL||!CFG.SUPABASE_ANON_KEY||/DIEN_/.test(CFG.SUPABASE_URL+CFG.SUPABASE_ANON_KEY)||!window.supabase){S.setup=true;render();return}
   sb=window.supabase.createClient(CFG.SUPABASE_URL,CFG.SUPABASE_ANON_KEY);
   const {data}=await sb.auth.getSession();await onSession(data.session);
-  sb.auth.onAuthStateChange((ev,session)=>{if(ev==="SIGNED_IN"||ev==="SIGNED_OUT")onSession(session)});
+  sb.auth.onAuthStateChange((ev,session)=>{if(ev==="SIGNED_IN"&&!S.db)onSession(session);if(ev==="SIGNED_OUT")onSession(null)});
 })();
 render();
 </script>
-
 </body>
 </html>
