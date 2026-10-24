@@ -20,7 +20,7 @@ Mở file `config.js` trên GitHub (bấm biểu tượng bút chì), thay `DIEN
 ### 3. Bật GitHub Pages
 Repo → **Settings → Pages** → Source: **Deploy from a branch** → Branch: `main` / `(root)` → **Save**. Sau 1–2 phút web chạy tại:
 
-`https://oneilledward1l10rbv-ai.github.io/hpg-so-khach/`
+`https://sokhach.hpgrp.vn` (tên miền riêng; bản gốc vẫn ở https://oneilledward1l10rbv-ai.github.io/hpg-so-khach/)
 
 ### 4. Đưa danh sách khách vào
 Đăng nhập → tab **Nhập / xuất file** → tải sheet *Khách hàng* từ Google Sheets dạng CSV và kéo vào.
