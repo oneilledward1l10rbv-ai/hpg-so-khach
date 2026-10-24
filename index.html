@@ -290,7 +290,8 @@ i.k{display:inline-block;width:10px;height:10px;border-radius:3px}
 .grp-h.over{color:var(--neg)}.grp-h.today{color:var(--warn)}
 
 /* ---------- kanban ---------- */
-.kanban{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(250px,1fr);gap:14px;overflow-x:auto;padding-bottom:8px;align-items:start}
+.sec-lane{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}.sec-lane h2{margin:0;font-size:14.5px}.sec-lane p{margin:0;color:var(--muted);font-size:12.5px}
+.kanban{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:14px;overflow-x:auto;padding-bottom:8px;align-items:start}
 .col{background:var(--sunk);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column;min-height:200px}
 .col-h{padding:12px 14px 10px;display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line)}
 .col-h b{font-size:13px;display:flex;align-items:center;gap:8px}
@@ -623,9 +624,9 @@ function taskRow(it,compact){
     <div class="t-act">${!S.canWrite?"":step?`<button class="btn sm" type="button" data-jtoggle="${esc(c.id)}|${esc(it.step.k)}">${compact?"Xong":"Đánh dấu xong"}</button>`:!S.needMigration?`<button class="btn sm" type="button" data-log="${esc(c.id)}">${compact?"Ghi":"Ghi chăm sóc"}</button>`:""}</div></div>`;
 }
 function vTasks(){
-  const tab=S.tTab||"list";const ownerSel=`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`;
-  const tabs=`<div class="tabs-row"><button class="chip" type="button" data-ttab="list" aria-pressed="${tab==="list"}">Việc cần làm theo ngày</button><button class="chip" type="button" data-ttab="board" aria-pressed="${tab==="board"}">Theo giai đoạn chốt khách</button></div>`;
-  if(tab==="board")return pageHead("Theo dõi khách hàng","Khách đang ở giai đoạn nào · kéo thẻ sang cột khác để cập nhật, kéo vào Đã ký để bắt đầu hành trình hồ sơ",ownerSel+btnClient)+tabs+boardHtml(S.tOwner);
+  const tab=S.tTab||"board";const ownerSel=`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`;
+  const tabs=`<div class="tabs-row"><button class="chip" type="button" data-ttab="board" aria-pressed="${tab==="board"}">Theo giai đoạn</button><button class="chip" type="button" data-ttab="list" aria-pressed="${tab==="list"}">Việc cần làm hằng ngày</button></div>`;
+  if(tab==="board")return pageHead("Theo dõi khách hàng","Từ tiếp nhận đến hoàn tất hồ sơ · kéo thẻ sang cột khác để cập nhật tình trạng",ownerSel+btnClient)+tabs+boardHtml(S.tOwner);
   const g=taskGroups(S.tOwner);const sec=(k,t,cls)=>g[k].length?`<div class="grp-h ${cls}">${t}<span class="n">${g[k].length}</span></div>${g[k].map(it=>taskRow(it,false)).join("")}`:"";
   const total=Object.values(g).reduce((a,x)=>a+x.length,0);
   return pageHead("Theo dõi khách hàng","Ai cần liên hệ, hồ sơ nào sắp đến hạn · việc hồ sơ gắn nhãn HỒ SƠ",ownerSel)+tabs+
@@ -653,13 +654,17 @@ function vJourneys(){
 }
 
 /* ============ Theo giai đoạn (bảng kéo thả) ============ */
+const colLabel=s=>({"7. Đang triển khai":"Đang xử lý hồ sơ","8. Hoàn thành":"Hoàn tất hồ sơ"}[s]||s.replace(/^\d+\.\s*/,""));
 function boardHtml(owner){
-  const cols=STATUSES.slice(0,6);const closed=[STATUSES[6],...STATUSES.slice(7)];
+  const cols=STATUSES.slice(0,8);const closed=STATUSES.slice(8);
   const by=s=>sortedClients().filter(c=>c.status===s&&(!owner||c.owner===owner));
-  return `<div class="kanban">${cols.map(s=>{const list=by(s);const v=list.reduce((a,c)=>a+(c.contractValue||0),0);return `<section class="col" data-col="${esc(s)}"><div class="col-h"><b>${esc(s.replace(/^\d+\.\s*/,""))}<span class="n">${list.length}</span></b><span class="num">${v?fmtM(v):"—"}</span></div><div class="col-b">${list.map(kcard).join("")}</div></section>`}).join("")}</div>
-  <section class="card"><div class="card-h"><h2>Không còn trong giai đoạn chốt</h2><p>Đang triển khai xem ở Hành trình hồ sơ</p></div><div class="card-b"><div class="filters">${closed.map(s=>`<span class="pill ${stClass(s)}">${esc(s)} · ${by(s).length}</span>`).join("")}<button class="btn sm ghost" type="button" data-view="journeys">Mở Hành trình hồ sơ</button><button class="btn sm ghost" type="button" data-goto-closed>Xem khách đã kết thúc</button></div></div></section>`;
+  const lane=(title,sub,cs)=>`<div style="display:flex;flex-direction:column;gap:10px"><div class="sec-lane"><h2>${title}</h2><p>${sub}</p></div><div class="kanban" style="grid-auto-flow:row;grid-template-columns:repeat(${cs.length},minmax(200px,1fr))">${cs.map(s=>{const list=by(s);const v=list.reduce((a,c)=>a+(c.contractValue||0),0);return `<section class="col" data-col="${esc(s)}"><div class="col-h"><b>${esc(colLabel(s))}<span class="n">${list.length}</span></b><span class="num">${v?fmtM(v):"—"}</span></div><div class="col-b">${list.map(kcard).join("")}</div></section>`}).join("")}</div></div>`;
+  return lane("Giai đoạn chốt khách","Từ tiếp nhận đến khi khách quyết định",cols.slice(0,5))+lane("Sau khi ký hợp đồng","Đã ký → đang xử lý hồ sơ → hoàn tất · thẻ hiện bước hồ sơ đang làm",cols.slice(5))+`
+  <section class="card"><div class="card-h"><h2>Dừng / không chốt</h2><p>Khách tạm dừng hoặc không ký</p></div><div class="card-b"><div class="filters">${closed.map(s=>`<span class="pill">${esc(s)} · ${by(s).length}</span>`).join("")}<button class="btn sm ghost" type="button" data-goto-closed>Xem danh sách</button></div></div></section>`;
 }
-function kcard(c){const d=dueInfo(c.nextDate);return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:(c.service||c.model||""))}</div><div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
+function kcard(c){const d=dueInfo(c.nextDate);const js=jState(c);const sub=esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:(c.service||c.model||""));
+  if(js.total&&SIGNED.has(c.status)){const dd=dueInfo(js.cur?.due);return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${sub}</div>${progHtml(js)}<div class="k3"><span class="k2" style="white-space:normal">${js.cur?esc(js.cur.t):"Đã xong mọi bước"}</span>${dd?`<span class="due ${dd.cls}">${dd.txt}</span>`:""}</div></article>`}
+  return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${sub}</div><div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
 
 /* ============ VIEW: Khách hàng ============ */
 function vClients(){
@@ -929,9 +934,13 @@ function journeyBlock(c){
 }
 async function saveJourney(id,j){
   const c=S.clients.get(id);if(!c)return;c.journey=j;
+  const done=j.filter(x=>x.st==="done").length;let ns=null;
+  if(j.length&&done===j.length&&SIGNED.has(c.status)&&c.status!=="8. Hoàn thành")ns="8. Hoàn thành";
+  else if(done>(j[0]?.st==="done"?1:0)&&done<j.length&&(c.status==="6. Đã ký hợp đồng"||c.status==="8. Hoàn thành"))ns="7. Đang triển khai";
+  if(ns){c.status=ns;toast(ns==="8. Hoàn thành"?`${id} đã xong mọi bước → Hoàn tất hồ sơ`:`${id} → Đang xử lý hồ sơ`)}
   const ov=$(".overlay"),top=ov?ov.scrollTop:0;
   if(ov&&$("#modal [data-jtoggle],#modal [data-jnew]")){clientDetail(id);const o2=$(".overlay");if(o2)o2.scrollTop=top;closeModal.dirty=true}else render();
-  S.quiet=true;try{const {error}=await sb.from("clients").update({journey:j,updated_at:Date.now()}).eq("id",id);if(error)throw dbErr(error)}catch(e){writeErr(e)}finally{S.quiet=false}
+  S.quiet=true;try{const {error}=await sb.from("clients").update({journey:j,updated_at:Date.now(),...(ns?{status:ns}:{})}).eq("id",id);if(error)throw dbErr(error)}catch(e){writeErr(e)}finally{S.quiet=false}
 }
 function jUpdate(key,fn){const [id,k]=key.split("|");const c=S.clients.get(id);if(!c)return;const j=jOf(c).map(s=>({...s}));const i=j.findIndex(s=>s.k===k);if(i<0)return;fn(j,i);saveJourney(id,j)}
 function logForm(id){
@@ -1180,7 +1189,7 @@ document.addEventListener("click",e=>{
   const ded=t.closest("[data-dedit]");if(ded){docEditForm(ded.dataset.dedit);return}
   const ddx=t.closest("[data-ddel]");if(ddx){deleteDoc(ddx.dataset.ddel,ddx);return}
   const dct=t.closest("[data-dcat]");if(dct){S.dCat=dct.dataset.dcat;render();return}
-  const jt=t.closest("[data-jtoggle]");if(jt){jUpdate(jt.dataset.jtoggle,(j,i)=>{const d=j[i].st==="done";j[i].st=d?"todo":"done";j[i].done=d?"":todayISO()});toast("Đã cập nhật hành trình");return}
+  const jt=t.closest("[data-jtoggle]");if(jt){jUpdate(jt.dataset.jtoggle,(j,i)=>{const d=j[i].st==="done";j[i].st=d?"todo":"done";j[i].done=d?"":todayISO()});return}
   const jd=t.closest("[data-jdel]");if(jd){jUpdate(jd.dataset.jdel,(j,i)=>j.splice(i,1));return}
   const jn=t.closest("[data-jnew]");if(jn){const c=S.clients.get(jn.dataset.jnew);if(c)saveJourney(c.id,newJourney(c.service,SIGNED.has(c.status)?(c.signedDate||todayISO()):""));return}
   const ja=t.closest("[data-jadd]");if(ja){const v=($("#jNew")?.value||"").trim();if(!v){$("#jNew")?.focus();return}const c=S.clients.get(ja.dataset.jadd);if(c){const j=jOf(c).map(s=>({...s}));const cur=j.findIndex(s=>s.st!=="done");const it={k:jid(),t:v,st:"todo",due:"",done:"",note:""};cur<0?j.push(it):j.splice(cur+1,0,it);saveJourney(c.id,j)}return}
