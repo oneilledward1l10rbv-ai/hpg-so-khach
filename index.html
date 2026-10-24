@@ -322,7 +322,8 @@ const CLOSED=new Set(["8. Hoàn thành","9. Tạm dừng","10. Không chốt"]);
 const OPEN_DEAL=s=>/^[1-5]\./.test(s||"");
 const MODELS=["Phòng khám chuyên khoa","Phòng khám đa khoa","Phòng khám thẩm mỹ","Bệnh viện thẩm mỹ","Spa / Thẩm mỹ viện","Nha khoa","Phòng chẩn trị YHCT","Phòng khám YHCT","Phòng khám da liễu","Bác sĩ cá nhân","Nhà đầu tư (chưa có cơ sở)","Khác"];
 const SERVICES=["Pháp lý - Thành lập cơ sở","Pháp lý - Giấy phép hoạt động","Pháp lý + Marketing","Bác sĩ đứng tên chuyên môn","Cố vấn pháp lý sau thành lập","Marketing Facebook","Marketing TikTok","Marketing FB + TikTok","Gói lẻ / Gói tuần Marketing","Kèm cặp / Cố vấn Marketing","Kế toán - Thuế","Khác"];
-const OWNERS=["Sake","Anh Kiên","Nhân viên 1","Nhân viên 2","Nhân viên 3"];
+const OWNERS_BASE=["Sake","PTK"];
+const ownerList=()=>[...new Set([...OWNERS_BASE,...[...S.clients.values()].map(c=>c.owner).filter(Boolean)])];
 const PRIORITIES=["Nóng","Ấm","Lạnh"];
 const ROLES=["Chủ phòng khám","Bác sĩ","Nhà đầu tư","Chủ spa","Quản lý","Khác"];
 const REGIONS=["TP.HCM","Hà Nội","Đà Nẵng","Cần Thơ","Đồng Nai","Tây Ninh","An Giang","Vũng Tàu","Tỉnh khác"];
@@ -501,7 +502,7 @@ function taskRow(c,compact){
 function vTasks(){
   const g=taskGroups(S.tOwner);const sec=(k,t,cls)=>g[k].length?`<div class="grp-h ${cls}">${t}<span class="n">${g[k].length}</span></div>${g[k].map(c=>taskRow(c,false)).join("")}`:"";
   const total=Object.values(g).reduce((a,x)=>a+x.length,0);
-  return pageHead("Việc cần làm","Khách đang chăm sóc, sắp theo ngày hẹn liên hệ tiếp",`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${OWNERS.map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
+  return pageHead("Việc cần làm","Khách đang chăm sóc, sắp theo ngày hẹn liên hệ tiếp",`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
   `<section class="card">${total?`<div class="tasks">${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Không có việc nào","Khách đang chăm sóc sẽ hiện ở đây kèm ngày hẹn liên hệ tiếp.")}</section>`;
 }
 
@@ -509,7 +510,7 @@ function vTasks(){
 function vPipeline(){
   const cols=STATUSES.slice(0,7);const closed=STATUSES.slice(7);
   const by=s=>sortedClients().filter(c=>c.status===s&&(!S.fOwner||c.owner===S.fOwner));
-  return pageHead("Pipeline","Kéo thẻ sang cột khác để đổi tình trạng · bấm thẻ để xem chi tiết",`<select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${OWNERS.map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>`+btnClient)+
+  return pageHead("Pipeline","Kéo thẻ sang cột khác để đổi tình trạng · bấm thẻ để xem chi tiết",`<select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>`+btnClient)+
   `<div class="kanban">${cols.map(s=>{const list=by(s);const v=list.reduce((a,c)=>a+(c.contractValue||0),0);return `<section class="col" data-col="${esc(s)}"><div class="col-h"><b>${esc(s.replace(/^\d+\.\s*/,""))}<span class="n">${list.length}</span></b><span class="num">${v?fmtM(v):"—"}</span></div><div class="col-b">${list.map(kcard).join("")}</div></section>`}).join("")}</div>
   <section class="card"><div class="card-h"><h2>Đã đóng</h2><p>Hoàn thành, tạm dừng, không chốt</p></div><div class="card-b"><div class="filters">${closed.map(s=>`<span class="pill ${stClass(s)}">${esc(s)} · ${by(s).length}</span>`).join("")}<button class="btn sm ghost" type="button" data-goto-closed>Xem danh sách</button></div></div></section>`;
 }
@@ -524,7 +525,7 @@ function vClients(){
     <input class="ctl grow" id="q" type="search" placeholder="Tìm tên, cơ sở, SĐT, địa chỉ, mã KH…" value="${esc(S.q)}">
     <select class="ctl" id="fStatus"><option value="">Mọi tình trạng</option><option value="_open"${S.fStatus==="_open"?" selected":""}>Đang chăm sóc / triển khai</option><option value="_closed"${S.fStatus==="_closed"?" selected":""}>Đã đóng</option>${STATUSES.map(s=>`<option${s===S.fStatus?" selected":""}>${s}</option>`).join("")}</select>
     <select class="ctl" id="fSvc"><option value="">Mọi dịch vụ</option>${SERVICES.map(s=>`<option${s===S.fSvc?" selected":""}>${s}</option>`).join("")}</select>
-    <select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${OWNERS.map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>
+    <select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>
     <select class="ctl" id="fPri"><option value="">Mọi mức ưu tiên</option>${PRIORITIES.map(o=>`<option${o===S.fPri?" selected":""}>${o}</option>`).join("")}</select>
   </div></div>
   ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:900px"><thead><tr><th>Khách / cơ sở</th><th>Tình trạng</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn tiếp</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
@@ -667,7 +668,7 @@ function clientForm(c){
     <label>Dịch vụ<select class="ctl" id="cService">${opt(SERVICES,c.service,"")}</select></label>
     <label>Tình trạng<select class="ctl" id="cStatus">${opt(STATUSES,c.status)}</select></label>
     ${nm?"":`<label>Mức ưu tiên<select class="ctl" id="cPriority">${opt(PRIORITIES,c.priority,"")}</select></label>`}
-    <label>Người phụ trách<select class="ctl" id="cOwner">${opt(OWNERS,c.owner,"")}</select></label>
+    <label>Người phụ trách<select class="ctl" id="cOwner">${opt(ownerList(),c.owner,"")}</select></label>
     <label>Giá trị hợp đồng (VNĐ)<input class="ctl num" id="cValue" inputmode="decimal" value="${c.contractValue?fmt(c.contractValue):""}" placeholder="vd 90tr"></label>
     ${nm?"":`<label>Ngày ký HĐ<input class="ctl" type="date" id="cSigned" value="${esc(String(c.signedDate||"").slice(0,10))}"></label>`}
     <label>Nguồn khách<select class="ctl" id="cSource">${opt(SOURCES.includes(c.source)||!c.source?SOURCES:[c.source,...SOURCES],c.source,"")}</select></label>
