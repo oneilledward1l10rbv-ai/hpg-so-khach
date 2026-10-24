@@ -110,7 +110,15 @@ button{cursor:pointer}
 th.grp{text-align:center;background:var(--gold-soft);color:var(--gold-ink);border-bottom:1px solid var(--line)}
 th.sub2{font-size:10.5px}
 .ledger td,.ledger th{padding:9px 10px}
-.ledger td{white-space:nowrap}.ledger td .cell2 small{white-space:normal;max-width:220px}
+.ledger td,.ledger th{white-space:nowrap}.ledger th.c,.ledger td.c{text-align:center}.ledger th.r{text-align:right}
+.chi-lines{display:flex;flex-direction:column;gap:8px}
+.chi-line{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.8fr) minmax(0,1fr) 28px;gap:8px;align-items:center}
+.chi-head{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.8fr) minmax(0,1fr) 28px;gap:8px;font-size:12px;font-weight:600;color:var(--muted)}
+.chi-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.chi-foot b{font-variant-numeric:tabular-nums}
+@media (max-width:560px){.chi-line{grid-template-columns:minmax(0,1fr) 28px}.chi-line .cl-amt,.chi-line .cl-note{grid-column:1}.chi-head{display:none}}
+.form label.chk{flex-direction:row;align-items:center;gap:8px;font-weight:500;color:var(--ink)}
+.form label.chk input{width:16px;height:16px;accent-color:var(--accent)}.ledger td .cell2 small{white-space:normal;max-width:220px}
 .pl td:first-child{min-width:240px}
 .ledger td.money{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ledger td.muted{color:var(--faint)}
@@ -683,10 +691,9 @@ function vLedger(){
   let body="";
   if(tab==="thu"){
     const rows=list.filter(e=>e.type==="thu").sort((a,b)=>String(a.date).localeCompare(String(b.date))||(Number(a.createdAt)||0)-(Number(b.createdAt)||0));const run=thuRunning();
-    body=rows.length?`<div class="tbl-wrap"><table class="ledger" style="min-width:1320px"><thead>
-      <tr><th rowspan="2">Ngày</th><th rowspan="2">Tên KH</th><th rowspan="2">Tên công ty</th><th rowspan="2">SĐT</th><th rowspan="2">Dịch vụ</th><th rowspan="2" class="r">Tổng HĐ<br><span class="sub2">(cả nợ)</span></th><th rowspan="2">Đợt</th><th colspan="3" class="grp">DT khách thanh toán trong ngày (doanh thu thực)</th><th colspan="2" class="grp">Thuế</th><th rowspan="2" class="r">Còn phải thu</th><th rowspan="2"></th></tr>
-      <tr><th class="r sub2">Chuyển khoản</th><th class="r sub2">Thẻ</th><th class="r sub2">Tiền mặt</th><th class="r sub2">Thuế</th><th class="r sub2">DT sau thuế</th></tr></thead><tbody>
-      ${rows.map(e=>{const c=S.clients.get(e.clientId)||{};const m=e.method||"ck";const left=run[e.id];const tx=Number(e.tax)||0;return `<tr><td class="num">${dmy(e.date)}</td><td><span class="cell-main">${esc(c.contact||(e.clientId?e.clientId:"—"))}</span>${e.clientId?` <span class="code">${esc(e.clientId)}</span>`:""}</td><td>${esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:"")}</td><td class="num">${esc(c.phone||"")}</td><td><div class="cell2">${esc(c.service||"")}${e.category&&e.category!=="Thanh toán hợp đồng"?`<small>${esc(e.category)}</small>`:""}${e.note?`<small>${esc(e.note)}</small>`:""}</div></td><td class="money">${money(c.contractValue)}</td><td>${e.installment?`<span class="inst">${e.installment}</span>`:""}</td><td class="money">${m==="ck"?fmt(e.amount):""}</td><td class="money">${m==="the"?fmt(e.amount):""}</td><td class="money">${m==="tm"?fmt(e.amount):""}</td><td class="money">${money(tx)}</td><td class="money" style="font-weight:600">${fmt(e.amount-tx)}</td><td class="money ${left>0?"neg":""}">${left==null?"":left>0?fmt(left):"Đã đủ"}</td><td>${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(e.id)}">Sửa</button>`:""}</td></tr>`}).join("")}
+    body=rows.length?`<div class="tbl-wrap"><table class="ledger" style="min-width:1180px"><thead>
+      <tr><th>Ngày</th><th>Tên KH</th><th>Tên công ty</th><th>SĐT</th><th>Dịch vụ</th><th class="r">Tổng HĐ (cả nợ)</th><th class="c">Đợt</th><th class="r">Chuyển khoản</th><th class="r">Thẻ</th><th class="r">Tiền mặt</th><th class="r">Thuế</th><th class="r">DT sau thuế</th><th class="r">Còn phải thu</th><th></th></tr></thead><tbody>
+      ${rows.map(e=>{const c=S.clients.get(e.clientId)||{};const m=e.method||"ck";const left=run[e.id];const tx=Number(e.tax)||0;return `<tr><td class="num">${dmy(e.date)}</td><td><span class="cell-main">${esc(c.contact||(e.clientId?e.clientId:"—"))}</span>${e.clientId?` <span class="code">${esc(e.clientId)}</span>`:""}</td><td>${esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:"")}</td><td class="num">${esc(c.phone||"")}</td><td><div class="cell2">${esc(c.service||"")}${e.category&&e.category!=="Thanh toán hợp đồng"?`<small>${esc(e.category)}</small>`:""}${e.note?`<small>${esc(e.note)}</small>`:""}</div></td><td class="money">${money(c.contractValue)}</td><td class="c">${e.installment?`<span class="inst">${e.installment}</span>`:""}</td><td class="money">${m==="ck"?fmt(e.amount):""}</td><td class="money">${m==="the"?fmt(e.amount):""}</td><td class="money">${m==="tm"?fmt(e.amount):""}</td><td class="money">${money(tx)}</td><td class="money" style="font-weight:600">${fmt(e.amount-tx)}</td><td class="money ${left>0?"neg":""}">${left==null?"":left>0?fmt(left):"Đã đủ"}</td><td>${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(e.id)}">Sửa</button>`:""}</td></tr>`}).join("")}
       </tbody><tfoot><tr><td colspan="7">Tổng ${rows.length} lần thu</td><td class="money">${money(f.ck)}</td><td class="money">${money(f.the)}</td><td class="money">${money(f.tm)}</td><td class="money">${money(rows.reduce((a,e)=>a+(Number(e.tax)||0),0))}</td><td class="money">${fmt(f.rev-rows.reduce((a,e)=>a+(Number(e.tax)||0),0))}</td><td class="money">${fmt(oweSum)}</td><td></td></tr></tfoot></table></div>`
       :emptyBox("ledger","Chưa có khoản thu trong kỳ","Bấm Ghi khoản thu khi khách chuyển khoản, quẹt thẻ hay trả tiền mặt.");
   }else if(tab==="hd"){
@@ -703,7 +710,9 @@ function vLedger(){
   }else{
     const rows=list.filter(e=>e.type==="chi"&&(!S.lf.cat||e.category===S.lf.cat)).sort((a,b)=>String(b.date).localeCompare(String(a.date)));
     const gl={cogs:["Giá vốn dịch vụ","st-wait"],opex:["Chi phí vận hành",""],tax:["Thuế","st-new"]};
-    body=`<div class="card-b" style="padding-bottom:0"><div class="filters"><select class="ctl" id="lfCat"><option value="">Mọi hạng mục</option>${[...new Set([...CAT_CHI,...S.entries.filter(e=>e.type==="chi").map(e=>e.category)])].filter(Boolean).map(c=>`<option${c===S.lf.cat?" selected":""}>${esc(c)}</option>`).join("")}</select></div></div>`+
+    const allChi=list.filter(e=>e.type==="chi");const byCat={};allChi.forEach(e=>byCat[e.category||"Chi khác"]=(byCat[e.category||"Chi khác"]||0)+e.amount);
+    const catOrder=[...new Set([...CAT_CHI,...Object.keys(byCat)])].filter(k=>byCat[k]);
+    body=`<div class="card-b" style="padding-bottom:0;display:flex;flex-direction:column;gap:10px"><div class="chips"><button class="chip" type="button" data-lcat="" aria-pressed="${!S.lf.cat}">Tất cả<b>${fmtM(allChi.reduce((a,e)=>a+e.amount,0))}</b></button>${catOrder.map(k=>`<button class="chip" type="button" data-lcat="${esc(k)}" aria-pressed="${S.lf.cat===k}">${esc(k)}<b>${fmtM(byCat[k])}</b></button>`).join("")}</div></div>`+
       (rows.length?`<div class="tbl-wrap" style="margin-top:14px"><table class="ledger" style="min-width:860px"><thead><tr><th>Ngày</th><th>Khách</th><th>Hạng mục</th><th>Nhóm</th><th>Nội dung</th><th class="r">Số tiền</th><th></th></tr></thead><tbody>
       ${rows.map(e=>{const g=gl[chiGroup(e)];return `<tr><td class="num">${dmy(e.date)}</td><td>${e.clientId?`<span class="code">${esc(e.clientId)}</span> `:""}${esc(clientName(e.clientId))}</td><td>${esc(e.category||"")}</td><td><span class="pill ${g[1]}">${g[0]}</span></td><td>${esc(e.note||"")}${e.by?`<span class="sub">${esc(e.by)}</span>`:""}</td><td class="money" style="font-weight:600">${fmt(e.amount)}</td><td>${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(e.id)}">Sửa</button>`:""}</td></tr>`}).join("")}
       </tbody><tfoot><tr><td colspan="5">Tổng ${rows.length} khoản chi</td><td class="money">${fmt(rows.reduce((a,e)=>a+e.amount,0))}</td><td></td></tr></tfoot></table></div>`:`<div class="card-b">${emptyBox("ledger","Chưa có khoản chi trong kỳ","Ghi lệ phí, phí thẩm định, cost dịch vụ, quảng cáo… để tính lợi nhuận.")}</div>`);
@@ -944,8 +953,8 @@ function logForm(id){
 
 function entryForm(e,presetClient,presetType){
   const isNew=!e;e=e||{type:presetType||"thu",date:todayISO(),clientId:presetClient||"",category:"",amount:0,note:"",method:"ck",installment:0,tax:0};const type=e.type;
-  let rate="0";try{rate=localStorage.getItem("hpgTaxRate")||"0"}catch{}
-  if(!isNew){const t=Number(e.tax)||0;rate=!t?"0":["7","8","10"].find(r=>Math.round(e.amount*r/100)===t)||"x"}
+  let rate="0",incl=false;try{rate=localStorage.getItem("hpgTaxRate")||"0";incl=localStorage.getItem("hpgTaxIncl")==="1"}catch{}
+  if(!isNew){const t=Number(e.tax)||0;if(!t)rate="0";else{const a=["7","8","10"].find(r=>Math.round(e.amount*r/(100+ +r))===t),b=["7","8","10"].find(r=>Math.round(e.amount*r/100)===t);if(a){rate=a;incl=true}else if(b){rate=b;incl=false}else rate="x"}}
   const thuCats=CAT_THU.includes(e.category)||!e.category||type!=="thu"?CAT_THU:[e.category,...CAT_THU];const chiCats=CAT_CHI.includes(e.category)||!e.category||type!=="chi"?CAT_CHI:[e.category,...CAT_CHI];
   openModal(`<div class="sheet-h"><h3>${isNew?(type==="thu"?"Ghi khoản thu":"Ghi khoản chi"):"Sửa khoản "+(type==="thu"?"thu":"chi")}</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
   <form id="fEntry" class="sheet-b" data-id="${isNew?"":esc(e.id)}"><input type="hidden" id="eType" value="${type}">
@@ -958,23 +967,32 @@ function entryForm(e,presetClient,presetType){
         <label>Đợt thanh toán<select class="ctl" id="eInst"><option value="0">Không theo đợt</option>${[1,2,3,4].map(n=>`<option value="${n}"${+e.installment===n?" selected":""}>Đợt ${n}</option>`).join("")}</select></label>
         <label>Hình thức<select class="ctl" id="eMethod">${Object.entries(METHODS).map(([k,l])=>`<option value="${k}"${(e.method||"ck")===k?" selected":""}>${l}</option>`).join("")}</select></label>
       </div>
-      <label class="full" id="chiCatWrap" ${type==="chi"?"":"hidden"}>Hạng mục chi<select class="ctl" id="eCatChi">${opt(chiCats,e.category)}</select><span class="hint">Lệ phí, phí thẩm định, cost dịch vụ, hoa hồng tính vào giá vốn. Quảng cáo, nội bộ tính vào chi phí vận hành.</span></label>
-      <label class="full">Số tiền (VNĐ)<input class="ctl num" id="eAmt" inputmode="decimal" placeholder="vd 10.000.000 hoặc 10tr" value="${e.amount?fmt(e.amount):""}" required autofocus><span class="hint" id="eAmtHint">${e.amount?fmt(e.amount)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ"}</span></label>
+      <div class="full" id="chiWrap" ${type==="chi"?"":"hidden"}>
+        <div class="chi-head"><span>Loại chi</span><span>Số tiền</span><span>Nội dung</span><span></span></div>
+        <div class="chi-lines" id="chiLines" style="margin-top:6px">${chiLine(type==="chi"?e.category:"",type==="chi"?e.amount:0,type==="chi"?e.note:"",isNew)}</div>
+        <div class="chi-foot">${isNew?`<button class="btn sm" type="button" data-chiadd>${ico("plus")}Thêm loại chi</button>`:"<span></span>"}<span>Tổng chi: <b id="chiTotal">0</b> đ</span></div>
+        <span class="hint">Lệ phí, phí thẩm định, cost dịch vụ, hoa hồng tính vào giá vốn. Quảng cáo, nội bộ tính vào chi phí vận hành. Mỗi dòng lưu thành một khoản chi riêng.</span>
+      </div>
+      <label class="full" id="amtWrap" ${type==="thu"?"":"hidden"}>Số tiền khách trả (VNĐ)<input class="ctl num" id="eAmt" inputmode="decimal" placeholder="vd 10.000.000 hoặc 10tr" value="${type==="thu"&&e.amount?fmt(e.amount):""}" autofocus><span class="hint" id="eAmtHint">${type==="thu"&&e.amount?fmt(e.amount)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ"}</span></label>
       <div class="subform two" id="taxWrap" ${type==="thu"?"":"hidden"}>
         <label>Thuế suất<select class="ctl" id="eTaxRate"><option value="0"${rate==="0"?" selected":""}>Không tính thuế</option><option value="7"${rate==="7"?" selected":""}>7% (hộ KD dịch vụ)</option><option value="8"${rate==="8"?" selected":""}>8%</option><option value="10"${rate==="10"?" selected":""}>10%</option><option value="x"${rate==="x"?" selected":""}>Tự nhập số tiền</option></select></label>
         <label>Tiền thuế (VNĐ)<input class="ctl num" id="eTax" inputmode="decimal" value="${Number(e.tax)?fmt(e.tax):""}" ${rate==="x"?"":"readonly"}><span class="hint" id="eNetHint"></span></label>
+        <label class="full chk"><input type="checkbox" id="eTaxIncl" ${incl?"checked":""}> Số tiền khách trả đã gồm thuế (tách thuế ra từ số tiền)</label>
       </div>
       <div class="einfo" id="eInfo" hidden></div>
-      <label class="full">Nội dung<input class="ctl" id="eNote" placeholder="vd Cọc HĐ1, lệ phí thẩm định Sở Y tế…" value="${esc(e.note)}"></label>
+      <label class="full" id="noteWrap" ${type==="thu"?"":"hidden"}>Nội dung<input class="ctl" id="eNote" placeholder="vd Thanh toán đợt 1 HĐ2" value="${type==="thu"?esc(e.note):""}"></label>
     </div>
   </form>
   <div class="sheet-f">${isNew?"":`<button class="btn danger" type="button" data-del-entry="${esc(e.id)}" style="margin-right:auto">Xoá khoản này</button>`}<button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fEntry">${isNew?"Lưu khoản":"Lưu thay đổi"}</button></div>`);
   $("#fEntry").dataset.orig=isNew?"":e.id;if(isNew&&type==="thu")entryAutoInst();entryRecalc();
 }
+function chiLine(cat,amt,note,removable){const cats=!cat||CAT_CHI.includes(cat)?CAT_CHI:[cat,...CAT_CHI];
+  return `<div class="chi-line"><select class="ctl cl-cat" aria-label="Loại chi">${opt(cats,cat)}</select><input class="ctl num cl-amt" inputmode="decimal" placeholder="vd 3,5tr" value="${amt?fmt(amt):""}" aria-label="Số tiền"><input class="ctl cl-note" placeholder="vd Lệ phí thẩm định SYT" value="${esc(note||"")}" aria-label="Nội dung">${removable?`<button class="jdel" type="button" data-chidel aria-label="Bỏ dòng này">×</button>`:"<span></span>"}</div>`}
 function entryAutoInst(){const cid=val("eClient");const sel=$("#eInst");if(!sel)return;if(!cid){sel.value="0";return}const mx=Math.max(0,...S.entries.filter(x=>x.type==="thu"&&x.clientId===cid).map(x=>+x.installment||0));sel.value=String(Math.min(4,mx+1))}
 function entryRecalc(){
   const type=val("eType"),amt=parseMoney(val("eAmt")),rate=val("eTaxRate");const taxIn=$("#eTax");
-  if(type==="thu"&&taxIn){if(rate!=="x"){taxIn.readOnly=true;taxIn.value=amt&&+rate?fmt(Math.round(amt*+rate/100)):""}else taxIn.readOnly=false;const tx=parseMoney(taxIn.value);$("#eNetHint").textContent=amt?`DT sau thuế: ${fmt(amt-tx)} đ`:""}
+  const tot=$("#chiTotal");if(tot)tot.textContent=fmt([...document.querySelectorAll(".cl-amt")].reduce((a,i)=>a+parseMoney(i.value),0));
+  if(type==="thu"&&taxIn){const incl=$("#eTaxIncl")?.checked;if(rate!=="x"){taxIn.readOnly=true;taxIn.value=amt&&+rate?fmt(Math.round(incl?amt*+rate/(100+ +rate):amt*+rate/100)):""}else taxIn.readOnly=false;const tx=parseMoney(taxIn.value);$("#eNetHint").textContent=amt?`DT sau thuế: ${fmt(amt-tx)} đ`:""}
   const info=$("#eInfo");const c=S.clients.get(val("eClient"));
   if(type!=="thu"||!c||!c.contractValue){info.hidden=true;return}
   const editId=$("#fEntry").dataset.orig;const paid=S.entries.filter(x=>x.type==="thu"&&x.clientId===c.id&&x.id!==editId).reduce((a,x)=>a+x.amount,0);
@@ -1052,9 +1070,14 @@ const noteDate=(iso,ref)=>{const [y,m,d]=iso.split("-");return String(ref||"").s
 /* ============ lưu ============ */
 const val=id=>{const el=document.getElementById(id);return el?el.value:undefined};
 async function saveEntry(form){
-  const amount=parseMoney(val("eAmt")),date=val("eDate");if(!amount){toast("Nhập số tiền lớn hơn 0");return}if(!date){toast("Chọn ngày");return}
-  const type=val("eType");const data={type,date,clientId:val("eClient"),category:type==="thu"?val("eCatThu"):val("eCatChi"),amount,note:val("eNote").trim()};
-  if(type==="thu"){Object.assign(data,{method:val("eMethod"),installment:+val("eInst")||0,tax:parseMoney(val("eTax"))});try{localStorage.setItem("hpgTaxRate",val("eTaxRate"))}catch{}}else Object.assign(data,{method:"",installment:0,tax:0});
+  const type=val("eType"),date=val("eDate");if(!date){toast("Chọn ngày");return}
+  if(type==="chi"){const lines=[...document.querySelectorAll(".chi-line")].map(l=>({category:l.querySelector(".cl-cat").value,amount:parseMoney(l.querySelector(".cl-amt").value),note:l.querySelector(".cl-note").value.trim()})).filter(x=>x.amount>0);
+    if(!lines.length){toast("Nhập số tiền cho ít nhất một loại chi");return}const base={type:"chi",date,clientId:val("eClient"),method:"",installment:0,tax:0};
+    try{if(form.dataset.id){await db.update("entries",form.dataset.id,{...base,...lines[0],updatedAt:Date.now()});closeModal();toast("Đã lưu thay đổi");return}
+      S.quiet=true;for(const [i,l] of lines.entries())await db.insert("entries",{...base,...l,by:S.uid,createdAt:Date.now()+i});S.quiet=false;await reload();closeModal();toast(`Đã ghi ${lines.length} khoản chi, tổng ${fmt(lines.reduce((a,x)=>a+x.amount,0))} đ`)}catch(err){S.quiet=false;writeErr(err)}
+    return}
+  const amount=parseMoney(val("eAmt"));if(!amount){toast("Nhập số tiền lớn hơn 0");return}const data={type,date,clientId:val("eClient"),category:type==="thu"?val("eCatThu"):val("eCatChi"),amount,note:val("eNote").trim()};
+  if(type==="thu"){Object.assign(data,{method:val("eMethod"),installment:+val("eInst")||0,tax:parseMoney(val("eTax"))});try{localStorage.setItem("hpgTaxRate",val("eTaxRate"));localStorage.setItem("hpgTaxIncl",$("#eTaxIncl")?.checked?"1":"0")}catch{}}else Object.assign(data,{method:"",installment:0,tax:0});
   try{if(form.dataset.id)await db.update("entries",form.dataset.id,{...data,updatedAt:Date.now()});else{await db.insert("entries",{...data,by:S.uid,createdAt:Date.now()});const c=S.clients.get(data.clientId);
       if(type==="thu"&&c&&!S.needJourney){const j=jOf(c).map(s=>({...s}));let i=data.installment?j.findIndex(s=>s.st!=="done"&&new RegExp("^Thu tiền đợt "+data.installment+"\\b").test(s.t)):-1;if(i<0)i=j.findIndex(s=>s.st!=="done"&&/^Thu tiền/.test(s.t));if(i>=0){j[i].st="done";j[i].done=data.date;j[i].note=j[i].note||`Đã thu ${fmt(data.amount)} đ`;await sb.from("clients").update({journey:j}).eq("id",c.id);await reload()}}}
     closeModal();toast(form.dataset.id?"Đã lưu thay đổi":`Đã ghi ${type==="thu"?"khoản thu":"khoản chi"} ${fmt(amount)} đ`)}catch(err){writeErr(err)}
@@ -1143,7 +1166,10 @@ document.addEventListener("click",e=>{
   const nv=t.closest("[data-view]");if(nv){e.preventDefault();S.view=nv.dataset.view;render();window.scrollTo(0,0);return}
   if(t.closest("[data-goto-closed]")){S.fStatus="_closed";S.view="clients";render();return}
   if(t.matches("[data-close]")){closeModal();return}
-  const ty=t.closest("[data-type]");if(ty){const v=ty.dataset.type;$("#eType").value=v;ty.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.type===v?"on-"+v:"");$("#thuFields").hidden=v!=="thu";$("#taxWrap").hidden=v!=="thu";$("#chiCatWrap").hidden=v!=="chi";if(v==="thu"&&!$("#fEntry").dataset.id)entryAutoInst();entryRecalc();return}
+  const ty=t.closest("[data-type]");if(ty){const v=ty.dataset.type;$("#eType").value=v;ty.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.type===v?"on-"+v:"");$("#thuFields").hidden=v!=="thu";$("#taxWrap").hidden=v!=="thu";$("#amtWrap").hidden=v!=="thu";$("#noteWrap").hidden=v!=="thu";$("#chiWrap").hidden=v!=="chi";if(v==="thu"&&!$("#fEntry").dataset.id)entryAutoInst();entryRecalc();return}
+  if(t.closest("[data-chiadd]")){$("#chiLines").insertAdjacentHTML("beforeend",chiLine("",0,"",true));$("#chiLines .chi-line:last-child .cl-cat").focus();return}
+  const cd=t.closest("[data-chidel]");if(cd){if(document.querySelectorAll(".chi-line").length>1)cd.closest(".chi-line").remove();else{const l=cd.closest(".chi-line");l.querySelector(".cl-amt").value="";l.querySelector(".cl-note").value=""}entryRecalc();return}
+  const lc=t.closest("[data-lcat]");if(lc){S.lf.cat=lc.dataset.lcat;render();return}
   const lt=t.closest("[data-ltab]");if(lt){S.lTab=lt.dataset.ltab;render();return}
   const rv=t.closest("[data-rview]");if(rv){S.rView=rv.dataset.rview;render();return}
   const tt=t.closest("[data-ttab]");if(tt){S.tTab=tt.dataset.ttab;render();return}
@@ -1172,12 +1198,14 @@ document.addEventListener("input",e=>{
   if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}
   if(e.target.id==="eAmt"){const v=parseMoney(e.target.value);$("#eAmtHint").textContent=v?fmt(v)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ";entryRecalc()}
   if(e.target.id==="eTax")entryRecalc();
+  if(e.target.classList?.contains("cl-amt"))entryRecalc();
 });
 document.addEventListener("change",e=>{const id=e.target.id,v=e.target.value;
   if(id==="dfFiles"){pendingFiles=[...pendingFiles,...e.target.files];renderPending();const c=$("#dfCat");if(c&&c.value==="_auto"&&pendingFiles.length===1)c.value=guessDocCat(pendingFiles[0].name,pendingFiles[0].type);return}
   if(id==="dfCat"){$("#dfNewWrap").hidden=v!=="_new";if(v==="_new")$("#dfNew").focus();return}
   if(id==="dClient"){S.dClient=v;render();return}
   if(id==="eClient"){if($("#eType").value==="thu"&&!$("#fEntry").dataset.id)entryAutoInst();entryRecalc();return}
+  if(id==="eTaxIncl"){entryRecalc();return}
   if(id==="eTaxRate"){entryRecalc();if(v==="x")$("#eTax").focus();return}
   const map={period:"period",fStatus:"fStatus",fOwner:"fOwner",fPri:"fPri",fSvc:"fSvc",tOwner:"tOwner"};
   if(map[id]){S[map[id]]=v;render()}
