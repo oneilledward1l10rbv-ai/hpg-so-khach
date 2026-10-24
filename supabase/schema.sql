@@ -123,3 +123,8 @@ do $$
 begin
   begin execute 'alter publication supabase_realtime add table public.documents'; exception when others then null; end;
 end $$;
+
+-- ===== Nâng cấp lần 5 =====
+alter table public.entries add column if not exists method text default '';
+alter table public.entries add column if not exists installment int default 0;
+alter table public.entries add column if not exists tax bigint default 0;
