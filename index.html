@@ -580,7 +580,7 @@ function vIO(){
   return pageHead("Nhập / xuất file","Đưa dữ liệu từ Google Sheets vào, hoặc xuất báo cáo ra Excel")+`
   <div class="row r-2">
     ${box("clients","Nhập danh sách khách",`<li>Mở file <b>Khách Hàng Pháp Lý HPG</b> trên Google Sheets, chọn sheet <b>Khách hàng</b>.</li><li>Tệp → Tải xuống → <b>CSV</b>, rồi kéo file vào ô dưới.</li><li>Khách trùng mã KH được cập nhật, không tạo trùng.</li>`)}
-    ${box("acts","Nhập nhật ký chăm sóc",`<li>Trong cùng file, chọn sheet <b>Nhật ký chăm sóc</b> → tải CSV.</li><li>Cần có cột <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Hình thức</code> <code class="k">Nội dung trao đổi</code>.</li><li>Nhập khách trước, nhật ký sau.</li>`)}
+    ${box("acts","Nhập nhật ký chăm sóc",`<li>Trong cùng file, chọn sheet <b>Nhật ký chăm sóc</b> → tải CSV.</li><li>Cần có cột <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Hình thức</code> <code class="k">Nội dung trao đổi</code>.</li><li>Nhập khách trước, nhật ký sau.</li><li>Hoặc tách thẳng cột <b>Ghi chú</b> của mọi khách thành nhật ký theo từng ngày:</li>`,`<button class="btn sm pri" type="button" data-act="sync-notes">Tạo nhật ký từ ghi chú</button>`)}
     ${box("entries","Nhập thu chi",`<li>Các cột: <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Loại</code> (Thu/Chi) <code class="k">Hạng mục</code> <code class="k">Số tiền</code> <code class="k">Nội dung</code>.</li><li>Mã KH trống nghĩa là chi phí chung. Số tiền ghi <code class="k">38.000.000</code> hay <code class="k">38tr</code> đều được.</li>`,`<button class="btn sm" type="button" data-act="tpl">Tải file mẫu</button>`)}
     <section class="card"><div class="card-h"><h2>Xuất báo cáo</h2><p>File CSV mở bằng Excel hoặc Google Sheets</p></div><div class="card-b" style="display:flex;flex-direction:column;gap:12px">${periodSelect()}<div class="filters"><button class="btn" type="button" data-act="exp-clients">Danh sách khách</button><button class="btn" type="button" data-act="exp-ledger">Sổ thu chi</button><button class="btn" type="button" data-act="exp-profit">Lợi nhuận theo khách</button><button class="btn" type="button" data-act="exp-acts">Nhật ký chăm sóc</button></div></div></section>
   </div>`;
@@ -604,11 +604,11 @@ function clientDetail(id){
       <div class="facts"><div><span>Giá trị HĐ</span><b class="num">${c.contractValue?fmt(c.contractValue):"—"}</b></div><div><span>Đã thu</span><b class="num" style="color:var(--c-thu)">${fmt(thu)}</b></div><div><span>Chi phí</span><b class="num" style="color:var(--gold-ink)">${fmt(chi)}</b></div><div><span>Lợi nhuận${thu?" · "+(p/thu*100).toFixed(0)+"%":""}</span><b class="num ${p<0?"neg":""}">${fmt(p)}</b></div>${owe!=null?`<div style="grid-column:1/-1"><span>Còn phải thu</span><b class="num ${owe?"neg":""}">${fmt(owe)}</b></div>`:""}</div>
       ${!CLOSED.has(c.status)?`<div class="next"><span class="lbl">Việc tiếp theo</span><div>${esc(c.nextAction||"Chưa ghi việc cần làm")}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="sub" style="display:inline">Chưa hẹn ngày</span>`}${S.canWrite&&!S.needMigration?`<button class="btn sm pri" type="button" data-log="${esc(id)}" style="margin-left:auto">${ico("chat")}Ghi chăm sóc</button>`:""}</div></div>`:""}
       <dl class="info">${info.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
-      ${c.note?`<div class="note">${esc(c.note)}</div>`:""}
+      ${c.note?(acts.some(a=>a.by===NOTE_MARK)?`<details><summary class="sub" style="cursor:pointer">Xem ghi chú gốc</summary><div class="note" style="margin-top:8px">${esc(c.note)}</div></details>`:`<div class="note">${esc(c.note)}</div>`):""}
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;min-width:0">
-      <p class="h3">Lịch sử<span class="r">${S.canWrite?`<button class="btn sm" type="button" data-add-for="${esc(id)}">${ico("plus")}Thu / chi</button>`:""}</span></p>
-      ${evs.length?`<div class="timeline">${evs.map(ev=>ev.k==="a"?`<div class="ev"><span class="dot"></span><div><div class="e-h"><b>${esc(ev.a.channel||"Chăm sóc")}</b><span>${dmy(ev.a.date)}</span>${ev.a.by?`<span>${esc(ev.a.by)}</span>`:""}</div><div class="e-b">${esc(ev.a.content||"")}</div>${ev.a.result?`<div class="e-r">→ ${esc(ev.a.result)}</div>`:""}</div></div>`:`<div class="ev"><span class="dot money"></span><div><div class="e-h"><b style="color:${ev.e.type==="thu"?"var(--c-thu)":"var(--gold-ink)"}">${ev.e.type==="thu"?"Thu":"Chi"} ${fmt(ev.e.amount)} đ</b><span>${dmy(ev.e.date)}</span><span>${esc(ev.e.category||"")}</span>${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(ev.e.id)}" style="padding:0 6px">Sửa</button>`:""}</div>${ev.e.note?`<div class="e-r">${esc(ev.e.note)}</div>`:""}</div></div>`).join("")}</div>`:`<p class="sub">Chưa có lần chăm sóc hay khoản thu chi nào.</p>`}
+      <p class="h3">Nhật ký chăm sóc & thu chi<span class="r">${S.canWrite?`<button class="btn sm" type="button" data-add-for="${esc(id)}">${ico("plus")}Thu / chi</button>`:""}</span></p>
+      ${evs.length?`<div class="timeline">${evs.map(ev=>ev.k==="a"?`<div class="ev"><span class="dot"></span><div><div class="e-h"><b>${esc(ev.a.channel||"Chăm sóc")}</b><span>${dmy(ev.a.date)}</span>${ev.a.by&&ev.a.by!==NOTE_MARK?`<span>${esc(ev.a.by)}</span>`:""}</div><div class="e-b">${esc(ev.a.content||"")}</div>${ev.a.result?`<div class="e-r">→ ${esc(ev.a.result)}</div>`:""}</div></div>`:`<div class="ev"><span class="dot money"></span><div><div class="e-h"><b style="color:${ev.e.type==="thu"?"var(--c-thu)":"var(--gold-ink)"}">${ev.e.type==="thu"?"Thu":"Chi"} ${fmt(ev.e.amount)} đ</b><span>${dmy(ev.e.date)}</span><span>${esc(ev.e.category||"")}</span>${S.canWrite?`<button class="btn sm ghost" type="button" data-edit="${esc(ev.e.id)}" style="padding:0 6px">Sửa</button>`:""}</div>${ev.e.note?`<div class="e-r">${esc(ev.e.note)}</div>`:""}</div></div>`).join("")}</div>`:`<p class="sub">Chưa có lần chăm sóc hay khoản thu chi nào.</p>`}
     </div>
   </div></div>`,true);
 }
@@ -675,10 +675,45 @@ function clientForm(c){
     ${nm?"":`<div class="sec-t">Chăm sóc</div>
     <label class="full">Việc cần làm tiếp<input class="ctl" id="cNext" value="${esc(c.nextAction)}"></label>
     <label>Hẹn liên hệ tiếp<input class="ctl" type="date" id="cNextDate" value="${esc(String(c.nextDate||"").slice(0,10))}"></label>`}
-    <label class="full">Ghi chú<textarea class="ctl" id="cNote">${esc(c.note)}</textarea></label>
+    <label class="full">Ghi chú theo ngày liên hệ<textarea class="ctl" id="cNote" rows="6" placeholder="Mỗi lần liên hệ ghi kèm ngày, vd:&#10;14/10 Inbox: hỏi giấy phép PK YHCT&#10;17/10 Họp: báo phí 2 hợp đồng → hẹn ký 21/10">${esc(c.note)}</textarea><span class="hint">Mỗi ngày (dd/mm) trong ghi chú tự thành một dòng trong Nhật ký chăm sóc. <button class="btn sm ghost" type="button" data-act="note-today" style="padding:0 6px">+ Thêm dòng hôm nay</button></span></label>
   </div></form>
   <div class="sheet-f">${isNew?"":`<button class="btn danger" type="button" data-del-client="${esc(c.id)}" style="margin-right:auto">Xoá khách</button>`}<button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fClient">${isNew?"Thêm khách":"Lưu hồ sơ"}</button></div>`);
 }
+
+/* ============ ghi chú → nhật ký ============ */
+const NOTE_MARK="Từ ghi chú";
+function guessChannel(t){t=t.toLowerCase();if(/inbox|trả lời qc|tin nhắn|fanpage|\bfb\b|gửi sđt/.test(t))return "Inbox Facebook";if(/họp|gặp|starbucks|cafe|cà phê|khảo sát/.test(t))return "Gặp trực tiếp";if(/gọi|nghe máy|cuộc gọi|điện thoại/.test(t))return "Gọi điện";if(/zalo/.test(t))return "Zalo";if(/email|mail/.test(t))return "Email";return "Ghi chú"}
+function cleanSeg(t){return t.replace(/\s+/g," ").replace(/\(\s*\)/g,"").replace(/\s+([.,;:)])/g,"$1").replace(/^[\s.,;:→>\-–)]+|[\s,;:→>\-–(]+$/g,"").trim()}
+function parseNote(note,refISO,fallbackISO){
+  note=String(note||"").replace(/\r/g,"").trim();if(!note)return [];
+  const yr=(refISO||fallbackISO||new Date().toISOString()).slice(0,4);
+  const re=/(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?(?![\d\/])/g;const hits=[];let m;
+  while((m=re.exec(note))){const d=+m[1],mo=+m[2];if(d<1||d>31||mo<1||mo>12)continue;
+    const prevEnd=hits.length?hits[hits.length-1].tEnd:0;const before=note.slice(prevEnd,m.index);
+    let cut=-1;for(const sp of [". ",".\n","; ","\n","→","->","|"]){const i=before.lastIndexOf(sp);if(i>=0)cut=Math.max(cut,i+sp.length)}
+    let start=m.index;const lead=cut>=0?before.slice(cut):before;const endsClause=/^\s*([.;\n]|$)/.test(note.slice(re.lastIndex));if(lead.length<=24||endsClause)start=prevEnd+(cut>=0?cut:0);
+    hits.push({start,tStart:m.index,tEnd:re.lastIndex,date:`${m[3]||yr}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`})}
+  const out=[];const pre=cleanSeg(note.slice(0,hits.length?hits[0].start:note.length));
+  hits.forEach((h,i)=>{const end=i+1<hits.length?hits[i+1].start:note.length;const txt=cleanSeg(note.slice(h.start,h.tStart)+" "+note.slice(h.tEnd,end));
+    const last=out[out.length-1];if(last&&last.date===h.date){if(txt)last.content=cleanSeg(last.content+" · "+txt)}else out.push({date:h.date,content:txt})});
+  if(pre)out.unshift({date:fallbackISO||(hits[0]?.date)||refISO,content:pre,undated:true});
+  const merged=[];for(const o of out.filter(o=>o.content&&o.date)){const l=merged[merged.length-1];if(l&&l.date===o.date)l.content=cleanSeg(l.content+" · "+o.content);else merged.push({...o})}
+  return merged.map(o=>({date:o.date,content:o.content,channel:guessChannel(o.content)}));
+}
+async function syncNoteActs(id,note,ref,last){
+  if(S.needMigration)return 0;
+  const items=parseNote(note,ref,last||ref);
+  const {error:e1}=await sb.from("activities").delete().eq("client_id",id).eq("created_by_email",NOTE_MARK);if(e1)throw dbErr(e1);
+  if(items.length){const {error:e2}=await sb.from("activities").insert(items.map((x,i)=>toRow("activities",{clientId:id,date:x.date,channel:x.channel,content:x.content,result:"",by:NOTE_MARK,createdAt:Date.now()+i})));if(e2)throw dbErr(e2)}
+  return items.length;
+}
+async function syncAllNotes(btn){
+  if(S.needMigration){toast("Cần chạy file nâng cấp cơ sở dữ liệu trước");return}
+  btn.disabled=true;let n=0,k=0;S.quiet=true;
+  try{for(const c of S.clients.values()){if(!c.note)continue;n+=await syncNoteActs(c.id,c.note,c.date,c.lastContact);k++}}catch(err){writeErr(err)}finally{S.quiet=false;btn.disabled=false;await reload()}
+  toast(`Đã tạo ${n} dòng nhật ký từ ghi chú của ${k} khách`);
+}
+const noteDate=(iso,ref)=>{const [y,m,d]=iso.split("-");return String(ref||"").startsWith(y)?`${d}/${m}`:`${d}/${m}/${y}`};
 
 /* ============ lưu ============ */
 const val=id=>{const el=document.getElementById(id);return el?el.value:undefined};
@@ -694,13 +729,18 @@ async function saveClient(form){
   const d={date:val("cDate"),contact:val("cContact").trim(),phone:val("cPhone").trim(),facility:val("cFacility").trim(),model:val("cModel"),service:val("cService"),status:val("cStatus"),owner:val("cOwner"),contractValue:parseMoney(val("cValue")),source:val("cSource"),note:val("cNote"),updatedAt:Date.now()};
   if(!S.needMigration)Object.assign(d,{role:val("cRole"),zalo:val("cZalo").trim(),region:val("cRegion"),address:val("cAddress").trim(),priority:val("cPriority"),signedDate:val("cSigned"),nextAction:val("cNext").trim(),nextDate:val("cNextDate")});
   if(!S.needMigration&&SIGNED.has(d.status)&&!d.signedDate)d.signedDate=todayISO();
-  try{if(form.dataset.new)await db.insert("clients",{id,...d});else await db.update("clients",id,d);closeModal();toast(form.dataset.new?"Đã thêm "+id:"Đã lưu hồ sơ "+id)}catch(err){writeErr(err)}
+  const old=S.clients.get(id)||{};
+  try{S.quiet=true;if(form.dataset.new)await db.insert("clients",{id,...d});else await db.update("clients",id,d);
+    if((d.note||"")!==(old.note||"")||form.dataset.new)await syncNoteActs(id,d.note,d.date,d.lastContact||old.lastContact);
+    S.quiet=false;await reload();closeModal();toast(form.dataset.new?"Đã thêm "+id:"Đã lưu hồ sơ "+id)}catch(err){S.quiet=false;writeErr(err)}
 }
 async function saveLog(form){
   const id=form.dataset.id;const content=val("aContent").trim();if(!content){toast("Ghi nội dung trao đổi");return}
   const date=val("aDate"),nextDate=val("aNextDate"),status=val("aStatus");const c=S.clients.get(id)||{};
   const patch={lastContact:date,nextAction:val("aNext").trim(),nextDate,status,updatedAt:Date.now()};if(SIGNED.has(status)&&!c.signedDate)patch.signedDate=date;
-  try{S.quiet=true;await db.insert("activities",{clientId:id,date,channel:val("aChannel"),content,result:val("aResult").trim(),nextDate,by:S.uid,createdAt:Date.now()});await db.update("clients",id,patch);S.quiet=false;await reload();closeModal();toast("Đã ghi chăm sóc "+id)}catch(err){S.quiet=false;writeErr(err)}
+  const res=val("aResult").trim();const line=`${noteDate(date,c.date)} ${val("aChannel")}: ${content}${res?" → "+res:""}`;
+  patch.note=(c.note?String(c.note).trimEnd()+"\n":"")+line;
+  try{S.quiet=true;await db.update("clients",id,patch);await syncNoteActs(id,patch.note,c.date,date);S.quiet=false;await reload();closeModal();toast("Đã ghi chăm sóc "+id)}catch(err){S.quiet=false;writeErr(err)}
 }
 function writeErr(err){toast(err?.code==="fk"?"Khách này còn dữ liệu liên quan, chưa xoá được":err?.code==="invalid_argument"?"Bạn chưa có quyền ghi dữ liệu này":"Chưa lưu được, thử lại sau giây lát")}
 async function del(tbl,id,btn,msg){
@@ -723,7 +763,8 @@ async function importClients(text){
     const d={date:parseDate(g(r,"date")),contact:g(r,"contact"),status:g(r,"status"),model:g(r,"model"),facility:g(r,"facility"),phone:g(r,"phone"),service:g(r,"service"),source:g(r,"source"),note:g(r,"note"),owner:g(r,"owner"),contractValue:parseMoney(g(r,"value"))};
     if(!S.needMigration)Object.assign(d,{role:g(r,"role"),priority:g(r,"priority"),zalo:/^đã kết nối/i.test(g(r,"zalo"))?"":g(r,"zalo"),region:g(r,"region"),address:g(r,"address"),nextAction:g(r,"nextAction"),lastContact:parseDate(g(r,"lastContact")),nextDate:parseDate(g(r,"nextDate"))});
     const old=S.clients.get(id);const clean=Object.fromEntries(Object.entries(d).filter(([,x])=>x!==""&&x!==0));
-    if(old){if(old.contractValue)delete clean.contractValue;await db.update("clients",id,{...clean,updatedAt:Date.now()});u++}else{await db.insert("clients",{id,...d,updatedAt:Date.now()});n++}}}
+    if(old){if(old.contractValue)delete clean.contractValue;await db.update("clients",id,{...clean,updatedAt:Date.now()});u++}else{await db.insert("clients",{id,...d,updatedAt:Date.now()});n++}
+    const note=d.note||old?.note||"";if(note)await syncNoteActs(id,note,d.date||old?.date,d.lastContact||old?.lastContact);}}
   catch(err){writeErr(err)}finally{S.quiet=false;await reload()}
   toast(`Đã nhập ${n} khách mới, cập nhật ${u} khách`);
 }
@@ -766,7 +807,7 @@ document.addEventListener("click",e=>{
   if(t.closest("[data-goto-closed]")){S.fStatus="_closed";S.view="clients";render();return}
   if(t.matches("[data-close]")){closeModal();return}
   const ty=t.closest("[data-type]");if(ty){const v=ty.dataset.type;$("#eType").value=v;ty.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.type===v?"on-"+v:"");$("#eCat").innerHTML=opt(v==="thu"?CAT_THU:CAT_CHI);return}
-  const act=t.closest("[data-act]");if(act){const a=act.dataset.act;if(a==="add-entry")entryForm();else if(a==="add-client")clientForm();else exportAct(a);return}
+  const act=t.closest("[data-act]");if(act){const a=act.dataset.act;if(a==="add-entry")entryForm();else if(a==="add-client")clientForm();else if(a==="sync-notes")syncAllNotes(act);else if(a==="note-today"){const ta=$("#cNote");const t=noteDate(todayISO(),val("cDate"));ta.value=(ta.value.trimEnd()?ta.value.trimEnd()+"\n":"")+t+": ";ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length)}else exportAct(a);return}
   const lg=t.closest("[data-log]");if(lg){logForm(lg.dataset.log);return}
   const ed=t.closest("[data-edit]");if(ed){const en=S.entries.find(x=>x.id===ed.dataset.edit);en&&entryForm(en);return}
   const ec=t.closest("[data-edit-client]");if(ec){clientForm(S.clients.get(ec.dataset.editClient));return}
