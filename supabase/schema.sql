@@ -41,4 +41,8 @@ drop policy if exists "team all entries" on public.entries;
 create policy "team all entries" on public.entries for all to authenticated using (true) with check (true);
 
 -- Cập nhật realtime: máy người này ghi, máy người kia tự hiện
-alter publication supabase_realtime add table public.clients, public.entries;
+do $$
+begin
+  begin execute 'alter publication supabase_realtime add table public.clients'; exception when others then null; end;
+  begin execute 'alter publication supabase_realtime add table public.entries'; exception when others then null; end;
+end $$;
