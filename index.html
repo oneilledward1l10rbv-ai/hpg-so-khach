@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sổ Khách &amp; Lợi Nhuận HPG</title>
+<title>HPG CRM</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
@@ -142,6 +142,22 @@ tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}
 .steps{margin:0;padding-left:20px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:4px}
 code.k{font-family:var(--f-code);font-size:12px;background:var(--sunk);padding:1px 5px;border-radius:4px}
 @media (prefers-reduced-motion:no-preference){.overlay .sheet{animation:up .16s ease-out}@keyframes up{from{transform:translateY(8px);opacity:.6}}}
+
+/* dashboard */
+:root{--c-thu:#2A6FB5;--c-chi:#D2731C}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--c-thu:#4F92D8;--c-chi:#C47030}}
+:root[data-theme="dark"]{--c-thu:#4F92D8;--c-chi:#C47030}
+.chart-wrap{overflow-x:auto}.chart{width:100%;min-width:520px;height:auto;display:block}
+.chart .grid{stroke:var(--line);stroke-width:1}.chart .grid.base{stroke:var(--muted)}
+.chart .ax{fill:var(--muted);font-size:10px;font-variant-numeric:tabular-nums}.chart .lbl{fill:var(--ink);font-size:12px;font-weight:600}
+.s-thu{fill:var(--c-thu);background:var(--c-thu)}.s-chi{fill:var(--c-chi);background:var(--c-chi)}.s-pos{fill:var(--accent)}.s-neg{fill:var(--chi)}
+.chart .hit{fill:transparent}.chart .hit:hover{fill:var(--ink);fill-opacity:.05}
+.legend{display:flex;gap:14px;margin-left:auto;font-size:12px;color:var(--muted)}.legend span{display:inline-flex;align-items:center;gap:6px}
+i.k{display:inline-block;width:10px;height:10px;border-radius:2px}
+.fill.f-open{background:var(--accent)}.fill.f-won{background:var(--thu)}.fill.f-off{background:var(--idle)}
+.tip{position:fixed;z-index:40;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;font-size:12px;display:grid;grid-template-columns:auto auto;gap:2px 14px;box-shadow:0 4px 16px rgba(0,0,0,.12);max-width:260px}
+.tip>b:first-child{grid-column:1/-1;margin-bottom:2px}.tip span{color:var(--muted);display:inline-flex;align-items:center;gap:6px}.tip .num{text-align:right}
+@media (max-width:760px){.grid2[style*="repeat(2"]{grid-template-columns:minmax(0,1fr)!important}}
 </style>
 </head>
 <body>
@@ -149,7 +165,7 @@ code.k{font-family:var(--f-code);font-size:12px;background:var(--sunk);padding:1
 
 <header class="top">
   <div class="wrap bar">
-    <div class="brand"><b>Sổ khách &amp; lợi nhuận</b><span>H&amp;P Group · Pháp lý y tế &amp; Marketing</span></div>
+    <div class="brand"><b>HPG CRM</b><span>H&amp;P Group · Pháp lý y tế &amp; Marketing</span></div>
     <select class="ctl" id="period" aria-label="Kỳ báo cáo"></select>
     <button class="btn pri" id="btnAddEntry" type="button" hidden>+ Ghi thu / chi</button>
     <span class="who" id="who" hidden></span>
@@ -158,6 +174,7 @@ code.k{font-family:var(--f-code);font-size:12px;background:var(--sunk);padding:1
   <div class="wrap">
     <nav class="tabs" role="tablist" id="tabs">
       <button role="tab" data-tab="overview" aria-selected="true">Tổng quan</button>
+      <button role="tab" data-tab="dashboard" aria-selected="false">Dashboard</button>
       <button role="tab" data-tab="clients" aria-selected="false">Khách hàng</button>
       <button role="tab" data-tab="ledger" aria-selected="false">Sổ thu chi</button>
       <button role="tab" data-tab="io" aria-selected="false">Nhập / xuất file</button>
@@ -227,10 +244,10 @@ function render(){
   const m=$("#main");
   const authed=!!S.db;["#btnAddEntry","#who","#btnLogout","#tabs","#period"].forEach(q=>$(q).hidden=!authed);
   if(S.setup){m.innerHTML=`<div class="panel empty"><b>Chưa cấu hình cơ sở dữ liệu</b><span>Điền SUPABASE_URL và SUPABASE_ANON_KEY vào file config.js theo hướng dẫn trong README.</span></div>`;return}
-  if(S.needLogin){m.innerHTML=`<section class="panel login"><form id="fLogin"><h2>Đăng nhập sổ khách HPG</h2><label>Email<input class="ctl" id="lEmail" type="email" autocomplete="username" required></label><label>Mật khẩu<input class="ctl" id="lPass" type="password" autocomplete="current-password" required></label><span class="err" id="lErr"></span><button class="btn pri" type="submit">Đăng nhập</button><span class="sub">Tài khoản do quản trị viên cấp. Quên mật khẩu thì nhắn quản trị viên đặt lại.</span></form></section>`;return}
+  if(S.needLogin){m.innerHTML=`<section class="panel login"><form id="fLogin"><h2>Đăng nhập HPG CRM</h2><label>Email<input class="ctl" id="lEmail" type="email" autocomplete="username" required></label><label>Mật khẩu<input class="ctl" id="lPass" type="password" autocomplete="current-password" required></label><span class="err" id="lErr"></span><button class="btn pri" type="submit">Đăng nhập</button><span class="sub">Tài khoản do quản trị viên cấp. Quên mật khẩu thì nhắn quản trị viên đặt lại.</span></form></section>`;return}
   if(!S.db){m.innerHTML=`<div class="empty"><b>Đang mở sổ…</b><span>Danh sách khách và các khoản thu chi sẽ hiện ở đây.</span></div>`;return}
   const banner=S.canWrite?"":`<div class="banner">Bạn đang ở quyền chỉ xem. Nhờ chủ sổ cấp quyền Contributor để ghi thu chi.</div>`;
-  m.innerHTML=banner+({overview:vOverview,clients:vClients,ledger:vLedger,io:vIO}[S.tab])();
+  m.innerHTML=banner+({overview:vOverview,dashboard:vDashboard,clients:vClients,ledger:vLedger,io:vIO}[S.tab])();
   $("#btnAddEntry").disabled=!S.canWrite;
 }
 function renderPeriod(){
@@ -315,6 +332,93 @@ function vIO(){
     <div class="filters"><button class="btn" type="button" data-act="exp-ledger">Sổ thu chi (${periodLabel()})</button><button class="btn" type="button" data-act="exp-profit">Lợi nhuận theo khách (${periodLabel()})</button><button class="btn" type="button" data-act="exp-clients">Danh sách khách</button></div>
   </section></div>`;
 }
+
+
+/* ---------- dashboard ---------- */
+const shortM=n=>{const a=Math.abs(n);if(a>=1e9)return (n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:1})+" tỷ";if(a>=1e6)return Math.round(n/1e6).toLocaleString("vi-VN")+" tr";if(a>=1e3)return Math.round(n/1e3)+"k";return String(Math.round(n))};
+function niceMax(v){if(v<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(v)));const f=v/p;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
+function last12(){const end=todayISO().slice(0,7);const latest=S.entries.reduce((m,e)=>e.date&&e.date.slice(0,7)>m?e.date.slice(0,7):m,end);let [y,m]=latest.split("-").map(Number);const out=[];for(let i=0;i<12;i++){out.unshift(`${y}-${String(m).padStart(2,"0")}`);m--;if(!m){m=12;y--}}return out}
+const barPath=(x,y,w,h,up)=>{const r=Math.min(4,w/2,Math.abs(h));if(h<=0)return "";return up?`M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`:`M${x},${y}V${y+h-r}Q${x},${y+h} ${x+r},${y+h}H${x+w-r}Q${x+w},${y+h} ${x+w},${y+h-r}V${y}Z`};
+function chartMonthly(months,byM){
+  const W=720,H=240,L=54,R=8,T=12,B=28,pw=W-L-R,ph=H-T-B;
+  const max=niceMax(Math.max(1,...months.map(m=>Math.max(byM[m].thu,byM[m].chi))));
+  const gw=pw/months.length,bw=Math.min(18,(gw-10)/2);
+  let g="";for(let i=0;i<=4;i++){const v=max*i/4,y=T+ph-ph*i/4;g+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" class="grid${i?"":" base"}"/><text x="${L-8}" y="${y+4}" text-anchor="end" class="ax">${shortM(v)}</text>`}
+  let bars="",hits="";months.forEach((m,i)=>{const cx=L+gw*i+gw/2,d=byM[m];const h1=ph*d.thu/max,h2=ph*d.chi/max;
+    bars+=`<path d="${barPath(cx-bw-1,T+ph-h1,bw,h1,true)}" class="s-thu"/><path d="${barPath(cx+1,T+ph-h2,bw,h2,true)}" class="s-chi"/>`;
+    bars+=`<text x="${cx}" y="${H-8}" text-anchor="middle" class="ax">${m.slice(5)}/${m.slice(2,4)}</text>`;
+    hits+=`<rect x="${L+gw*i}" y="${T}" width="${gw}" height="${ph}" class="hit" data-tip="${esc(`<b>Tháng ${m.slice(5)}/${m.slice(0,4)}</b><span><i class="k s-thu"></i>Thu</span><b class="num">${fmt(d.thu)}</b><span><i class="k s-chi"></i>Chi</span><b class="num">${fmt(d.chi)}</b><span>Lợi nhuận</span><b class="num">${fmt(d.thu-d.chi)}</b>`)}"/>`});
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Thu và chi theo tháng">${g}${bars}${hits}</svg>`;
+}
+function chartProfit(months,byM){
+  const W=720,H=170,L=54,R=8,T=12,B=28,pw=W-L-R,ph=H-T-B;
+  const vals=months.map(m=>byM[m].thu-byM[m].chi);const mx=niceMax(Math.max(1,...vals.map(Math.abs)));const hasNeg=vals.some(v=>v<0);
+  const lo=hasNeg?-mx:0,span=mx-lo,yOf=v=>T+ph*(mx-v)/span,zero=yOf(0);
+  let g="";const ticks=hasNeg?[-mx,0,mx]:[0,mx/2,mx];ticks.forEach(v=>{g+=`<line x1="${L}" x2="${W-R}" y1="${yOf(v)}" y2="${yOf(v)}" class="grid${v===0?" base":""}"/><text x="${L-8}" y="${yOf(v)+4}" text-anchor="end" class="ax">${shortM(v)}</text>`});
+  const gw=pw/months.length,bw=Math.min(26,gw-12);let bars="",hits="";
+  months.forEach((m,i)=>{const v=vals[i],cx=L+gw*i+gw/2,h=Math.abs(yOf(v)-zero);
+    bars+=v>=0?`<path d="${barPath(cx-bw/2,zero-h,bw,h,true)}" class="s-pos"/>`:`<path d="${barPath(cx-bw/2,zero,bw,h,false)}" class="s-neg"/>`;
+    if(i===months.length-1&&v)bars+=`<text x="${cx}" y="${v>=0?zero-h-6:zero+h+14}" text-anchor="middle" class="lbl">${shortM(v)}</text>`;
+    bars+=`<text x="${cx}" y="${H-8}" text-anchor="middle" class="ax">${m.slice(5)}/${m.slice(2,4)}</text>`;
+    hits+=`<rect x="${L+gw*i}" y="${T}" width="${gw}" height="${ph}" class="hit" data-tip="${esc(`<b>Tháng ${m.slice(5)}/${m.slice(0,4)}</b><span>Lợi nhuận</span><b class="num">${fmt(v)}</b><span>Biên</span><b class="num">${byM[m].thu?(v/byM[m].thu*100).toFixed(0)+"%":"—"}</b>`)}"/>`});
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Lợi nhuận theo tháng">${g}${bars}${hits}</svg>`;
+}
+function inPeriodClient(c){if(S.period==="all")return true;return (c.date||"").startsWith(S.period)}
+function vDashboard(){
+  const months=last12();const byM=Object.fromEntries(months.map(m=>[m,{thu:0,chi:0}]));
+  for(const e of S.entries){const m=(e.date||"").slice(0,7);if(byM[m])byM[m][e.type==="thu"?"thu":"chi"]+=e.amount}
+  const tot=months.reduce((a,m)=>(a.thu+=byM[m].thu,a.chi+=byM[m].chi,a),{thu:0,chi:0});
+  const at=allTime(),ag=aggregate();
+  const cl=[...S.clients.values()].filter(inPeriodClient);
+  // phễu
+  const funnel=STATUSES.map(s=>{const g=cl.filter(c=>c.status===s);return {s,n:g.length,v:g.reduce((a,c)=>a+(c.contractValue||0),0)}});const fmax=Math.max(1,...funnel.map(f=>f.n));
+  const signedN=cl.filter(c=>SIGNED.has(c.status)).length;const closedN=cl.filter(c=>SIGNED.has(c.status)||/^10\./.test(c.status)).length;
+  // nguồn
+  const src={};cl.forEach(c=>{const k=c.source||"Chưa rõ";src[k]??={n:0,won:0,v:0};src[k].n++;if(SIGNED.has(c.status)){src[k].won++;src[k].v+=c.contractValue||0}});
+  const srcRows=Object.entries(src).sort((a,b)=>b[1].n-a[1].n);
+  // dịch vụ
+  const svc={};cl.forEach(c=>{const k=c.service||"Chưa rõ";svc[k]??={n:0,v:0};svc[k].n++;if(SIGNED.has(c.status))svc[k].v+=c.contractValue||0});const svcRows=Object.entries(svc).sort((a,b)=>b[1].n-a[1].n);const smax=Math.max(1,...svcRows.map(r=>r[1].n));
+  // người phụ trách
+  const own={};cl.forEach(c=>{const k=c.owner||"Chưa phân công";own[k]??={n:0,won:0,v:0,thu:0,chi:0};own[k].n++;if(SIGNED.has(c.status)){own[k].won++;own[k].v+=c.contractValue||0}const p=ag.per[c.id];if(p){own[k].thu+=p.thu;own[k].chi+=p.chi}});
+  const ownRows=Object.entries(own).sort((a,b)=>(b[1].thu-b[1].chi)-(a[1].thu-a[1].chi)||b[1].n-a[1].n);
+  // công nợ
+  const owe=[...S.clients.values()].filter(c=>SIGNED.has(c.status)&&(c.contractValue||0)>(at[c.id]?.thu||0)).map(c=>({c,paid:at[c.id]?.thu||0,left:(c.contractValue||0)-(at[c.id]?.thu||0)})).sort((a,b)=>b.left-a.left);
+  const noMoney=!S.entries.length;
+  return `
+  <section class="kpis" aria-label="12 tháng gần nhất">
+    <div class="kpi"><span class="l">Thu 12 tháng</span><span class="v num">${fmtM(tot.thu)}</span><span class="s">${months[0].slice(5)}/${months[0].slice(0,4)} – ${months[11].slice(5)}/${months[11].slice(0,4)}</span></div>
+    <div class="kpi"><span class="l">Lợi nhuận 12 tháng</span><span class="v num ${tot.thu-tot.chi<0?"neg":""}">${fmtM(tot.thu-tot.chi)}</span><span class="s">${tot.thu?"Biên "+((tot.thu-tot.chi)/tot.thu*100).toFixed(0)+"%":"Chưa có khoản thu"}</span></div>
+    <div class="kpi"><span class="l">Tỷ lệ chốt</span><span class="v num">${closedN?Math.round(signedN/closedN*100)+"%":"—"}</span><span class="s">${signedN} ký / ${closedN} khách đã có kết quả</span></div>
+    <div class="kpi"><span class="l">Khách mới</span><span class="v num">${cl.length}</span><span class="s">Tiếp nhận ${periodLabel()}</span></div>
+  </section>
+  <div class="grid2" style="grid-template-columns:minmax(0,1fr)">
+    <section class="panel sec"><div class="sec-h"><h2>Thu và chi theo tháng</h2><div class="legend"><span><i class="k s-thu"></i>Thu</span><span><i class="k s-chi"></i>Chi</span></div></div>
+      ${noMoney?`<p class="sub">Biểu đồ sẽ hiện khi có khoản thu chi đầu tiên.</p>`:`<div class="chart-wrap">${chartMonthly(months,byM)}</div>`}</section>
+    <section class="panel sec"><div class="sec-h"><h2>Lợi nhuận theo tháng</h2><p>Thu trừ chi, mọi khách và chi phí chung</p></div>
+      ${noMoney?`<p class="sub">Chưa có dữ liệu.</p>`:`<div class="chart-wrap">${chartProfit(months,byM)}</div>`}</section>
+  </div>
+  <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+    <section class="panel sec"><div class="sec-h"><h2>Phễu khách hàng</h2><p>${periodLabel()}</p></div>
+      <div class="bars">${funnel.map(f=>`<div class="barrow" data-tip="${esc(`<b>${f.s}</b><span>Số khách</span><b class="num">${f.n}</b><span>Giá trị HĐ</span><b class="num">${fmt(f.v)}</b>`)}"><span>${esc(f.s)}</span><span class="num">${f.n}${f.v?` <span class="sub" style="display:inline">· ${shortM(f.v)}</span>`:""}</span><div class="track"><div class="fill ${SIGNED.has(f.s)?"f-won":/^(9|10)\./.test(f.s)?"f-off":"f-open"}" style="width:${(f.n/fmax*100).toFixed(1)}%"></div></div></div>`).join("")}</div></section>
+    <section class="panel sec"><div class="sec-h"><h2>Khách theo dịch vụ</h2><p>${periodLabel()}</p></div>
+      <div class="bars">${svcRows.map(([k,v])=>`<div class="barrow" data-tip="${esc(`<b>${k}</b><span>Số khách</span><b class="num">${v.n}</b><span>Đã ký</span><b class="num">${fmt(v.v)}</b>`)}"><span>${esc(k)}</span><span class="num">${v.n}${v.v?` <span class="sub" style="display:inline">· ký ${shortM(v.v)}</span>`:""}</span><div class="track"><div class="fill f-open" style="width:${(v.n/smax*100).toFixed(1)}%"></div></div></div>`).join("")||`<p class="sub">Chưa có khách.</p>`}</div></section>
+  </div>
+  <section class="sec"><div class="sec-h"><h2>Theo người phụ trách</h2><p>Khách tiếp nhận và lợi nhuận ${periodLabel()}</p></div>
+    <div class="tbl-wrap"><table><thead><tr><th>Người phụ trách</th><th class="r">Khách</th><th class="r">Đã ký</th><th class="r">Giá trị đã ký</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
+    ${ownRows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="r num">${v.n}</td><td class="r num">${v.won}</td><td class="r num">${fmt(v.v)}</td><td class="r num">${fmt(v.thu)}</td><td class="r num ${v.thu-v.chi<0?"neg":""}">${fmt(v.thu-v.chi)}</td></tr>`).join("")||`<tr><td colspan="6" class="sub">Chưa có khách trong kỳ.</td></tr>`}</tbody></table></div></section>
+  <div class="grid2" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+    <section class="sec"><div class="sec-h"><h2>Nguồn khách</h2><p>Nguồn nào ra hợp đồng</p></div>
+      <div class="tbl-wrap"><table style="min-width:420px"><thead><tr><th>Nguồn</th><th class="r">Khách</th><th class="r">Ký</th><th class="r">Tỷ lệ</th><th class="r">Giá trị</th></tr></thead><tbody>
+      ${srcRows.map(([k,v])=>`<tr><td>${esc(k)}</td><td class="r num">${v.n}</td><td class="r num">${v.won}</td><td class="r num">${Math.round(v.won/v.n*100)}%</td><td class="r num">${shortM(v.v)}</td></tr>`).join("")||`<tr><td colspan="5" class="sub">Chưa có khách.</td></tr>`}</tbody></table></div></section>
+    <section class="sec"><div class="sec-h"><h2>Cần thu tiền</h2><p>Khách đã ký, chưa thu đủ</p></div>
+      <div class="tbl-wrap"><table style="min-width:420px"><thead><tr><th>Khách</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Còn lại</th></tr></thead><tbody>
+      ${owe.map(o=>`<tr class="click" data-client="${esc(o.c.id)}"><td><span class="code">${esc(o.c.id)}</span> ${esc(clientName(o.c.id))}</td><td class="r num">${fmt(o.c.contractValue)}</td><td class="r num">${fmt(o.paid)}</td><td class="r num neg">${fmt(o.left)}</td></tr>`).join("")||`<tr><td colspan="4" class="sub">Không còn khoản nào phải thu.</td></tr>`}</tbody>
+      ${owe.length?`<tfoot><tr><td>Tổng</td><td></td><td></td><td class="r num">${fmt(owe.reduce((a,o)=>a+o.left,0))}</td></tr></tfoot>`:""}</table></div></section>
+  </div>`;
+}
+const tipEl=document.createElement("div");tipEl.className="tip";tipEl.hidden=true;document.body.appendChild(tipEl);
+document.addEventListener("mousemove",e=>{const t=e.target.closest?.("[data-tip]");if(!t){tipEl.hidden=true;return}tipEl.innerHTML=t.dataset.tip;tipEl.hidden=false;const r=tipEl.getBoundingClientRect();let x=e.clientX+14,y=e.clientY+14;if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;tipEl.style.left=x+"px";tipEl.style.top=y+"px"});
+document.addEventListener("scroll",()=>tipEl.hidden=true,true);
 
 /* ---------- modal ---------- */
 function openModal(html,wide){$("#modal").innerHTML=`<div class="overlay" data-close><div class="sheet${wide?" wide":""}" role="dialog" aria-modal="true">${html}</div></div>`;const f=$("#modal").querySelector("input:not([type=hidden]):not([readonly]),select,textarea");f&&f.focus()}

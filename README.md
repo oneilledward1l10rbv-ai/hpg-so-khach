@@ -1,6 +1,6 @@
-# Sổ khách & lợi nhuận HPG
+# HPG CRM
 
-Web quản lý khách hàng và thu chi cho dịch vụ pháp lý y tế & marketing của H&P Group: ghi thu/chi theo từng khách, tự tính chi phí, lợi nhuận, biên lợi nhuận và công nợ còn phải thu. Có đăng nhập bằng email + mật khẩu, nhiều người dùng chung, dữ liệu cập nhật tức thì.
+HPG CRM: web quản lý khách hàng, thu chi và dashboard cho dịch vụ pháp lý y tế & marketing của H&P Group: ghi thu/chi theo từng khách, tự tính chi phí, lợi nhuận, biên lợi nhuận và công nợ còn phải thu. Có đăng nhập bằng email + mật khẩu, nhiều người dùng chung, dữ liệu cập nhật tức thì.
 
 - Giao diện: 1 file `index.html`, chạy trên **GitHub Pages** (miễn phí)
 - Dữ liệu + đăng nhập: **Supabase** (gói miễn phí)
