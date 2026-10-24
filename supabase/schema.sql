@@ -128,3 +128,8 @@ end $$;
 alter table public.entries add column if not exists method text default '';
 alter table public.entries add column if not exists installment int default 0;
 alter table public.entries add column if not exists tax bigint default 0;
+
+-- ===== Nâng cấp lần 6 =====
+alter table public.documents add column if not exists url text default '';
+alter table public.documents alter column path drop not null;
+alter table public.clients add column if not exists drive_url text default '';

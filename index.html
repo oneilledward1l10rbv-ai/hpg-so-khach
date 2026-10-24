@@ -90,6 +90,8 @@ button{cursor:pointer}
 .doc{border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;min-width:0;position:relative}
 .doc .th{aspect-ratio:4/3;max-width:100%;background:var(--sunk);display:grid;place-items:center;color:var(--faint);cursor:pointer;overflow:hidden}
 .doc .th img{width:100%;height:100%;object-fit:cover;display:block}
+a.btn{text-decoration:none;text-transform:none;letter-spacing:0;color:var(--ink);font-weight:500}
+.doc .th .ext.drive{color:var(--accent);background:var(--accent-soft)}
 .doc .th .ext{font-family:var(--f-code);font-size:12px;font-weight:600;color:var(--gold-ink);background:var(--gold-soft);border-radius:6px;padding:6px 10px}
 .doc .dm{padding:8px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
 .doc .dn{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -828,9 +830,10 @@ function clientDetail(id){
 
 /* ============ Kho tài liệu ============ */
 function docCard(d,showClient){
-  return `<div class="doc"><div class="th" data-dopen="${esc(d.id)}" title="Mở ${esc(d.name)}">${isImg(d)?`<img alt="" data-thumb="${esc(d.path)}" loading="lazy">`:`<span class="ext">${esc(extOf(d.name))}</span>`}</div>
-  <div class="dm"><span class="dn" title="${esc(d.name)}">${esc(d.name)}</span><span class="ds">${showClient?(d.clientId?esc(d.clientId+" · "+clientName(d.clientId)):"Tài liệu chung"):esc(d.docDate?dmy(d.docDate):dmy(new Date(Number(d.createdAt)||Date.now()).toISOString()))} · ${fsize(Number(d.size)||0)}</span>${d.note?`<span class="ds" title="${esc(d.note)}">${esc(d.note)}</span>`:""}</div>
-  <div class="da"><button class="btn sm ghost" type="button" data-dopen="${esc(d.id)}">Xem</button><button class="btn sm ghost" type="button" data-ddl="${esc(d.id)}">Tải</button>${S.canWrite?`<button class="btn sm ghost" type="button" data-dedit="${esc(d.id)}">Sửa</button>`:""}</div></div>`;
+  const link=!!d.url;const isDrive=link&&/drive\.google\.com|docs\.google\.com/.test(d.url);
+  return `<div class="doc"><div class="th" data-dopen="${esc(d.id)}" title="Mở ${esc(d.name)}">${link?`<span class="ext drive">${isDrive?"DRIVE":"LINK"}</span>`:isImg(d)?`<img alt="" data-thumb="${esc(d.path)}" loading="lazy">`:`<span class="ext">${esc(extOf(d.name))}</span>`}</div>
+  <div class="dm"><span class="dn" title="${esc(d.name)}">${esc(d.name)}</span><span class="ds">${showClient?(d.clientId?esc(d.clientId+" · "+clientName(d.clientId)):"Tài liệu chung"):esc(d.docDate?dmy(d.docDate):dmy(new Date(Number(d.createdAt)||Date.now()).toISOString()))} · ${link?(isDrive?"Google Drive":"Liên kết"):fsize(Number(d.size)||0)}</span>${d.note?`<span class="ds" title="${esc(d.note)}">${esc(d.note)}</span>`:""}</div>
+  <div class="da"><button class="btn sm ghost" type="button" data-dopen="${esc(d.id)}">${link?"Mở":"Xem"}</button>${link?"":`<button class="btn sm ghost" type="button" data-ddl="${esc(d.id)}">Tải</button>`}${S.canWrite?`<button class="btn sm ghost" type="button" data-dedit="${esc(d.id)}">Sửa</button>`:""}</div></div>`;
 }
 function docGroups(list,showClient){
   const by={};list.forEach(d=>{(by[d.category||"Khác"]??=[]).push(d)});
@@ -840,18 +843,18 @@ function vDocs(){
   if(S.needDocs)return pageHead("Kho tài liệu","")+`<section class="card">${emptyBox("folder","Cần nâng cấp cơ sở dữ liệu","Chạy đoạn SQL nâng cấp Kho tài liệu trong Supabase → SQL Editor để bật mục này.")}</section>`;
   const q=norm(S.dq);const base=S.docs.filter(d=>(S.dClient===""||(S.dClient==="_none"?!d.clientId:d.clientId===S.dClient))&&(!q||norm([d.name,d.note,d.clientId,clientName(d.clientId)].join(" ")).includes(q)));
   const list=base.filter(d=>!S.dCat||d.category===S.dCat);const cnt={};base.forEach(d=>cnt[d.category]=(cnt[d.category]||0)+1);
-  const total=S.docs.reduce((a,d)=>a+(Number(d.size)||0),0);
-  return pageHead("Kho tài liệu",`${S.docs.length} tài liệu · ${fsize(total)} · hợp đồng, chứng từ, giấy phép, hình ảnh theo từng khách`,S.canWrite?`<button class="btn pri" type="button" data-dupload="">${ico("plus")}Tải tài liệu lên</button>`:"")+
+  const total=S.docs.reduce((a,d)=>a+(Number(d.size)||0),0);const nLink=S.docs.filter(d=>d.url).length;
+  return pageHead("Kho tài liệu",`${S.docs.length} tài liệu · ${nLink} link Drive · ${fsize(total)} / 1 GB dung lượng Supabase đã dùng`,S.canWrite?`<button class="btn pri" type="button" data-dupload="">${ico("plus")}Thêm tài liệu</button>`:"")+
   `<section class="card"><div class="card-b" style="display:flex;flex-direction:column;gap:12px">
     <div class="filters"><input class="ctl grow" id="dq" type="search" placeholder="Tìm tên file, ghi chú, khách…" value="${esc(S.dq)}"><select class="ctl" id="dClient"><option value="">Mọi khách</option><option value="_none"${S.dClient==="_none"?" selected":""}>Tài liệu chung</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===S.dClient?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></div>
     <div class="chips"><button class="chip" type="button" data-dcat="" aria-pressed="${!S.dCat}">Tất cả<b>${base.length}</b></button>${docCats().filter(k=>cnt[k]).map(k=>`<button class="chip" type="button" data-dcat="${esc(k)}" aria-pressed="${S.dCat===k}">${esc(k)}<b>${cnt[k]}</b></button>`).join("")}</div>
-    ${list.length?docGroups(list,true):emptyBox("folder",S.docs.length?"Không có tài liệu khớp bộ lọc":"Chưa có tài liệu nào","Tải lên hợp đồng, hoá đơn, giấy phép hay hình ảnh cơ sở. Hệ thống tự gợi ý mục theo tên file.",S.canWrite&&!S.docs.length?`<button class="btn pri" type="button" data-dupload="">Tải tài liệu lên</button>`:"")}
+    ${list.length?docGroups(list,true):emptyBox("folder",S.docs.length?"Không có tài liệu khớp bộ lọc":"Chưa có tài liệu nào","Dán link Google Drive của hợp đồng, hoá đơn, giấy phép (không tốn dung lượng), hoặc tải file trực tiếp.",S.canWrite&&!S.docs.length?`<button class="btn pri" type="button" data-dupload="">Thêm tài liệu</button>`:"")}
   </div></section>`;
 }
 function docsBlock(c){
   if(S.needDocs)return "";const list=S.docs.filter(d=>d.clientId===c.id);
-  return `<div style="display:flex;flex-direction:column;gap:10px"><p class="h3">Tài liệu<span class="r">${S.canWrite?`<button class="btn sm" type="button" data-dupload="${esc(c.id)}">${ico("plus")}Tải lên</button>`:""}</span></p>
-  ${list.length?docGroups(list,false):`<div class="drop" data-drop="docs:${esc(c.id)}" style="padding:14px"><span>Kéo ảnh / bản scan hợp đồng vào đây</span></div>`}</div>`;
+  return `<div style="display:flex;flex-direction:column;gap:10px"><div class="h3">Tài liệu<span class="r" style="display:flex;gap:6px">${c.driveUrl?`<a class="btn sm" href="${esc(c.driveUrl)}" target="_blank" rel="noopener">${ico("folder")}Thư mục Drive</a>`:""}${S.canWrite?`<button class="btn sm" type="button" data-dupload="${esc(c.id)}">${ico("plus")}Thêm</button>`:""}</span></div>
+  ${list.length?docGroups(list,false):`<div class="drop" data-drop="docs:${esc(c.id)}" style="padding:14px"><span>Chưa có tài liệu. Bấm Thêm để dán link Google Drive, hoặc kéo file vào đây.</span></div>`}</div>`;
 }
 async function fillThumbs(){
   const imgs=[...document.querySelectorAll("img[data-thumb]:not([src])")];if(!imgs.length||!sb)return;
@@ -860,34 +863,58 @@ async function fillThumbs(){
   const m=Object.fromEntries(data.filter(x=>x.signedUrl).map(x=>[x.path,x.signedUrl]));imgs.forEach(i=>{if(m[i.dataset.thumb])i.src=m[i.dataset.thumb]});
 }
 async function openDoc(id,download){
-  const d=S.docs.find(x=>x.id===id);if(!d)return;const w=download?null:window.open("","_blank");
+  const d=S.docs.find(x=>x.id===id);if(!d)return;
+  if(d.url){window.open(d.url,"_blank","noopener");return}const w=download?null:window.open("","_blank");
   const {data,error}=await sb.storage.from("documents").createSignedUrl(d.path,600,download?{download:d.name}:undefined);
   if(error||!data){w&&w.close();toast("Chưa mở được file, thử lại sau");return}
   if(w)w.location=data.signedUrl;else{const a=document.createElement("a");a.href=data.signedUrl;a.download=d.name;document.body.appendChild(a);a.click();a.remove()}
 }
 let pendingFiles=[];
 function uploadForm(clientId,files){
-  pendingFiles=[...(files||[])];
-  const cats=docCats();const sug=pendingFiles[0]?guessDocCat(pendingFiles[0].name,pendingFiles[0].type):"";
-  openModal(`<div class="sheet-h"><h3>Tải tài liệu lên</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
-  <form id="fDocs" class="sheet-b"><div class="form">
+  pendingFiles=[...(files||[])];const mode=pendingFiles.length||S.needLinks?"file":"link";
+  const cats=docCats();const sug=pendingFiles[0]?guessDocCat(pendingFiles[0].name,pendingFiles[0].type):"";const cl=S.clients.get(clientId);
+  openModal(`<div class="sheet-h"><h3>Thêm tài liệu</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  <form id="fDocs" class="sheet-b"><input type="hidden" id="dfMode" value="${mode}">
+    ${S.needLinks?"":`<div class="seg" role="group" aria-label="Cách thêm"><button type="button" data-dfmode="link" class="${mode==="link"?"on-thu":""}">Dán link Google Drive</button><button type="button" data-dfmode="file" class="${mode==="file"?"on-chi":""}">Tải file lên</button></div>`}
+    <div class="form">
     <label>Khách<select class="ctl" id="dfClient"><option value="">— Tài liệu chung (không gắn khách) —</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===clientId?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></label>
-    <label>Mục<select class="ctl" id="dfCat"><option value="_auto">Tự phân theo tên file</option>${cats.map(k=>`<option${k===sug&&pendingFiles.length===1?" selected":""}>${esc(k)}</option>`).join("")}<option value="_new">+ Tạo mục mới…</option></select></label>
+    <label>Mục<select class="ctl" id="dfCat"><option value="_auto">Tự phân theo tên</option>${cats.map(k=>`<option${k===sug&&pendingFiles.length===1?" selected":""}>${esc(k)}</option>`).join("")}<option value="_new">+ Tạo mục mới…</option></select></label>
     <label class="full" id="dfNewWrap" hidden>Tên mục mới<input class="ctl" id="dfNew" placeholder="vd Hồ sơ PCCC"></label>
+    <div class="subform two" id="dfLinkWrap" ${mode==="link"?"":"hidden"}>
+      <label class="full">Link Google Drive<input class="ctl" id="dfUrl" type="url" placeholder="https://drive.google.com/file/d/…" autofocus><span class="hint">Trên Drive: chuột phải vào file → Chia sẻ → Sao chép đường liên kết. Dán link thư mục cũng được.${cl?.driveUrl?` Thư mục Drive của khách: <a href="${esc(cl.driveUrl)}" target="_blank" rel="noopener">mở</a>`:""}</span></label>
+      <label class="full">Tên tài liệu<input class="ctl" id="dfName" placeholder="vd HĐ2 Ý Clinic bản đã ký"></label>
+    </div>
     <label>Ngày trên tài liệu<input class="ctl" type="date" id="dfDate"><span class="hint">Không bắt buộc, vd ngày ký hợp đồng</span></label>
-    <label>Ghi chú<input class="ctl" id="dfNote" placeholder="vd HĐ2 bản đã ký, đóng dấu"></label>
-    <div class="full drop" data-drop="docsform"><span>Kéo ảnh, PDF, bản scan vào đây</span><label class="btn sm">Chọn file<input type="file" id="dfFiles" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.dwg,.zip" hidden></label><span class="hint">Mỗi file tối đa 50 MB. Chụp bằng điện thoại cũng được.</span></div>
-    <div class="full upl-list" id="dfList"></div>
+    <label>Ghi chú<input class="ctl" id="dfNote" placeholder="vd Bản đã ký, đóng dấu"></label>
+    <div class="full" id="dfFileWrap" ${mode==="file"?"":"hidden"} style="display:flex;flex-direction:column;gap:10px">
+      <div class="drop" data-drop="docsform"><span>Kéo ảnh, PDF, bản scan vào đây</span><label class="btn sm">Chọn file<input type="file" id="dfFiles" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.dwg,.zip" hidden></label><span class="hint">Ảnh tự nén trước khi tải để tiết kiệm dung lượng. Mỗi file tối đa 50 MB.</span></div>
+      <div class="upl-list" id="dfList"></div>
+    </div>
   </div></form>
-  <div class="sheet-f"><button class="btn" type="button" data-close>Huỷ</button><button class="btn pri" type="submit" form="fDocs" id="dfGo">Tải lên</button></div>`);
+  <div class="sheet-f"><button class="btn" type="button" data-close>Huỷ</button>${S.needLinks?"":`<button class="btn" type="button" id="dfMore" data-dfmore ${mode==="link"?"":"hidden"}>Lưu và thêm link khác</button>`}<button class="btn pri" type="submit" form="fDocs" id="dfGo">${mode==="link"?"Lưu link":"Tải lên"}</button></div>`);
   renderPending();
 }
+async function saveLink(more){
+  const url=val("dfUrl").trim(),name=val("dfName").trim();if(!/^https?:\/\//i.test(url)){toast("Dán link bắt đầu bằng https://");$("#dfUrl").focus();return}if(!name){toast("Nhập tên tài liệu");$("#dfName").focus();return}
+  let cat=val("dfCat");if(cat==="_new"){cat=val("dfNew").trim();if(!cat){toast("Nhập tên mục mới");return}}if(cat==="_auto")cat=guessDocCat(name,"");
+  const clientId=val("dfClient");
+  const {error}=await sb.from("documents").insert({client_id:clientId||null,category:cat,name,path:null,url,size:0,mime:"link",note:val("dfNote").trim(),doc_date:val("dfDate")||null,created_at:Date.now()});
+  if(error){writeErr(dbErr(error));return}
+  await reload();toast("Đã lưu link: "+name);
+  if(more){$("#dfUrl").value="";$("#dfName").value="";$("#dfNote").value="";$("#dfUrl").focus()}else{closeModal();if(clientId)clientDetail(clientId)}
+}
+async function compressImage(f){
+  if(!/^image\/(jpeg|png|webp)$/.test(f.type)||f.size<800*1024||!window.createImageBitmap)return f;
+  try{const bmp=await createImageBitmap(f);const sc=Math.min(1,2000/Math.max(bmp.width,bmp.height));const cv=document.createElement("canvas");cv.width=Math.round(bmp.width*sc);cv.height=Math.round(bmp.height*sc);cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height);
+    const blob=await new Promise(r=>cv.toBlob(r,"image/jpeg",0.82));if(!blob||blob.size>=f.size)return f;return new File([blob],f.name.replace(/\.(png|webp)$/i,".jpg"),{type:"image/jpeg"})}catch{return f}
+}
 function renderPending(){const el=$("#dfList");if(!el)return;el.innerHTML=pendingFiles.map((f,i)=>`<div class="upl-item" id="upl${i}"><span>${esc(f.name)} <span class="sub" style="display:inline">· ${fsize(f.size)} · ${esc(guessDocCat(f.name,f.type))}</span></span><span class="st">${f.size>52428800?'<span class="st err">Quá 50 MB</span>':"Chờ tải"}</span></div>`).join("")}
-async function doUpload(){
+async function doUpload(more){
+  if(val("dfMode")==="link")return saveLink(more);
   if(!pendingFiles.length){toast("Chọn ít nhất một file");return}
   let cat=val("dfCat");if(cat==="_new"){cat=val("dfNew").trim();if(!cat){toast("Nhập tên mục mới");return}}
   const clientId=val("dfClient"),docDate=val("dfDate"),note=val("dfNote").trim();$("#dfGo").disabled=true;let ok=0;S.quiet=true;
-  for(const [i,f] of pendingFiles.entries()){const st=$(`#upl${i} .st`);if(f.size>52428800)continue;st.textContent="Đang tải…";
+  for(const [i,f0] of pendingFiles.entries()){const st=$(`#upl${i} .st`);st.textContent="Đang nén…";const f=await compressImage(f0);if(f.size>52428800){st.textContent="Quá 50 MB";st.className="st err";continue}st.textContent=f.size<f0.size?`Đang tải (${fsize(f0.size)} → ${fsize(f.size)})…`:"Đang tải…";
     const path=`${clientId||"chung"}/${jid()}-${safeKey(f.name)}`;
     const up=await sb.storage.from("documents").upload(path,f,{contentType:f.type||undefined,upsert:false});
     if(up.error){st.textContent="Lỗi";st.className="st err";console.error(up.error);continue}
@@ -901,7 +928,8 @@ function docEditForm(id){
   const d=S.docs.find(x=>x.id===id);if(!d)return;
   openModal(`<div class="sheet-h"><h3>Sửa tài liệu</h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
   <form id="fDocEdit" class="sheet-b" data-id="${esc(id)}"><div class="form">
-    <label class="full">Tên file<input class="ctl" id="deName" value="${esc(d.name)}"></label>
+    <label class="full">Tên tài liệu<input class="ctl" id="deName" value="${esc(d.name)}"></label>
+    ${d.url?`<label class="full">Link<input class="ctl" id="deUrl" type="url" value="${esc(d.url)}"></label>`:""}
     <label>Khách<select class="ctl" id="deClient"><option value="">— Tài liệu chung —</option>${sortedClients().map(c=>`<option value="${esc(c.id)}"${c.id===d.clientId?" selected":""}>${esc(c.id)} · ${esc(clientName(c.id))}</option>`).join("")}</select></label>
     <label>Mục<input class="ctl" id="deCat" value="${esc(d.category)}" list="deCats"><datalist id="deCats">${docCats().map(k=>`<option>${esc(k)}</option>`).join("")}</datalist></label>
     <label>Ngày trên tài liệu<input class="ctl" type="date" id="deDate" value="${esc(String(d.docDate||"").slice(0,10))}"></label>
@@ -911,13 +939,13 @@ function docEditForm(id){
 }
 async function saveDocEdit(form){
   const id=form.dataset.id;const d=S.docs.find(x=>x.id===id)||{};
-  const {error}=await sb.from("documents").update({name:val("deName").trim()||d.name,client_id:val("deClient")||null,category:val("deCat").trim()||"Khác",doc_date:val("deDate")||null,note:val("deNote").trim()}).eq("id",id);
+  const {error}=await sb.from("documents").update({...(d.url?{url:val("deUrl").trim()||d.url}:{}),name:val("deName").trim()||d.name,client_id:val("deClient")||null,category:val("deCat").trim()||"Khác",doc_date:val("deDate")||null,note:val("deNote").trim()}).eq("id",id);
   if(error){writeErr(dbErr(error));return}await reload();closeModal();toast("Đã lưu tài liệu");
 }
 async function deleteDoc(id,btn){
   if(!btn.classList.contains("arm")){btn.classList.add("arm");btn.dataset.label=btn.textContent;btn.textContent="Bấm lần nữa để xoá";setTimeout(()=>{if(btn.isConnected){btn.classList.remove("arm");btn.textContent=btn.dataset.label}},3500);return}
   const d=S.docs.find(x=>x.id===id);if(!d)return;
-  const r1=await sb.storage.from("documents").remove([d.path]);if(r1.error){toast("Chưa xoá được file");return}
+  if(d.path){const r1=await sb.storage.from("documents").remove([d.path]);if(r1.error){toast("Chưa xoá được file");return}}
   await sb.from("documents").delete().eq("id",id);await reload();closeModal();toast("Đã xoá tài liệu");
 }
 
@@ -1022,6 +1050,7 @@ function clientForm(c){
     ${nm?"":`<label>Zalo / Email<input class="ctl" id="cZalo" value="${esc(c.zalo)}"></label>`}
     <div class="sec-t">Cơ sở</div>
     <label class="full">Tên công ty / cơ sở<input class="ctl" id="cFacility" value="${esc(c.facility)}"></label>
+    ${S.needLinks?"":`<label class="full">Link thư mục Google Drive của khách<input class="ctl" id="cDrive" type="url" value="${esc(c.driveUrl||"")}" placeholder="https://drive.google.com/drive/folders/…"><span class="hint">Nơi cất toàn bộ hồ sơ của khách trên Drive công ty</span></label>`}
     <label>Mô hình<select class="ctl" id="cModel">${opt(MODELS,c.model,"")}</select></label>
     ${nm?"":`<label>Khu vực<select class="ctl" id="cRegion">${opt(REGIONS,c.region,"")}</select></label>
     <label class="full">Địa chỉ<input class="ctl" id="cAddress" value="${esc(c.address)}"></label>`}
@@ -1096,6 +1125,7 @@ async function saveClient(form){
   if(form.dataset.new&&S.clients.has(id)){toast("Mã "+id+" đã có, dùng mã khác");return}
   const d={date:val("cDate"),contact:val("cContact").trim(),phone:val("cPhone").trim(),facility:val("cFacility").trim(),model:val("cModel"),service:val("cService"),status:val("cStatus"),owner:val("cOwner"),contractValue:parseMoney(val("cValue")),source:val("cSource"),note:val("cNote"),updatedAt:Date.now()};
   if(!S.needMigration)Object.assign(d,{role:val("cRole"),zalo:val("cZalo").trim(),region:val("cRegion"),address:val("cAddress").trim(),priority:val("cPriority"),signedDate:val("cSigned"),nextAction:val("cNext").trim(),nextDate:val("cNextDate")});
+  if(!S.needLinks)d.driveUrl=(val("cDrive")||"").trim();
   if(!S.needMigration&&SIGNED.has(d.status)&&!d.signedDate)d.signedDate=todayISO();
   if(!S.needJourney&&SIGNED.has(d.status)&&!jOf(S.clients.get(id)).length)d.journey=newJourney(d.service,d.signedDate||todayISO());
   const old=S.clients.get(id)||{};
@@ -1183,6 +1213,8 @@ document.addEventListener("click",e=>{
   const rv=t.closest("[data-rview]");if(rv){S.rView=rv.dataset.rview;render();return}
   const tt=t.closest("[data-ttab]");if(tt){S.tTab=tt.dataset.ttab;render();return}
   const act=t.closest("[data-act]");if(act){const a=act.dataset.act;if(a==="add-entry")entryForm(null,S.view==="ledger"&&S.lf.client&&S.lf.client!=="_none"?S.lf.client:"","thu");else if(a==="add-chi")entryForm(null,S.view==="ledger"&&S.lf.client&&S.lf.client!=="_none"?S.lf.client:"","chi");else if(a==="add-client")clientForm();else if(a==="sync-notes")syncAllNotes(act);else if(a==="note-today"){const ta=$("#cNote");const t=noteDate(todayISO(),val("cDate"));ta.value=(ta.value.trimEnd()?ta.value.trimEnd()+"\n":"")+t+": ";ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length)}else exportAct(a);return}
+  const dm=t.closest("[data-dfmode]");if(dm){const v=dm.dataset.dfmode;$("#dfMode").value=v;dm.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.dfmode===v?(v==="link"?"on-thu":"on-chi"):"");$("#dfLinkWrap").hidden=v!=="link";$("#dfFileWrap").hidden=v!=="file";$("#dfFileWrap").style.display=v==="file"?"flex":"none";if($("#dfMore"))$("#dfMore").hidden=v!=="link";$("#dfGo").textContent=v==="link"?"Lưu link":"Tải lên";return}
+  if(t.closest("[data-dfmore]")){doUpload(true);return}
   const du=t.closest("[data-dupload]");if(du){uploadForm(du.dataset.dupload||(S.view==="docs"&&S.dClient&&S.dClient!=="_none"?S.dClient:""));return}
   const dop=t.closest("[data-dopen]");if(dop){openDoc(dop.dataset.dopen,false);return}
   const ddl=t.closest("[data-ddl]");if(ddl){openDoc(ddl.dataset.ddl,true);return}
@@ -1201,8 +1233,9 @@ document.addEventListener("click",e=>{
   const dc=t.closest("[data-del-client]");if(dc){if(S.entries.some(x=>x.clientId===dc.dataset.delClient)){toast("Khách còn khoản thu chi, xoá các khoản đó trước");return}if(S.docs.some(x=>x.clientId===dc.dataset.delClient)){toast("Khách còn tài liệu trong Kho tài liệu, xoá hoặc chuyển tài liệu trước");return}del("clients",dc.dataset.delClient,dc,"Đã xoá khách");return}
   const cl=t.closest("[data-client]");if(cl){clientDetail(cl.dataset.client);return}
 });
-document.addEventListener("submit",e=>{e.preventDefault();const id=e.target.id;if(id==="fLogin")login();if(id==="fEntry")saveEntry(e.target);if(id==="fClient")saveClient(e.target);if(id==="fLog")saveLog(e.target);if(id==="fDocs")doUpload();if(id==="fDocEdit")saveDocEdit(e.target)});
+document.addEventListener("submit",e=>{e.preventDefault();const id=e.target.id;if(id==="fLogin")login();if(id==="fEntry")saveEntry(e.target);if(id==="fClient")saveClient(e.target);if(id==="fLog")saveLog(e.target);if(id==="fDocs")doUpload(false);if(id==="fDocEdit")saveDocEdit(e.target)});
 document.addEventListener("input",e=>{
+  if(e.target.id==="dfName"){const c=$("#dfCat");if(c&&c.value==="_auto"){}}
   if(e.target.id==="dq"){S.dq=e.target.value;const pos=e.target.selectionStart;render();const q=$("#dq");q.focus();q.setSelectionRange(pos,pos);return}
   if(e.target.id==="q"){S.q=e.target.value;const pos=e.target.selectionStart;render();const q=$("#q");q.focus();q.setSelectionRange(pos,pos)}
   if(e.target.id==="eAmt"){const v=parseMoney(e.target.value);$("#eAmtHint").textContent=v?fmt(v)+" đ":"Gõ 3,5tr, 500k hoặc số đầy đủ";entryRecalc()}
@@ -1248,8 +1281,8 @@ document.addEventListener("scroll",()=>tipEl.hidden=true,true);
 const CFG=window.HPG_CONFIG||{};let sb=null;
 const COLS_BASE={clients:["id","date","contact","phone","facility","model","service","status","owner","contract_value","source","note","updated_at"],entries:["id","type","date","client_id","category","amount","note","created_by_email","created_at","updated_at"],activities:["id","client_id","date","channel","content","result","next_date","created_by_email","created_at"]};
 const COLS_NEW={clients:["role","zalo","region","address","priority","signed_date","next_action","next_date","last_contact"],entries:["method","installment","tax"]};
-const colsFor=t=>{const base=S.needMigration?COLS_BASE[t]:[...COLS_BASE[t],...(t==="entries"?[]:COLS_NEW[t]||[]),...(t==="clients"&&!S.needJourney?["journey"]:[])];return t==="entries"&&!S.needFinance?[...base,...COLS_NEW.entries]:base};
-const MAP={contractValue:"contract_value",updatedAt:"updated_at",clientId:"client_id",createdAt:"created_at",by:"created_by_email",signedDate:"signed_date",nextAction:"next_action",nextDate:"next_date",lastContact:"last_contact"};
+const colsFor=t=>{const base=S.needMigration?COLS_BASE[t]:[...COLS_BASE[t],...(t==="entries"?[]:COLS_NEW[t]||[]),...(t==="clients"&&!S.needJourney?["journey"]:[])];const b2=t==="clients"&&!S.needLinks?[...base,"drive_url"]:base;return t==="entries"&&!S.needFinance?[...b2,...COLS_NEW.entries]:b2};
+const MAP={driveUrl:"drive_url",contractValue:"contract_value",updatedAt:"updated_at",clientId:"client_id",createdAt:"created_at",by:"created_by_email",signedDate:"signed_date",nextAction:"next_action",nextDate:"next_date",lastContact:"last_contact"};
 const INV=Object.fromEntries(Object.entries(MAP).map(([a,b])=>[b,a]));
 const DATE_COLS=new Set(["date","signed_date","next_date","last_contact","client_id"]);
 function toRow(t,o){const r={},cols=colsFor(t);for(const [k,v] of Object.entries(o)){if(v===undefined)continue;const c=MAP[k]||k;if(!cols.includes(c))continue;r[c]=(v===""&&DATE_COLS.has(c))?null:v}return r}
@@ -1262,10 +1295,10 @@ const db={
 };
 async function reload(){
   if(S.quiet||!S.db)return;
-  const [c,e,a,dc,fx]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000),sb.from("activities").select("*").order("date",{ascending:false}).limit(5000),sb.from("documents").select("*").order("created_at",{ascending:false}).limit(5000),sb.from("entries").select("method,installment,tax").limit(1)]);
+  const [c,e,a,dc,fx,lk]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000),sb.from("activities").select("*").order("date",{ascending:false}).limit(5000),sb.from("documents").select("*").order("created_at",{ascending:false}).limit(5000),sb.from("entries").select("method,installment,tax").limit(1),sb.from("documents").select("url").limit(1)]);
   if(c.error||e.error){toast("Chưa tải được dữ liệu, thử tải lại trang");return}
   S.needMigration=!!a.error||!c.data.length?!!a.error:!("next_date" in c.data[0]);S.needJourney=S.needMigration||(c.data.length?!("journey" in c.data[0]):false);
-  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);S.needDocs=!!dc.error;S.needFinance=!!fx.error;S.docs=dc.error?[]:dc.data.map(r=>({...fromRow(r),docDate:r.doc_date||"",size:Number(r.size)||0}));
+  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);S.needDocs=!!dc.error;S.needFinance=!!fx.error;S.needLinks=!!lk.error||(c.data.length?!("drive_url" in c.data[0]):false);S.docs=dc.error?[]:dc.data.map(r=>({...fromRow(r),docDate:r.doc_date||"",size:Number(r.size)||0}));
   if($("#modal").innerHTML){closeModal.dirty=true;return}
   render();
 }
