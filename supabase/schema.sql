@@ -81,3 +81,6 @@ do $$
 begin
   begin execute 'alter publication supabase_realtime add table public.activities'; exception when others then null; end;
 end $$;
+
+-- ===== Nâng cấp lần 3 =====
+alter table public.clients add column if not exists journey jsonb default '[]'::jsonb;

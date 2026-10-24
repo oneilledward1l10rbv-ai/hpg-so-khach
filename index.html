@@ -22,7 +22,7 @@
   --shadow:0 1px 2px rgba(15,27,51,.05),0 2px 8px rgba(15,27,51,.04);
   --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   --f-code:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
-  --r:10px; --side:236px;
+  --r:10px; --side:252px;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -61,6 +61,28 @@ button{cursor:pointer}
 
 /* ---------- khung ---------- */
 .app{display:grid;grid-template-columns:var(--side) minmax(0,1fr);min-height:100%}
+.tag-step{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gold-ink);background:var(--gold-soft);border-radius:4px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.prog{display:flex;align-items:center;gap:8px;min-width:120px}.prog .bar{flex:1;height:6px;border-radius:3px;background:var(--sunk);overflow:hidden}.prog .bar i{display:block;height:100%;background:var(--accent);border-radius:3px}.prog .bar i.full{background:var(--pos)}.prog span{font-size:12px;color:var(--muted);white-space:nowrap}
+.jr{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.js{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;padding:10px 12px;border-top:1px solid var(--line);align-items:start;background:var(--surface)}
+.js:first-child{border-top:0}
+.js.cur{background:var(--gold-soft)}
+.jchk{width:22px;height:22px;border-radius:50%;border:2px solid var(--line-2);background:var(--surface);display:grid;place-items:center;color:transparent;font-size:12px;font-weight:700;margin-top:1px;padding:0}
+.jchk:hover{border-color:var(--accent)}
+.js.done .jchk{background:var(--pos);border-color:var(--pos);color:#fff}
+.js.done .jt{color:var(--muted);text-decoration:line-through;font-weight:500}
+.js.done{padding-block:7px}
+.js.cur .jchk{border-color:var(--gold)}
+.jt{font-weight:600;font-size:13px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.jt .now{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--gold-ink)}
+.jx{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted);margin-top:4px}
+.jin{border:1px solid transparent;background:transparent;border-radius:6px;padding:2px 6px;font-size:12px;color:var(--ink);min-width:0}
+.jin:hover,.jin:focus{border-color:var(--line-2);background:var(--surface);outline:none}
+.jnote{width:100%;margin-top:4px;color:var(--muted)}
+.js .over{color:var(--neg);font-weight:600}
+.jdel{border:0;background:none;color:var(--faint);font-size:16px;line-height:1;padding:2px 4px;border-radius:4px}
+.jdel:hover{color:var(--neg);background:var(--neg-soft)}
+.jadd{display:flex;gap:8px;margin-top:8px}
 .side{background:var(--navy);color:var(--navy-ink);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:calc(20px + env(safe-area-inset-top,0px)) 14px calc(16px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px))}
 .logo{display:flex;align-items:center;gap:12px;padding:4px 8px 22px;color:#fff;text-decoration:none}
 .logo svg{width:26px;height:40px;color:var(--gold);flex:none}
@@ -185,7 +207,7 @@ tfoot td{font-weight:700;border-top:1px solid var(--line-2);border-bottom:0;back
 .fill.f-won{background:var(--pos)}.fill.f-off{background:var(--idle)}.fill.f-chi{background:var(--c-chi)}.fill.f-gold{background:var(--gold)}
 
 /* ---------- charts ---------- */
-.chart-wrap{overflow-x:auto}.chart{width:100%;min-width:520px;height:auto;display:block}
+.chart-wrap{overflow-x:auto}.chart{width:100%;min-width:460px;height:auto;display:block}
 .chart .grid{stroke:var(--line);stroke-width:1}.chart .grid.base{stroke:var(--line-2)}
 .chart .ax{fill:var(--faint);font-size:10px;font-variant-numeric:tabular-nums}.chart .lbl{fill:var(--ink);font-size:11px;font-weight:600}
 .s-thu{fill:var(--c-thu);background:var(--c-thu)}.s-chi{fill:var(--c-chi);background:var(--c-chi)}.s-pos{fill:var(--accent)}.s-neg{fill:var(--neg)}
@@ -330,6 +352,16 @@ const REGIONS=["TP.HCM","Hà Nội","Đà Nẵng","Cần Thơ","Đồng Nai","T�
 const SOURCES=["Facebook Ads","TikTok","Fanpage / Inbox","Zalo","Website","Giới thiệu","Khách cũ","Sự kiện / Hội thảo","Telesale","Khác"];
 const CHANNELS=["Gọi điện","Zalo","Gặp trực tiếp","Inbox Facebook","Email","Họp online"];
 const CAT_THU=["Đặt cọc / tạm ứng","Thanh toán theo đợt","Tất toán hợp đồng","Phí phát sinh thêm","Thu khác"];
+const JOURNEY_TPL={
+  legal:["Ký hợp đồng","Thu tiền đợt 1 (cọc)","Khảo sát mặt bằng & tư vấn bố trí","Thành lập công ty / hộ kinh doanh","Khách xây dựng / cải tạo hạ tầng","Soạn hồ sơ (làm song song khi khách xây dựng)","Chốt nhân sự & bác sĩ đứng tên","Nộp hồ sơ Sở Y tế","Xin lịch thẩm định","Thẩm định tại cơ sở","Khắc phục sau thẩm định","Nhận giấy phép hoạt động","Thu tiền đợt cuối / tất toán"],
+  mkt:["Ký hợp đồng","Thu tiền đợt 1","Nhận thông tin & tài liệu từ khách","Lên kế hoạch & khách duyệt","Thiết lập tài khoản quảng cáo / fanpage","Sản xuất nội dung","Chạy quảng cáo","Báo cáo kết quả cho khách","Nghiệm thu & tất toán"],
+  other:["Ký hợp đồng","Thu tiền đợt 1","Triển khai","Bàn giao cho khách","Tất toán"]};
+const tplKey=svc=>/^Pháp lý|Bác sĩ đứng tên|Cố vấn pháp lý/.test(svc||"")?"legal":/Marketing|Kèm cặp|Gói lẻ/.test(svc||"")?"mkt":"other";
+const jid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const newJourney=(svc,signed)=>JOURNEY_TPL[tplKey(svc)].map((t,i)=>({k:jid(),t,st:i===0&&signed?"done":"todo",due:"",done:i===0&&signed?signed:"",note:""}));
+const jOf=c=>Array.isArray(c&&c.journey)?c.journey:[];
+function jState(c){const j=jOf(c),done=j.filter(s=>s.st==="done").length,cur=j.find(s=>s.st!=="done");return {j,total:j.length,done,cur,pct:j.length?Math.round(done/j.length*100):0}}
+const progHtml=st=>`<div class="prog"><div class="bar"><i class="${st.pct===100?"full":""}" style="width:${st.pct}%"></i></div><span>${st.done}/${st.total}</span></div>`;
 const CAT_CHI=["Lệ phí nhà nước / hồ sơ","Ngân sách quảng cáo","Hoa hồng / chi phí đối tác","Chi phí nội bộ (lương, đi lại, in ấn)","Thuế / VAT","Chi khác"];
 
 const S={view:"dashboard",period:"all",clients:new Map(),entries:[],acts:[],q:"",fStatus:"",fOwner:"",fPri:"",fSvc:"",tOwner:"",lf:{type:"",cat:"",client:""},
@@ -353,6 +385,7 @@ const ICON={
   ledger:'<path d="M4 4h16v16H4z"/><path d="M4 9h16M9 9v11"/>',
   report:'<path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/>',
   io:'<path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 21h16"/>',
+  route:'<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a3.5 3.5 0 0 0 0-7H8a3.5 3.5 0 0 1 0-7h8"/>',
   plus:'<path d="M12 5v14M5 12h14"/>',
   phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/>',
   chat:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'
@@ -383,11 +416,17 @@ function allTime(){const per={};for(const e of S.entries){const k=e.clientId||""
 function oweList(){const at=allTime();return [...S.clients.values()].filter(c=>SIGNED.has(c.status)&&(c.contractValue||0)>(at[c.id]?.thu||0)).map(c=>({c,paid:at[c.id]?.thu||0,left:(c.contractValue||0)-(at[c.id]?.thu||0)})).sort((a,b)=>b.left-a.left)}
 function monthSum(m){let thu=0,chi=0;for(const e of S.entries){if(!String(e.date).startsWith(m))continue;e.type==="thu"?thu+=e.amount:chi+=e.amount}return {thu,chi}}
 const prevMonth=m=>{let [y,mo]=m.split("-").map(Number);mo--;if(!mo){mo=12;y--}return `${y}-${String(mo).padStart(2,"0")}`};
+function workItems(owner){
+  const items=[];
+  for(const c of S.clients.values()){if(owner&&(c.owner||"")!==owner)continue;const j=jOf(c);
+    if(!CLOSED.has(c.status)&&(c.nextDate||!j.length))items.push({kind:"follow",c,date:c.nextDate||"",text:c.nextAction||"Chưa ghi việc cần làm"});
+    if(!/^(9|10)\./.test(c.status||""))for(const st of j)if(st.st!=="done"&&st.due)items.push({kind:"step",c,date:st.due,text:st.t,step:st});}
+  return items;
+}
 function taskGroups(owner){
   const t=todayISO(),wk=addDays(t,7);const g={over:[],today:[],week:[],later:[],none:[]};
-  for(const c of S.clients.values()){if(CLOSED.has(c.status))continue;if(owner&&(c.owner||"")!==owner)continue;
-    const d=c.nextDate;if(!d)g.none.push(c);else if(d<t)g.over.push(c);else if(d===t)g.today.push(c);else if(d<=wk)g.week.push(c);else g.later.push(c)}
-  const byD=(a,b)=>(a.nextDate||"").localeCompare(b.nextDate||"")||a.id.localeCompare(b.id);Object.values(g).forEach(a=>a.sort(byD));return g;
+  for(const it of workItems(owner)){const d=it.date;(!d?g.none:d<t?g.over:d===t?g.today:d<=wk?g.week:g.later).push(it)}
+  const byD=(a,b)=>(a.date||"").localeCompare(b.date||"")||a.c.id.localeCompare(b.c.id);Object.values(g).forEach(a=>a.sort(byD));return g;
 }
 const periodLabel=()=>S.period==="all"?"toàn bộ thời gian":S.period.length===4?"năm "+S.period:"tháng "+S.period.slice(5)+"/"+S.period.slice(0,4);
 function periodSelect(){
@@ -398,7 +437,7 @@ function periodSelect(){
 }
 
 /* ============ khung & điều hướng ============ */
-const NAV=[["Điều hành",[["dashboard","Tổng quan","dash"],["tasks","Lịch chăm sóc","task"]]],["Khách hàng",[["pipeline","Tiến độ chốt khách","pipe"],["clients","Hồ sơ khách hàng","users"]]],["Tài chính",[["ledger","Sổ thu chi","ledger"],["reports","Báo cáo lợi nhuận","report"]]],["Dữ liệu",[["io","Nhập / xuất dữ liệu","io"]]]];
+const NAV=[["Điều hành",[["dashboard","Tổng quan","dash"],["tasks","Theo dõi khách hàng","task"]]],["Khách hàng",[["journeys","Hành trình hồ sơ","route"],["pipeline","Tiến độ chốt khách","pipe"],["clients","Hồ sơ khách hàng","users"]]],["Tài chính",[["ledger","Sổ thu chi","ledger"],["reports","Báo cáo lợi nhuận","report"]]],["Dữ liệu",[["io","Nhập / xuất dữ liệu","io"]]]];
 function render(){
   const root=$("#root");
   if(S.setup){root.innerHTML=`<div class="page"><div class="card empty"><b>Chưa cấu hình cơ sở dữ liệu</b><span>Điền SUPABASE_URL và SUPABASE_ANON_KEY vào file config.js theo hướng dẫn trong README.</span></div></div>`;return}
@@ -408,8 +447,8 @@ function render(){
   if(!$(".app")){root.innerHTML=`<div class="app"><aside class="side"><a class="logo" href="#" data-view="dashboard">${mark("")}<div><b>H&amp;P GROUP</b><span>CRM</span></div></a><nav class="nav" id="nav"></nav><div class="side-foot"><span class="who" id="who"></span><button type="button" id="btnLogout">Đăng xuất</button></div></aside><main class="main"><div class="page" id="page"></div></main></div>`}
   $("#nav").innerHTML=NAV.map(([grp,items])=>`<div class="grp">${grp}</div>`+items.map(([v,l,i])=>`<button type="button" data-view="${v}" ${S.view===v?'aria-current="page"':""}>${ico(i)}<span>${l}</span>${v==="tasks"&&due?`<span class="badge">${due}</span>`:""}</button>`).join("")).join("")+`<button type="button" class="m-only" id="btnLogoutM">Đăng xuất</button>`;
   $("#who").textContent=S.uid||"";
-  const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-2.sql</code> trong kho GitHub để bật Nhật ký chăm sóc, Lịch chăm sóc khách và các trường mới.</div>`:"";
-  $("#page").innerHTML=banner+({dashboard:vDashboard,tasks:vTasks,pipeline:vPipeline,clients:vClients,ledger:vLedger,reports:vReports,io:vIO}[S.view]||vDashboard)();
+  const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy lần lượt <code class="k">supabase/migration-2.sql</code> và <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:S.needJourney?`<div class="banner"><b>Cần nâng cấp để bật Hành trình hồ sơ.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:"";
+  $("#page").innerHTML=banner+({dashboard:vDashboard,tasks:vTasks,journeys:vJourneys,pipeline:vPipeline,clients:vClients,ledger:vLedger,reports:vReports,io:vIO}[S.view]||vDashboard)();
 }
 function renderLogin(){
   $("#root").innerHTML=`<div class="login-wrap"><section class="login-brand">${mark("bgmark")}<div>${mark("mark")}<h2>Quản lý khách hàng, hợp đồng và lợi nhuận ở một nơi.</h2><p>Hệ thống nội bộ của H&amp;P Group cho dịch vụ pháp lý y tế và marketing phòng khám.</p></div><div class="word">H&amp;P GROUP</div></section>
@@ -456,24 +495,26 @@ function vDashboard(){
   const signedN=cl.filter(c=>SIGNED.has(c.status)).length,decided=cl.filter(c=>SIGNED.has(c.status)||/^10\./.test(c.status||"")).length;
   const src={};cl.forEach(c=>{const k=c.source||"Chưa rõ";src[k]??={n:0,won:0,v:0};src[k].n++;if(SIGNED.has(c.status)){src[k].won++;src[k].v+=c.contractValue||0}});
   const ag=aggregate();const own={};cl.forEach(c=>{const k=c.owner||"Chưa phân công";own[k]??={n:0,won:0,v:0,thu:0,chi:0};own[k].n++;if(SIGNED.has(c.status)){own[k].won++;own[k].v+=c.contractValue||0}const p=ag.per[c.id];if(p){own[k].thu+=p.thu;own[k].chi+=p.chi}});
-  const todo=[...g.over,...g.today].slice(0,7);const noMoney=!S.entries.length;
+  const todo=[...g.over,...g.today].slice(0,7);const jr=journeyRows("").filter(r=>r.st.cur).slice(0,6);const noMoney=!S.entries.length;
   return pageHead("Tổng quan",`Hôm nay ${dmy(todayISO())} · ${S.clients.size} khách trong hệ thống`,periodSelect()+btnEntry+btnClient)+`
   <section class="kpis">
     <div class="card kpi hl"><span class="l">Doanh thu tháng ${cur.slice(5)}</span><span class="v num">${fmtM(ms.thu)}</span><span class="s">${dRev==null?"Tháng trước chưa có thu":`So với tháng trước <span class="delta ${dRev>=0?"up":"dn"}">${dRev>=0?"+":""}${dRev}%</span>`}</span></div>
     <div class="card kpi"><span class="l">Lợi nhuận tháng ${cur.slice(5)}</span><span class="v num ${ms.thu-ms.chi<0?"neg":""}">${fmtM(ms.thu-ms.chi)}</span><span class="s">Chi ${fmtM(ms.chi)}</span></div>
     <div class="card kpi"><span class="l">Giá trị đang đàm phán</span><span class="v num">${fmtM(pipeVal)}</span><span class="s">${openDeals.length} khách đang tư vấn / báo giá</span></div>
     <div class="card kpi"><span class="l">Còn phải thu</span><span class="v num">${fmtM(oweSum)}</span><span class="s">${owe.length} hợp đồng chưa thu đủ</span></div>
-    <div class="card kpi ${g.over.length?"alert":""}"><span class="l">Quá hạn liên hệ</span><span class="v num">${g.over.length}</span><span class="s">${g.today.length} khách cần gọi hôm nay</span></div>
+    <div class="card kpi ${g.over.length?"alert":""}"><span class="l">Việc quá hạn</span><span class="v num">${g.over.length}</span><span class="s">${g.today.length} việc hôm nay</span></div>
   </section>
   <div class="row r-21">
     <section class="card"><div class="card-h"><h2>Thu và chi theo tháng</h2><p>12 tháng gần nhất</p><div class="r legend"><span><i class="k s-thu"></i>Thu</span><span><i class="k s-chi"></i>Chi</span></div></div>
       <div class="card-b">${noMoney?emptyBox("ledger","Chưa có khoản thu chi","Ghi khoản đầu tiên, biểu đồ sẽ tự hiện.",`<button class="btn pri" type="button" data-act="add-entry">Ghi thu / chi</button>`):`<div class="chart-wrap">${chartMonthly(months,byM)}</div>`}</div></section>
-    <section class="card"><div class="card-h"><h2>Khách cần liên hệ</h2><p>Quá hạn và hôm nay</p><div class="r"><button class="btn sm ghost" type="button" data-view="tasks">Xem lịch</button></div></div>
-      ${todo.length?`<div class="tasks" style="margin-top:10px">${todo.map(c=>taskRow(c,true)).join("")}</div>`:`<div class="card-b">${emptyBox("task","Không có khách cần gọi gấp","Mọi khách đều đã được hẹn lịch liên hệ.")}</div>`}</section>
+    <section class="card"><div class="card-h"><h2>Cần xử lý</h2><p>Quá hạn và hôm nay</p><div class="r"><button class="btn sm ghost" type="button" data-view="tasks">Xem tất cả</button></div></div>
+      ${todo.length?`<div class="tasks" style="margin-top:10px">${todo.map(it=>taskRow(it,true)).join("")}</div>`:`<div class="card-b">${emptyBox("task","Không có việc gấp","Không có lịch liên hệ hay hạn hồ sơ nào quá hạn.")}</div>`}</section>
   </div>
+  ${S.needJourney?"":`<section class="card"><div class="card-h"><h2>Hồ sơ đang triển khai</h2><p>Khách đã ký: đang ở bước nào, hạn khi nào</p><div class="r"><button class="btn sm ghost" type="button" data-view="journeys">Xem tất cả</button></div></div>
+    ${jr.length?journeyTable(jr,true):`<div class="card-b">${emptyBox("route","Chưa có hồ sơ đang triển khai","Khi khách chuyển sang Đã ký hợp đồng, hệ thống tự tạo hành trình các bước để theo dõi.")}</div>`}</section>`}
   <div class="row r-2">
     <section class="card"><div class="card-h"><h2>Lợi nhuận theo tháng</h2><p>Thu trừ chi, gồm chi phí chung</p></div><div class="card-b">${noMoney?`<p class="sub">Chưa có dữ liệu.</p>`:`<div class="chart-wrap">${chartProfit(months,byM)}</div>`}</div></section>
-    <section class="card"><div class="card-h"><h2>Khách theo tình trạng</h2><p>${periodLabel()} · tỷ lệ chốt ${decided?Math.round(signedN/decided*100)+"%":"—"}</p></div>
+    <section class="card"><div class="card-h"><h2>Phễu khách hàng</h2><p>${periodLabel()} · tỷ lệ chốt ${decided?Math.round(signedN/decided*100)+"%":"—"}</p></div>
       <div class="card-b"><div class="bars">${funnel.filter(f=>f.n||!/^(7|8|9)\./.test(f.s)).map(f=>`<div class="barrow" data-tip="${esc(`<b>${f.s}</b><span>Số khách</span><b class="num">${f.n}</b><span>Giá trị</span><b class="num">${fmt(f.v)}</b>`)}"><span>${esc(f.s.replace(/^\d+\.\s*/,""))}</span><span class="num">${f.n}${f.v?` <span class="sub" style="display:inline">· ${shortM(f.v)}</span>`:""}</span><div class="track"><div class="fill ${SIGNED.has(f.s)?"f-won":/^(9|10)\./.test(f.s)?"f-off":""}" style="width:${(f.n/fmax*100).toFixed(1)}%"></div></div></div>`).join("")}</div></div></section>
   </div>
   <div class="row r-2">
@@ -490,20 +531,40 @@ function vDashboard(){
     ${Object.entries(own).sort((a,b)=>b[1].v-a[1].v||b[1].n-a[1].n).map(([k,v])=>`<tr><td class="cell-main">${esc(k)}</td><td class="r num">${v.n}</td><td class="r num">${v.won}</td><td class="r num">${fmt(v.v)}</td><td class="r num">${fmt(v.thu)}</td><td class="r num ${v.thu-v.chi<0?"neg":""}">${fmt(v.thu-v.chi)}</td></tr>`).join("")||`<tr><td colspan="6" class="sub">Chưa có khách.</td></tr>`}</tbody></table></div></section>`;
 }
 
-/* ============ VIEW: Việc cần làm ============ */
-function taskRow(c,compact){
-  const d=dueInfo(c.nextDate);
+/* ============ VIEW: Theo dõi khách hàng ============ */
+function taskRow(it,compact){
+  const c=it.c,d=dueInfo(it.date),step=it.kind==="step";const js=step?jState(c):null;
   return `<div class="task"><span class="pri-dot ${priCls(c.priority)}" title="${esc(c.priority||"")}"></span>
-    <div class="t-main"><div><span class="code">${esc(c.id)}</span> <b class="click-name" data-client="${esc(c.id)}" style="cursor:pointer">${esc(c.contact||clientName(c.id))}</b>${!compact&&c.facility?` <span class="sub" style="display:inline">· ${esc(c.facility)}</span>`:""}</div>
-      <div class="t-what">${esc(c.nextAction||"Chưa ghi việc cần làm")}</div>
-      <div class="t-meta">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span>Chưa hẹn ngày</span>`}${c.owner?`<span>${esc(c.owner)}</span>`:""}${!compact?`<span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span>`:""}${!compact&&c.phone?`<span class="num">${esc(c.phone)}</span>`:""}</div></div>
-    <div class="t-act">${S.canWrite&&!S.needMigration?`<button class="btn sm" type="button" data-log="${esc(c.id)}">${compact?"Ghi":"Ghi chăm sóc"}</button>`:""}</div></div>`;
+    <div class="t-main"><div><span class="code">${esc(c.id)}</span> <b data-client="${esc(c.id)}" style="cursor:pointer">${esc(c.contact||clientName(c.id))}</b>${!compact&&c.facility?` <span class="sub" style="display:inline">· ${esc(c.facility)}</span>`:""}</div>
+      <div class="t-what">${step?`<span class="tag-step">Hồ sơ</span>`:""}${esc(it.text)}</div>
+      <div class="t-meta">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span>Chưa hẹn ngày</span>`}${c.owner?`<span>${esc(c.owner)}</span>`:""}${!compact?`<span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span>`:""}${step?`<span>Bước ${js.j.indexOf(it.step)+1}/${js.total}</span>`:""}${!compact&&c.phone?`<span class="num">${esc(c.phone)}</span>`:""}</div></div>
+    <div class="t-act">${!S.canWrite?"":step?`<button class="btn sm" type="button" data-jtoggle="${esc(c.id)}|${esc(it.step.k)}">${compact?"Xong":"Đánh dấu xong"}</button>`:!S.needMigration?`<button class="btn sm" type="button" data-log="${esc(c.id)}">${compact?"Ghi":"Ghi chăm sóc"}</button>`:""}</div></div>`;
 }
 function vTasks(){
-  const g=taskGroups(S.tOwner);const sec=(k,t,cls)=>g[k].length?`<div class="grp-h ${cls}">${t}<span class="n">${g[k].length}</span></div>${g[k].map(c=>taskRow(c,false)).join("")}`:"";
+  const g=taskGroups(S.tOwner);const sec=(k,t,cls)=>g[k].length?`<div class="grp-h ${cls}">${t}<span class="n">${g[k].length}</span></div>${g[k].map(it=>taskRow(it,false)).join("")}`:"";
   const total=Object.values(g).reduce((a,x)=>a+x.length,0);
-  return pageHead("Lịch chăm sóc khách","Ai cần liên hệ, khi nào và làm gì — sắp theo ngày hẹn liên hệ tiếp",`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
-  `<section class="card">${total?`<div class="tasks">${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Chưa có lịch liên hệ","Khách đang chăm sóc sẽ hiện ở đây kèm ngày hẹn liên hệ tiếp.")}</section>`;
+  return pageHead("Theo dõi khách hàng","Mọi việc cần làm theo ngày: lịch liên hệ khách và hạn từng bước hồ sơ (gắn nhãn HỒ SƠ)",`<select class="ctl" id="tOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.tOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
+  `<section class="card">${total?`<div class="tasks">${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Chưa có việc nào","Lịch liên hệ khách và hạn các bước hồ sơ sẽ hiện ở đây.")}</section>`;
+}
+
+/* ============ VIEW: Hành trình hồ sơ ============ */
+function journeyRows(owner){
+  const t=todayISO();
+  return [...S.clients.values()].filter(c=>(SIGNED.has(c.status)||jOf(c).length)&&!/^(9|10)\./.test(c.status||"")&&(!owner||c.owner===owner)).map(c=>{const st=jState(c);const due=st.cur?.due||"";return {c,st,due,over:due&&due<t}})
+    .sort((a,b)=>(!!b.st.cur-!!a.st.cur)||(b.over-a.over)||((a.due||"9")).localeCompare(b.due||"9")||a.c.id.localeCompare(b.c.id));
+}
+function journeyTable(rows,compact){
+  const at=allTime();
+  return `<div class="tbl-wrap"><table style="min-width:${compact?640:860}px"><thead><tr><th>Khách</th>${compact?"":"<th>Dịch vụ</th>"}<th>Tiến độ</th><th>Đang làm</th><th>Hạn</th>${compact?"":'<th class="r">Còn phải thu</th><th>Phụ trách</th>'}</tr></thead><tbody>
+  ${rows.map(({c,st,due})=>{const d=dueInfo(due);const left=Math.max(0,(c.contractValue||0)-(at[c.id]?.thu||0));return `<tr class="click" data-client="${esc(c.id)}"><td><span class="cell-main">${esc(c.contact||c.id)}</span> <span class="code">${esc(c.id)}</span><span class="sub">${esc(c.facility||"")}</span></td>${compact?"":`<td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td>`}<td>${st.total?progHtml(st):`<button class="btn sm" type="button" data-jnew="${esc(c.id)}">Tạo hành trình</button>`}</td><td>${st.cur?esc(st.cur.t):st.total?'<span class="pill st-won">Hoàn tất</span>':"—"}</td><td>${d?`<span class="due ${d.cls}">${d.txt}</span>`:st.cur?'<span class="sub" style="display:inline">Chưa đặt hạn</span>':"—"}</td>${compact?"":`<td class="r num ${left?"neg":""}">${left?fmt(left):"—"}</td><td>${esc(c.owner||"—")}</td>`}</tr>`}).join("")}
+  </tbody></table></div>`;
+}
+function vJourneys(){
+  if(S.needJourney)return pageHead("Hành trình hồ sơ","")+`<section class="card">${emptyBox("route","Cần nâng cấp cơ sở dữ liệu","Chạy file supabase/migration-3.sql trong Supabase → SQL Editor để bật Hành trình hồ sơ.")}</section>`;
+  const rows=journeyRows(S.fOwner);const over=rows.filter(r=>r.over).length,noDue=rows.filter(r=>r.st.cur&&!r.due).length,done=rows.filter(r=>r.st.total&&!r.st.cur).length;
+  return pageHead("Hành trình hồ sơ","Khách đã ký: mỗi hồ sơ đang ở bước nào, bước tiếp theo và hạn · bấm một dòng để cập nhật",`<select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>`)+
+  `<section class="kpis k4"><div class="card kpi hl"><span class="l">Đang triển khai</span><span class="v num">${rows.length-done}</span><span class="s">hồ sơ</span></div><div class="card kpi ${over?"alert":""}"><span class="l">Trễ hạn</span><span class="v num">${over}</span><span class="s">bước đang làm đã quá hạn</span></div><div class="card kpi"><span class="l">Chưa đặt hạn</span><span class="v num">${noDue}</span><span class="s">nên đặt hạn để được nhắc</span></div><div class="card kpi"><span class="l">Hoàn tất</span><span class="v num">${done}</span><span class="s">hồ sơ đã xong mọi bước</span></div></section>
+  <section class="card">${rows.length?journeyTable(rows,false):emptyBox("route","Chưa có hồ sơ nào","Khi khách chuyển sang Đã ký hợp đồng, hệ thống tự tạo hành trình các bước để theo dõi.")}</section>`;
 }
 
 /* ============ VIEW: Pipeline ============ */
@@ -580,7 +641,7 @@ function vIO(){
   return pageHead("Nhập / xuất dữ liệu","Đưa dữ liệu từ Google Sheets vào, hoặc xuất báo cáo ra Excel")+`
   <div class="row r-2">
     ${box("clients","Nhập danh sách khách",`<li>Mở file <b>Khách Hàng Pháp Lý HPG</b> trên Google Sheets, chọn sheet <b>Khách hàng</b>.</li><li>Tệp → Tải xuống → <b>CSV</b>, rồi kéo file vào ô dưới.</li><li>Khách trùng mã KH được cập nhật, không tạo trùng.</li>`)}
-    ${box("acts","Nhập nhật ký chăm sóc",`<li>Trong cùng file, chọn sheet <b>Nhật ký chăm sóc</b> → tải CSV.</li><li>Cần có cột <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Hình thức</code> <code class="k">Nội dung trao đổi</code>.</li><li>Nhập khách trước, nhật ký sau.</li><li>Hoặc tách thẳng cột <b>Ghi chú</b> của mọi khách thành nhật ký theo từng ngày:</li>`,`<button class="btn sm pri" type="button" data-act="sync-notes">Tạo nhật ký từ ghi chú</button>`)}
+    ${box("acts","Nhập nhật ký chăm sóc",`<li>Trong cùng file, chọn sheet <b>Nhật ký chăm sóc</b> → tải CSV.</li><li>Cần có cột <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Hình thức</code> <code class="k">Nội dung trao đổi</code>.</li><li>Nhập khách trước, nhật ký sau.</li><li>Hoặc tách thẳng cột <b>Ghi chú</b> và <b>Việc cần làm tiếp theo</b> của mọi khách thành nhật ký theo từng ngày:</li>`,`<button class="btn sm pri" type="button" data-act="sync-notes">Tạo nhật ký từ ghi chú</button>`)}
     ${box("entries","Nhập thu chi",`<li>Các cột: <code class="k">Ngày</code> <code class="k">Mã KH</code> <code class="k">Loại</code> (Thu/Chi) <code class="k">Hạng mục</code> <code class="k">Số tiền</code> <code class="k">Nội dung</code>.</li><li>Mã KH trống nghĩa là chi phí chung. Số tiền ghi <code class="k">38.000.000</code> hay <code class="k">38tr</code> đều được.</li>`,`<button class="btn sm" type="button" data-act="tpl">Tải file mẫu</button>`)}
     <section class="card"><div class="card-h"><h2>Xuất báo cáo</h2><p>File CSV mở bằng Excel hoặc Google Sheets</p></div><div class="card-b" style="display:flex;flex-direction:column;gap:12px">${periodSelect()}<div class="filters"><button class="btn" type="button" data-act="exp-clients">Danh sách khách</button><button class="btn" type="button" data-act="exp-ledger">Sổ thu chi</button><button class="btn" type="button" data-act="exp-profit">Lợi nhuận theo khách</button><button class="btn" type="button" data-act="exp-acts">Nhật ký chăm sóc</button></div></div></section>
   </div>`;
@@ -602,6 +663,7 @@ function clientDetail(id){
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
       ${c.facility?`<div style="font-weight:600;font-size:15px">${esc(c.facility)}</div>`:""}
       <div class="facts"><div><span>Giá trị HĐ</span><b class="num">${c.contractValue?fmt(c.contractValue):"—"}</b></div><div><span>Đã thu</span><b class="num" style="color:var(--c-thu)">${fmt(thu)}</b></div><div><span>Chi phí</span><b class="num" style="color:var(--gold-ink)">${fmt(chi)}</b></div><div><span>Lợi nhuận${thu?" · "+(p/thu*100).toFixed(0)+"%":""}</span><b class="num ${p<0?"neg":""}">${fmt(p)}</b></div>${owe!=null?`<div style="grid-column:1/-1"><span>Còn phải thu</span><b class="num ${owe?"neg":""}">${fmt(owe)}</b></div>`:""}</div>
+      ${journeyBlock(c)}
       ${!CLOSED.has(c.status)?`<div class="next"><span class="lbl">Việc cần làm tiếp theo</span><div>${esc(c.nextAction||"Chưa ghi việc cần làm")}</div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="sub" style="display:inline">Chưa hẹn ngày</span>`}${S.canWrite&&!S.needMigration?`<button class="btn sm pri" type="button" data-log="${esc(id)}" style="margin-left:auto">${ico("chat")}Ghi chăm sóc</button>`:""}</div></div>`:""}
       <dl class="info">${info.map(([k,v])=>`<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
       ${c.note?(acts.some(a=>a.by===NOTE_MARK)?`<details><summary class="sub" style="cursor:pointer">Xem ghi chú gốc</summary><div class="note" style="margin-top:8px">${esc(c.note)}</div></details>`:`<div class="note">${esc(c.note)}</div>`):""}
@@ -613,6 +675,24 @@ function clientDetail(id){
   </div></div>`,true);
 }
 
+function journeyBlock(c){
+  if(S.needJourney)return "";const st=jState(c);const t=todayISO();const ro=S.canWrite?"":"disabled";
+  if(!st.total)return SIGNED.has(c.status)||S.canWrite?`<div class="next"><span class="lbl">Hành trình hồ sơ</span><div class="sub" style="color:var(--ink)">Chưa có các bước theo dõi cho khách này.</div>${S.canWrite?`<div><button class="btn sm pri" type="button" data-jnew="${esc(c.id)}">Tạo hành trình theo dịch vụ</button></div>`:""}</div>`:"";
+  return `<div style="display:flex;flex-direction:column;gap:8px"><div class="h3">Hành trình hồ sơ<span class="r" style="text-transform:none;letter-spacing:0;font-weight:500;width:170px">${progHtml(st)}</span></div>
+  <ol class="jr">${st.j.map((s,i)=>{const done=s.st==="done",cur=s===st.cur,over=!done&&s.due&&s.due<t;const key=esc(c.id)+"|"+esc(s.k);return `<li class="js ${done?"done":""} ${cur?"cur":""}"><button class="jchk" type="button" data-jtoggle="${key}" ${ro} aria-label="${done?"Bỏ đánh dấu":"Đánh dấu xong"}">✓</button>
+    <div style="min-width:0"><div class="jt">${i+1}. ${esc(s.t)}${cur?'<span class="now">Đang làm</span>':""}</div>
+    ${done?`<div class="jx"><span>Xong ${dmy(s.done)}</span>${s.note?`<span>· ${esc(s.note)}</span>`:""}</div>`:`<div class="jx"><span class="${over?"over":""}">Hạn</span><input class="jin" type="date" data-jf="${key}|due" value="${esc(s.due||"")}" ${ro}>${over?`<span class="over">Trễ hạn</span>`:""}</div>
+    <input class="jin jnote" data-jf="${key}|note" value="${esc(s.note||"")}" placeholder="Ghi chú cho bước này" ${ro}>`}</div>
+    ${S.canWrite?`<button class="jdel" type="button" data-jdel="${key}" title="Bỏ bước này" aria-label="Bỏ bước">×</button>`:""}</li>`}).join("")}</ol>
+  ${S.canWrite?`<div class="jadd"><input class="ctl" id="jNew" placeholder="Thêm bước, vd Nộp bổ sung hồ sơ PCCC"><button class="btn sm" type="button" data-jadd="${esc(c.id)}">Thêm</button></div>`:""}</div>`;
+}
+async function saveJourney(id,j){
+  const c=S.clients.get(id);if(!c)return;c.journey=j;
+  const ov=$(".overlay"),top=ov?ov.scrollTop:0;
+  if(ov&&$("#modal [data-jtoggle],#modal [data-jnew]")){clientDetail(id);const o2=$(".overlay");if(o2)o2.scrollTop=top;closeModal.dirty=true}else render();
+  S.quiet=true;try{const {error}=await sb.from("clients").update({journey:j,updated_at:Date.now()}).eq("id",id);if(error)throw dbErr(error)}catch(e){writeErr(e)}finally{S.quiet=false}
+}
+function jUpdate(key,fn){const [id,k]=key.split("|");const c=S.clients.get(id);if(!c)return;const j=jOf(c).map(s=>({...s}));const i=j.findIndex(s=>s.k===k);if(i<0)return;fn(j,i);saveJourney(id,j)}
 function logForm(id){
   const c=S.clients.get(id);if(!c)return;
   openModal(`<div class="sheet-h"><h3>Ghi chăm sóc · ${esc(c.contact||id)} <span class="code">${esc(id)}</span></h3><button class="btn sm ghost" type="button" data-close>Đóng</button></div>
@@ -683,7 +763,7 @@ function clientForm(c){
 /* ============ ghi chú → nhật ký ============ */
 const NOTE_MARK="Từ ghi chú";
 function guessChannel(t){t=t.toLowerCase();if(/inbox|trả lời qc|tin nhắn|fanpage|\bfb\b|gửi sđt/.test(t))return "Inbox Facebook";if(/họp|gặp|starbucks|cafe|cà phê|khảo sát/.test(t))return "Gặp trực tiếp";if(/gọi|nghe máy|cuộc gọi|điện thoại/.test(t))return "Gọi điện";if(/zalo/.test(t))return "Zalo";if(/email|mail/.test(t))return "Email";return "Ghi chú"}
-function cleanSeg(t){return t.replace(/\s+/g," ").replace(/\(\s*\)/g,"").replace(/\s+([.,;:)])/g,"$1").replace(/^[\s.,;:→>\-–)]+|[\s,;:→>\-–(]+$/g,"").trim()}
+function cleanSeg(t){return t.replace(/\s+/g," ").replace(/\(\s*\)/g,"").replace(/\s+([.,;:)])/g,"$1").replace(/^[\s.,;:→>\-–]+|[\s,;:→>\-–(]+$/g,"").trim()}
 function parseNote(note,refISO,fallbackISO){
   note=String(note||"").replace(/\r/g,"").trim();if(!note)return [];
   const yr=(refISO||fallbackISO||new Date().toISOString()).slice(0,4);
@@ -691,18 +771,18 @@ function parseNote(note,refISO,fallbackISO){
   while((m=re.exec(note))){const d=+m[1],mo=+m[2];if(d<1||d>31||mo<1||mo>12)continue;
     const prevEnd=hits.length?hits[hits.length-1].tEnd:0;const before=note.slice(prevEnd,m.index);
     let cut=-1;for(const sp of [". ",".\n","; ","\n","→","->","|"]){const i=before.lastIndexOf(sp);if(i>=0)cut=Math.max(cut,i+sp.length)}
-    let start=m.index;const lead=cut>=0?before.slice(cut):before;const endsClause=/^\s*([.;\n]|$)/.test(note.slice(re.lastIndex));if(lead.length<=24||endsClause)start=prevEnd+(cut>=0?cut:0);
+    let start=m.index;const lead=cut>=0?before.slice(cut):before;const endsClause=/^\s*\)?\s*([.;\n]|$)/.test(note.slice(re.lastIndex));if(lead.length<=24||endsClause)start=prevEnd+(cut>=0?cut:0);
     hits.push({start,tStart:m.index,tEnd:re.lastIndex,date:`${m[3]||yr}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`})}
   const out=[];const pre=cleanSeg(note.slice(0,hits.length?hits[0].start:note.length));
-  hits.forEach((h,i)=>{const end=i+1<hits.length?hits[i+1].start:note.length;const txt=cleanSeg(note.slice(h.start,h.tStart)+" "+note.slice(h.tEnd,end));
+  hits.forEach((h,i)=>{const end=i+1<hits.length?hits[i+1].start:note.length;const txt=cleanSeg(note.slice(h.start,h.tStart)+note.slice(h.tEnd,end));
     const last=out[out.length-1];if(last&&last.date===h.date){if(txt)last.content=cleanSeg(last.content+" · "+txt)}else out.push({date:h.date,content:txt})});
   if(pre)out.unshift({date:fallbackISO||(hits[0]?.date)||refISO,content:pre,undated:true});
   const merged=[];for(const o of out.filter(o=>o.content&&o.date)){const l=merged[merged.length-1];if(l&&l.date===o.date)l.content=cleanSeg(l.content+" · "+o.content);else merged.push({...o})}
   return merged.map(o=>({date:o.date,content:o.content,channel:guessChannel(o.content)}));
 }
-async function syncNoteActs(id,note,ref,last){
+async function syncNoteActs(id,note,ref,last,next){
   if(S.needMigration)return 0;
-  const items=parseNote(note,ref,last||ref);
+  const items=[...parseNote(note,ref,last||ref),...parseNote(next,ref,last||ref).map(x=>({...x,channel:x.channel==="Ghi chú"?"Việc cần làm tiếp theo":x.channel}))];
   const {error:e1}=await sb.from("activities").delete().eq("client_id",id).eq("created_by_email",NOTE_MARK);if(e1)throw dbErr(e1);
   if(items.length){const {error:e2}=await sb.from("activities").insert(items.map((x,i)=>toRow("activities",{clientId:id,date:x.date,channel:x.channel,content:x.content,result:"",by:NOTE_MARK,createdAt:Date.now()+i})));if(e2)throw dbErr(e2)}
   return items.length;
@@ -710,8 +790,8 @@ async function syncNoteActs(id,note,ref,last){
 async function syncAllNotes(btn){
   if(S.needMigration){toast("Cần chạy file nâng cấp cơ sở dữ liệu trước");return}
   btn.disabled=true;let n=0,k=0;S.quiet=true;
-  try{for(const c of S.clients.values()){if(!c.note)continue;n+=await syncNoteActs(c.id,c.note,c.date,c.lastContact);k++}}catch(err){writeErr(err)}finally{S.quiet=false;btn.disabled=false;await reload()}
-  toast(`Đã tạo ${n} dòng nhật ký từ ghi chú của ${k} khách`);
+  try{for(const c of S.clients.values()){if(!c.note&&!c.nextAction)continue;n+=await syncNoteActs(c.id,c.note,c.date,c.lastContact,c.nextAction);k++}}catch(err){writeErr(err)}finally{S.quiet=false;btn.disabled=false;await reload()}
+  toast(`Đã tạo ${n} dòng nhật ký từ ghi chú và việc cần làm của ${k} khách`);
 }
 const noteDate=(iso,ref)=>{const [y,m,d]=iso.split("-");return String(ref||"").startsWith(y)?`${d}/${m}`:`${d}/${m}/${y}`};
 
@@ -720,7 +800,7 @@ const val=id=>{const el=document.getElementById(id);return el?el.value:undefined
 async function saveEntry(form){
   const amount=parseMoney(val("eAmt")),date=val("eDate");if(!amount){toast("Nhập số tiền lớn hơn 0");return}if(!date){toast("Chọn ngày");return}
   const data={type:val("eType"),date,clientId:val("eClient"),category:val("eCat"),amount,note:val("eNote").trim()};
-  try{if(form.dataset.id)await db.update("entries",form.dataset.id,{...data,updatedAt:Date.now()});else await db.insert("entries",{...data,by:S.uid,createdAt:Date.now()});
+  try{if(form.dataset.id)await db.update("entries",form.dataset.id,{...data,updatedAt:Date.now()});else{await db.insert("entries",{...data,by:S.uid,createdAt:Date.now()});const c=S.clients.get(data.clientId);if(data.type==="thu"&&c&&!S.needJourney){const j=jOf(c).map(s=>({...s}));const i=j.findIndex(s=>s.st!=="done"&&/^Thu tiền/.test(s.t));if(i>=0){j[i].st="done";j[i].done=data.date;j[i].note=j[i].note||`Đã thu ${fmt(data.amount)} đ`;await sb.from("clients").update({journey:j}).eq("id",c.id);await reload()}}}
     closeModal();toast(form.dataset.id?"Đã lưu thay đổi":`Đã ghi ${data.type==="thu"?"khoản thu":"khoản chi"} ${fmt(amount)} đ`)}catch(err){writeErr(err)}
 }
 async function saveClient(form){
@@ -729,18 +809,19 @@ async function saveClient(form){
   const d={date:val("cDate"),contact:val("cContact").trim(),phone:val("cPhone").trim(),facility:val("cFacility").trim(),model:val("cModel"),service:val("cService"),status:val("cStatus"),owner:val("cOwner"),contractValue:parseMoney(val("cValue")),source:val("cSource"),note:val("cNote"),updatedAt:Date.now()};
   if(!S.needMigration)Object.assign(d,{role:val("cRole"),zalo:val("cZalo").trim(),region:val("cRegion"),address:val("cAddress").trim(),priority:val("cPriority"),signedDate:val("cSigned"),nextAction:val("cNext").trim(),nextDate:val("cNextDate")});
   if(!S.needMigration&&SIGNED.has(d.status)&&!d.signedDate)d.signedDate=todayISO();
+  if(!S.needJourney&&SIGNED.has(d.status)&&!jOf(S.clients.get(id)).length)d.journey=newJourney(d.service,d.signedDate||todayISO());
   const old=S.clients.get(id)||{};
   try{S.quiet=true;if(form.dataset.new)await db.insert("clients",{id,...d});else await db.update("clients",id,d);
-    if((d.note||"")!==(old.note||"")||form.dataset.new)await syncNoteActs(id,d.note,d.date,d.lastContact||old.lastContact);
+    const nx=d.nextAction!==undefined?d.nextAction:old.nextAction;if((d.note||"")!==(old.note||"")||(nx||"")!==(old.nextAction||"")||form.dataset.new)await syncNoteActs(id,d.note,d.date,d.lastContact||old.lastContact,nx);
     S.quiet=false;await reload();closeModal();toast(form.dataset.new?"Đã thêm "+id:"Đã lưu hồ sơ "+id)}catch(err){S.quiet=false;writeErr(err)}
 }
 async function saveLog(form){
   const id=form.dataset.id;const content=val("aContent").trim();if(!content){toast("Ghi nội dung trao đổi");return}
   const date=val("aDate"),nextDate=val("aNextDate"),status=val("aStatus");const c=S.clients.get(id)||{};
-  const patch={lastContact:date,nextAction:val("aNext").trim(),nextDate,status,updatedAt:Date.now()};if(SIGNED.has(status)&&!c.signedDate)patch.signedDate=date;
+  const patch={lastContact:date,nextAction:val("aNext").trim(),nextDate,status,updatedAt:Date.now()};if(SIGNED.has(status)&&!c.signedDate)patch.signedDate=date;if(!S.needJourney&&SIGNED.has(status)&&!jOf(c).length)patch.journey=newJourney(c.service,patch.signedDate||c.signedDate||date);
   const res=val("aResult").trim();const line=`${noteDate(date,c.date)} ${val("aChannel")}: ${content}${res?" → "+res:""}`;
   patch.note=(c.note?String(c.note).trimEnd()+"\n":"")+line;
-  try{S.quiet=true;await db.update("clients",id,patch);await syncNoteActs(id,patch.note,c.date,date);S.quiet=false;await reload();closeModal();toast("Đã ghi chăm sóc "+id)}catch(err){S.quiet=false;writeErr(err)}
+  try{S.quiet=true;await db.update("clients",id,patch);await syncNoteActs(id,patch.note,c.date,date,patch.nextAction);S.quiet=false;await reload();closeModal();toast("Đã ghi chăm sóc "+id)}catch(err){S.quiet=false;writeErr(err)}
 }
 function writeErr(err){toast(err?.code==="fk"?"Khách này còn dữ liệu liên quan, chưa xoá được":err?.code==="invalid_argument"?"Bạn chưa có quyền ghi dữ liệu này":"Chưa lưu được, thử lại sau giây lát")}
 async function del(tbl,id,btn,msg){
@@ -764,7 +845,7 @@ async function importClients(text){
     if(!S.needMigration)Object.assign(d,{role:g(r,"role"),priority:g(r,"priority"),zalo:/^đã kết nối/i.test(g(r,"zalo"))?"":g(r,"zalo"),region:g(r,"region"),address:g(r,"address"),nextAction:g(r,"nextAction"),lastContact:parseDate(g(r,"lastContact")),nextDate:parseDate(g(r,"nextDate"))});
     const old=S.clients.get(id);const clean=Object.fromEntries(Object.entries(d).filter(([,x])=>x!==""&&x!==0));
     if(old){if(old.contractValue)delete clean.contractValue;await db.update("clients",id,{...clean,updatedAt:Date.now()});u++}else{await db.insert("clients",{id,...d,updatedAt:Date.now()});n++}
-    const note=d.note||old?.note||"";if(note)await syncNoteActs(id,note,d.date||old?.date,d.lastContact||old?.lastContact);}}
+    const note=d.note||old?.note||"",nx=d.nextAction||old?.nextAction||"";if(note||nx)await syncNoteActs(id,note,d.date||old?.date,d.lastContact||old?.lastContact,nx);}}
   catch(err){writeErr(err)}finally{S.quiet=false;await reload()}
   toast(`Đã nhập ${n} khách mới, cập nhật ${u} khách`);
 }
@@ -808,6 +889,10 @@ document.addEventListener("click",e=>{
   if(t.matches("[data-close]")){closeModal();return}
   const ty=t.closest("[data-type]");if(ty){const v=ty.dataset.type;$("#eType").value=v;ty.parentElement.querySelectorAll("button").forEach(b=>b.className=b.dataset.type===v?"on-"+v:"");$("#eCat").innerHTML=opt(v==="thu"?CAT_THU:CAT_CHI);return}
   const act=t.closest("[data-act]");if(act){const a=act.dataset.act;if(a==="add-entry")entryForm();else if(a==="add-client")clientForm();else if(a==="sync-notes")syncAllNotes(act);else if(a==="note-today"){const ta=$("#cNote");const t=noteDate(todayISO(),val("cDate"));ta.value=(ta.value.trimEnd()?ta.value.trimEnd()+"\n":"")+t+": ";ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length)}else exportAct(a);return}
+  const jt=t.closest("[data-jtoggle]");if(jt){jUpdate(jt.dataset.jtoggle,(j,i)=>{const d=j[i].st==="done";j[i].st=d?"todo":"done";j[i].done=d?"":todayISO()});toast("Đã cập nhật hành trình");return}
+  const jd=t.closest("[data-jdel]");if(jd){jUpdate(jd.dataset.jdel,(j,i)=>j.splice(i,1));return}
+  const jn=t.closest("[data-jnew]");if(jn){const c=S.clients.get(jn.dataset.jnew);if(c)saveJourney(c.id,newJourney(c.service,SIGNED.has(c.status)?(c.signedDate||todayISO()):""));return}
+  const ja=t.closest("[data-jadd]");if(ja){const v=($("#jNew")?.value||"").trim();if(!v){$("#jNew")?.focus();return}const c=S.clients.get(ja.dataset.jadd);if(c){const j=jOf(c).map(s=>({...s}));const cur=j.findIndex(s=>s.st!=="done");const it={k:jid(),t:v,st:"todo",due:"",done:"",note:""};cur<0?j.push(it):j.splice(cur+1,0,it);saveJourney(c.id,j)}return}
   const lg=t.closest("[data-log]");if(lg){logForm(lg.dataset.log);return}
   const ed=t.closest("[data-edit]");if(ed){const en=S.entries.find(x=>x.id===ed.dataset.edit);en&&entryForm(en);return}
   const ec=t.closest("[data-edit-client]");if(ec){clientForm(S.clients.get(ec.dataset.editClient));return}
@@ -825,9 +910,10 @@ document.addEventListener("change",e=>{const id=e.target.id,v=e.target.value;
   const map={period:"period",fStatus:"fStatus",fOwner:"fOwner",fPri:"fPri",fSvc:"fSvc",tOwner:"tOwner"};
   if(map[id]){S[map[id]]=v;render()}
   if(id==="lfType"){S.lf.type=v;render()}if(id==="lfCat"){S.lf.cat=v;render()}if(id==="lfClient"){S.lf.client=v;render()}
+  if(e.target.dataset.jf){const parts=e.target.dataset.jf.split("|");const f=parts.pop();const v=e.target.value;jUpdate(parts.join("|"),(j,i)=>{j[i][f]=f==='note'?v.trim():v});return}
   if(e.target.dataset.file)handleFile(e.target.dataset.file,e.target.files[0]);
 });
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&$("#modal").innerHTML)closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.id==="jNew"){e.preventDefault();$("[data-jadd]")?.click();return}if(e.key==="Escape"&&$("#modal").innerHTML)closeModal()});
 /* kéo thả: file CSV + thẻ pipeline */
 let dragId=null;
 document.addEventListener("dragstart",e=>{const c=e.target.closest?.("[data-card]");if(c){dragId=c.dataset.card;c.classList.add("drag");e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",dragId)}});
@@ -837,7 +923,7 @@ document.addEventListener("dragleave",e=>{const d=e.target.closest?.("[data-drop
 document.addEventListener("drop",async e=>{
   const col=e.target.closest?.("[data-col]");
   if(col&&dragId){e.preventDefault();const id=dragId;dragId=null;col.classList.remove("over");const c=S.clients.get(id);const st=col.dataset.col;if(!c||c.status===st)return;
-    const patch={status:st,updatedAt:Date.now()};if(!S.needMigration&&SIGNED.has(st)&&!c.signedDate)patch.signedDate=todayISO();
+    const patch={status:st,updatedAt:Date.now()};if(!S.needMigration&&SIGNED.has(st)&&!c.signedDate)patch.signedDate=todayISO();if(!S.needJourney&&SIGNED.has(st)&&!jOf(c).length){patch.journey=newJourney(c.service,patch.signedDate||c.signedDate||todayISO());c.journey=patch.journey}
     c.status=st;render();try{await db.update("clients",id,patch);toast(`${id} → ${st}`)}catch(err){writeErr(err);reload()}return}
   const d=e.target.closest?.("[data-drop]");if(d){e.preventDefault();d.classList.remove("over");handleFile(d.dataset.drop,e.dataTransfer.files[0])}
 });
@@ -850,12 +936,12 @@ document.addEventListener("scroll",()=>tipEl.hidden=true,true);
 const CFG=window.HPG_CONFIG||{};let sb=null;
 const COLS_BASE={clients:["id","date","contact","phone","facility","model","service","status","owner","contract_value","source","note","updated_at"],entries:["id","type","date","client_id","category","amount","note","created_by_email","created_at","updated_at"],activities:["id","client_id","date","channel","content","result","next_date","created_by_email","created_at"]};
 const COLS_NEW={clients:["role","zalo","region","address","priority","signed_date","next_action","next_date","last_contact"]};
-const colsFor=t=>S.needMigration?COLS_BASE[t]:[...COLS_BASE[t],...(COLS_NEW[t]||[])];
+const colsFor=t=>S.needMigration?COLS_BASE[t]:[...COLS_BASE[t],...(COLS_NEW[t]||[]),...(t==="clients"&&!S.needJourney?["journey"]:[])];
 const MAP={contractValue:"contract_value",updatedAt:"updated_at",clientId:"client_id",createdAt:"created_at",by:"created_by_email",signedDate:"signed_date",nextAction:"next_action",nextDate:"next_date",lastContact:"last_contact"};
 const INV=Object.fromEntries(Object.entries(MAP).map(([a,b])=>[b,a]));
 const DATE_COLS=new Set(["date","signed_date","next_date","last_contact","client_id"]);
 function toRow(t,o){const r={},cols=colsFor(t);for(const [k,v] of Object.entries(o)){if(v===undefined)continue;const c=MAP[k]||k;if(!cols.includes(c))continue;r[c]=(v===""&&DATE_COLS.has(c))?null:v}return r}
-function fromRow(r){const o={};for(const [k,v] of Object.entries(r))o[INV[k]||k]=v??"";o.amount=Number(r.amount||0);o.contractValue=Number(r.contract_value||0);return o}
+function fromRow(r){const o={};for(const [k,v] of Object.entries(r))o[INV[k]||k]=v??"";o.amount=Number(r.amount||0);o.contractValue=Number(r.contract_value||0);o.journey=Array.isArray(r.journey)?r.journey:[];return o}
 function dbErr(error){console.error(error);if(error.code==="23503")return {code:"fk"};if(error.code==="42501"||/row-level security|permission/i.test(error.message||""))return {code:"invalid_argument"};return {code:"unavailable"}}
 const db={
   async insert(t,d){const {error}=await sb.from(t).insert(toRow(t,d));if(error)throw dbErr(error);await reload()},
@@ -866,7 +952,7 @@ async function reload(){
   if(S.quiet||!S.db)return;
   const [c,e,a]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000),sb.from("activities").select("*").order("date",{ascending:false}).limit(5000)]);
   if(c.error||e.error){toast("Chưa tải được dữ liệu, thử tải lại trang");return}
-  S.needMigration=!!a.error||!c.data.length?!!a.error:!("next_date" in c.data[0]);
+  S.needMigration=!!a.error||!c.data.length?!!a.error:!("next_date" in c.data[0]);S.needJourney=S.needMigration||(c.data.length?!("journey" in c.data[0]):false);
   S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);
   if($("#modal").innerHTML){closeModal.dirty=true;return}
   render();
