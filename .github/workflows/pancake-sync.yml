@@ -1,0 +1,27 @@
+name: Đồng bộ khách từ Pancake
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # khoảng 15 phút một lần (GitHub có thể chạy trễ vài phút)
+  workflow_dispatch: {}       # cho phép bấm "Run workflow" để chạy ngay
+
+concurrency:
+  group: pancake-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Đồng bộ
+        run: node sync/pancake-sync.mjs
+        env:
+          SUPABASE_URL: https://nbywaqwvmsoszsdyllqi.supabase.co
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PANCAKE_PAGES: ${{ secrets.PANCAKE_PAGES }}
+          CRM_DEFAULT_OWNER: ${{ secrets.CRM_DEFAULT_OWNER }}

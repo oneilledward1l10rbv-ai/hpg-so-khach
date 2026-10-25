@@ -32,3 +32,13 @@ Repo → **Settings → Pages** → Source: **Deploy from a branch** → Branch:
 - Repo công khai chỉ chứa code, **không chứa dữ liệu khách**. Dữ liệu nằm trong Supabase, chỉ người đã đăng nhập mới đọc được (Row Level Security).
 - Anon key được Supabase thiết kế để nằm ở trình duyệt, không phải bí mật. **Không bao giờ** dán `service_role` key vào đây.
 - Thêm/xoá nhân viên: Supabase → Authentication → Users.
+
+## Tự đồng bộ khách từ Pancake
+Workflow `.github/workflows/pancake-sync.yml` chạy khoảng 15 phút/lần: đọc khách để lại SĐT trên Pancake (48 giờ gần nhất), khách nào chưa có SĐT trong CRM thì tạo mới (tình trạng *Mới tiếp nhận*, hẹn gọi hôm nay) kèm một dòng nhật ký chăm sóc.
+
+Cài đặt: GitHub → Settings → Secrets and variables → Actions → New repository secret:
+- `SUPABASE_SERVICE_KEY`: Supabase → Project Settings → API Keys → khoá **secret** (sb_secret_… hoặc service_role). Không dán khoá này ở đâu khác.
+- `PANCAKE_PAGES`: mỗi trang một dòng dạng `page_id|page_access_token|Tên trang`. Token lấy ở Pancake → Cài đặt → Công cụ.
+- `CRM_DEFAULT_OWNER` (tuỳ chọn): người phụ trách mặc định, vd `Sake`.
+
+Chạy thử: tab Actions → *Đồng bộ khách từ Pancake* → Run workflow. Log chỉ in số lượng, không in tên hay SĐT khách.
