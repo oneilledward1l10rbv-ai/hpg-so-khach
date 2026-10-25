@@ -249,6 +249,8 @@ tfoot td{font-weight:700;border-top:1px solid var(--line-2);border-bottom:0;back
 
 /* ---------- chips ---------- */
 .pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;background:var(--idle-soft);color:var(--idle)}
+.pill.fresh{background:var(--neg-soft);color:var(--neg);font-weight:700;letter-spacing:.02em}
+.grp-h.fresh{color:var(--neg);background:var(--neg-soft)}
 .pill.st-new{background:var(--accent-soft);color:var(--accent)}
 .pill.st-wait{background:var(--warn-soft);color:var(--warn)}
 .pill.st-won{background:var(--pos-soft);color:var(--pos)}
@@ -402,6 +404,8 @@ code.k{font-family:var(--f-code);font-size:11.5px;background:var(--sunk);padding
 const STATUSES=["1. Mới tiếp nhận","2. Đã liên hệ","3. Đang tư vấn","4. Đã gửi báo giá","5. Chờ quyết định","6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành","9. Tạm dừng","10. Không chốt"];
 const SIGNED=new Set(["6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành"]);
 const CLOSED=new Set(["8. Hoàn thành","9. Tạm dừng","10. Không chốt"]);
+const isUncalled=c=>c&&c.status==="1. Mới tiếp nhận"&&!c.lastContact;
+const FRESH='<span class="pill fresh">Chưa gọi</span>';
 const OPEN_DEAL=s=>/^[1-5]\./.test(s||"");
 const MODELS=["Phòng khám chuyên khoa","Phòng khám đa khoa","Phòng khám thẩm mỹ","Bệnh viện thẩm mỹ","Spa / Thẩm mỹ viện","Nha khoa","Phòng chẩn trị YHCT","Phòng khám YHCT","Phòng khám da liễu","Bác sĩ cá nhân","Nhà đầu tư (chưa có cơ sở)","Khác"];
 const SERVICES=["Pháp lý - Thành lập cơ sở","Pháp lý - Giấy phép hoạt động","Pháp lý + Marketing","Bác sĩ đứng tên chuyên môn","Cố vấn pháp lý sau thành lập","Marketing Facebook","Marketing TikTok","Marketing FB + TikTok","Gói lẻ / Gói tuần Marketing","Kèm cặp / Cố vấn Marketing","Kế toán - Thuế","Khác"];
@@ -508,8 +512,8 @@ function workItems(owner){
   return items;
 }
 function taskGroups(owner){
-  const t=todayISO(),wk=addDays(t,7);const g={over:[],today:[],week:[],later:[],none:[]};
-  for(const it of workItems(owner)){const d=it.date;(!d?g.none:d<t?g.over:d===t?g.today:d<=wk?g.week:g.later).push(it)}
+  const t=todayISO(),wk=addDays(t,7);const g={fresh:[],over:[],today:[],week:[],later:[],none:[]};
+  for(const it of workItems(owner)){const d=it.date;if(it.kind==="follow"&&isUncalled(it.c)){g.fresh.push(it);continue}(!d?g.none:d<t?g.over:d===t?g.today:d<=wk?g.week:g.later).push(it)}
   const byD=(a,b)=>(a.date||"").localeCompare(b.date||"")||a.c.id.localeCompare(b.c.id);Object.values(g).forEach(a=>a.sort(byD));return g;
 }
 const periodLabel=()=>S.period==="all"?"toàn bộ thời gian":S.period.length===4?"năm "+S.period:"tháng "+S.period.slice(5)+"/"+S.period.slice(0,4);
@@ -527,7 +531,7 @@ function render(){
   if(S.setup){root.innerHTML=`<div class="page"><div class="card empty"><b>Chưa cấu hình cơ sở dữ liệu</b><span>Điền SUPABASE_URL và SUPABASE_ANON_KEY vào file config.js theo hướng dẫn trong README.</span></div></div>`;return}
   if(S.needLogin){renderLogin();return}
   if(!S.db){root.innerHTML=`<div class="page"><div class="empty"><b>Đang mở HPG CRM…</b></div></div>`;return}
-  const g=taskGroups("");const due=g.over.length+g.today.length;
+  const g=taskGroups("");const due=g.fresh.length+g.over.length+g.today.length;
   if(!$(".app")){root.innerHTML=`<div class="app"><aside class="side"><a class="logo" href="#" data-view="dashboard">${mark("")}<div><b>H&amp;P GROUP</b><span>CRM</span></div></a><nav class="nav" id="nav"></nav><div class="side-foot"><span class="who" id="who"></span><button type="button" id="btnLogout">Đăng xuất</button></div></aside><main class="main"><div class="page" id="page"></div></main></div>`}
   $("#nav").innerHTML=NAV.map(([grp,items])=>`<div class="grp">${grp}</div>`+items.map(([v,l,i])=>`<button type="button" data-view="${v}" ${S.view===v?'aria-current="page"':""}>${ico(i)}<span>${l}</span>${v==="tasks"&&due?`<span class="badge">${due}</span>`:""}</button>`).join("")).join("")+`<button type="button" class="m-only" id="btnLogoutM">Đăng xuất</button>`;
   $("#who").textContent=S.uid||"";
@@ -580,19 +584,19 @@ function vDashboard(){
   const signedN=cl.filter(c=>SIGNED.has(c.status)).length,decided=cl.filter(c=>SIGNED.has(c.status)||/^10\./.test(c.status||"")).length;
   const src={};cl.forEach(c=>{const k=c.source||"Chưa rõ";src[k]??={n:0,won:0,v:0};src[k].n++;if(SIGNED.has(c.status)){src[k].won++;src[k].v+=c.contractValue||0}});
   const ag=aggregate();const own={};cl.forEach(c=>{const k=c.owner||"Chưa phân công";own[k]??={n:0,won:0,v:0,thu:0,chi:0};own[k].n++;if(SIGNED.has(c.status)){own[k].won++;own[k].v+=c.contractValue||0}const p=ag.per[c.id];if(p){own[k].thu+=p.thu;own[k].chi+=p.chi+(p.tax||0)}});
-  const todo=[...g.over,...g.today].slice(0,7);const jr=journeyRows("").filter(r=>r.st.cur).slice(0,6);const noMoney=!S.entries.length;
+  const todo=[...g.fresh,...g.over,...g.today].slice(0,7);const jr=journeyRows("").filter(r=>r.st.cur).slice(0,6);const noMoney=!S.entries.length;
   return pageHead("Tổng quan",`Hôm nay ${dmy(todayISO())} · ${S.clients.size} khách trong hệ thống`,periodSelect()+btnEntry+btnClient)+`
   <section class="kpis">
     <div class="card kpi hl"><span class="l">Doanh thu tháng ${cur.slice(5)}</span><span class="v num">${fmtM(ms.thu)}</span><span class="s">${dRev==null?"Tháng trước chưa có thu":`So với tháng trước <span class="delta ${dRev>=0?"up":"dn"}">${dRev>=0?"+":""}${dRev}%</span>`}</span></div>
     <div class="card kpi"><span class="l">Lợi nhuận tháng ${cur.slice(5)}</span><span class="v num ${ms.profit<0?"neg":""}">${fmtM(ms.profit)}</span><span class="s">Thuế ${fmtM(ms.tax)} · chi ${fmtM(ms.chi)}</span></div>
     <div class="card kpi"><span class="l">Giá trị đang đàm phán</span><span class="v num">${fmtM(pipeVal)}</span><span class="s">${openDeals.length} khách đang tư vấn / báo giá</span></div>
     <div class="card kpi"><span class="l">Còn phải thu</span><span class="v num">${fmtM(oweSum)}</span><span class="s">${owe.length} hợp đồng chưa thu đủ</span></div>
-    <div class="card kpi ${g.over.length?"alert":""}"><span class="l">Việc quá hạn</span><span class="v num">${g.over.length}</span><span class="s">${g.today.length} việc hôm nay</span></div>
+    <div class="card kpi ${g.over.length?"alert":""}"><span class="l">Việc quá hạn</span><span class="v num">${g.over.length}</span><span class="s">${g.today.length} việc hôm nay${g.fresh.length?` · <b style="color:var(--neg)">${g.fresh.length} data mới chưa gọi</b>`:""}</span></div>
   </section>
   <div class="row r-21">
     <section class="card"><div class="card-h"><h2>Thu và chi theo tháng</h2><p>12 tháng gần nhất</p><div class="r legend"><span><i class="k s-thu"></i>Thu</span><span><i class="k s-chi"></i>Chi</span></div></div>
       <div class="card-b">${noMoney?emptyBox("ledger","Chưa có khoản thu chi","Ghi khoản đầu tiên, biểu đồ sẽ tự hiện.",`<button class="btn pri" type="button" data-act="add-entry">Ghi thu / chi</button>`):`<div class="chart-wrap">${chartMonthly(months,byM)}</div>`}</div></section>
-    <section class="card"><div class="card-h"><h2>Cần xử lý</h2><p>Quá hạn và hôm nay</p><div class="r"><button class="btn sm ghost" type="button" data-view="tasks">Xem tất cả</button></div></div>
+    <section class="card"><div class="card-h"><h2>Cần xử lý</h2><p>Data mới chưa gọi, quá hạn và hôm nay</p><div class="r"><button class="btn sm ghost" type="button" data-view="tasks">Xem tất cả</button></div></div>
       ${todo.length?`<div class="tasks" style="margin-top:10px">${todo.map(it=>taskRow(it,true)).join("")}</div>`:`<div class="card-b">${emptyBox("task","Không có việc gấp","Không có lịch liên hệ hay hạn hồ sơ nào quá hạn.")}</div>`}</section>
   </div>
   ${S.needJourney?"":`<section class="card"><div class="card-h"><h2>Hồ sơ đang triển khai</h2><p>Khách đã ký: đang ở bước nào, hạn khi nào</p><div class="r"><button class="btn sm ghost" type="button" data-view="journeys">Xem tất cả</button></div></div>
@@ -620,7 +624,7 @@ function vDashboard(){
 function taskRow(it,compact){
   const c=it.c,d=dueInfo(it.date),step=it.kind==="step";const js=step?jState(c):null;
   return `<div class="task"><span class="pri-dot ${priCls(c.priority)}" title="${esc(c.priority||"")}"></span>
-    <div class="t-main"><div><span class="code">${esc(c.id)}</span> <b data-client="${esc(c.id)}" style="cursor:pointer">${esc(c.contact||clientName(c.id))}</b>${!compact&&c.facility?` <span class="sub" style="display:inline">· ${esc(c.facility)}</span>`:""}</div>
+    <div class="t-main"><div><span class="code">${esc(c.id)}</span> <b data-client="${esc(c.id)}" style="cursor:pointer">${esc(c.contact||clientName(c.id))}</b>${it.kind==="follow"&&isUncalled(c)?" "+FRESH:""}${!compact&&c.facility?` <span class="sub" style="display:inline">· ${esc(c.facility)}</span>`:""}</div>
       <div class="t-what">${step?`<span class="tag-step">Hồ sơ</span>`:""}${esc(it.text)}</div>
       <div class="t-meta">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span>Chưa hẹn ngày</span>`}${c.owner?`<span>${esc(c.owner)}</span>`:""}${!compact?`<span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span>`:""}${step?`<span>Bước ${js.j.indexOf(it.step)+1}/${js.total}</span>`:""}${!compact&&c.phone?`<span class="num">${esc(c.phone)}</span>`:""}</div></div>
     <div class="t-act">${!S.canWrite?"":step?`<button class="btn sm" type="button" data-jtoggle="${esc(c.id)}|${esc(it.step.k)}">${compact?"Xong":"Đánh dấu xong"}</button>`:!S.needMigration?`<button class="btn sm" type="button" data-log="${esc(c.id)}">${compact?"Ghi":"Ghi chăm sóc"}</button>`:""}</div></div>`;
@@ -632,7 +636,7 @@ function vTasks(){
   const g=taskGroups(S.tOwner);const sec=(k,t,cls)=>g[k].length?`<div class="grp-h ${cls}">${t}<span class="n">${g[k].length}</span></div>${g[k].map(it=>taskRow(it,false)).join("")}`:"";
   const total=Object.values(g).reduce((a,x)=>a+x.length,0);
   return pageHead("Theo dõi khách hàng","Ai cần liên hệ, hồ sơ nào sắp đến hạn · việc hồ sơ gắn nhãn HỒ SƠ",ownerSel)+tabs+
-  `<section class="card">${total?`<div class="tasks">${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Chưa có việc nào","Lịch liên hệ khách và hạn các bước hồ sơ sẽ hiện ở đây.")}</section>`;
+  `<section class="card">${total?`<div class="tasks">${sec("fresh","Data mới — chưa gọi","fresh")}${sec("over","Quá hạn","over")}${sec("today","Hôm nay","today")}${sec("week","7 ngày tới","")}${sec("later","Sau đó","")}${sec("none","Chưa hẹn ngày","")}</div>`:emptyBox("task","Chưa có việc nào","Lịch liên hệ khách và hạn các bước hồ sơ sẽ hiện ở đây.")}</section>`;
 }
 
 /* ============ VIEW: Hành trình hồ sơ ============ */
@@ -666,25 +670,25 @@ function boardHtml(owner){
 }
 function kcard(c){const d=dueInfo(c.nextDate);const js=jState(c);const sub=esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:(c.service||c.model||""));
   if(js.total&&SIGNED.has(c.status)){const dd=dueInfo(js.cur?.due);return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${sub}</div>${progHtml(js)}<div class="k3"><span class="k2" style="white-space:normal">${js.cur?esc(js.cur.t):"Đã xong mọi bước"}</span>${dd?`<span class="due ${dd.cls}">${dd.txt}</span>`:""}</div></article>`}
-  return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${sub}</div><div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
+  return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span>${isUncalled(c)?FRESH:""}</div><div class="k2">${sub}</div><div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
 
 /* ============ VIEW: Khách hàng ============ */
 function vClients(){
   const at=allTime();const q=S.q.trim().toLowerCase();
   const num=c=>parseInt(String(c.id).replace(/\D/g,""),10)||0;const PR={"Nóng":0,"Ấm":1,"Lạnh":2};
   const sorters={new:(a,b)=>String(b.date||"").localeCompare(String(a.date||""))||num(b)-num(a),old:(a,b)=>String(a.date||"").localeCompare(String(b.date||""))||num(a)-num(b),pri:(a,b)=>(PR[a.priority]??3)-(PR[b.priority]??3)||String(b.date||"").localeCompare(String(a.date||""))||num(b)-num(a),next:(a,b)=>(a.nextDate||"9999").localeCompare(b.nextDate||"9999")||num(b)-num(a),val:(a,b)=>(b.contractValue||0)-(a.contractValue||0)||num(b)-num(a)};
-  const list=[...S.clients.values()].sort(sorters[S.cSort||"new"]).filter(c=>(!S.fStatus||(S.fStatus==="_open"?!CLOSED.has(c.status):S.fStatus==="_closed"?CLOSED.has(c.status):c.status===S.fStatus))&&(!S.fOwner||c.owner===S.fOwner)&&(!S.fPri||c.priority===S.fPri)&&(!S.fSvc||c.service===S.fSvc)&&(!q||[c.id,c.contact,c.facility,c.phone,c.zalo,c.service,c.model,c.address,c.note].join(" ").toLowerCase().includes(q)));
+  const list=[...S.clients.values()].sort(sorters[S.cSort||"new"]).filter(c=>(!S.fStatus||(S.fStatus==="_new"?isUncalled(c):S.fStatus==="_open"?!CLOSED.has(c.status):S.fStatus==="_closed"?CLOSED.has(c.status):c.status===S.fStatus))&&(!S.fOwner||c.owner===S.fOwner)&&(!S.fPri||c.priority===S.fPri)&&(!S.fSvc||c.service===S.fSvc)&&(!q||[c.id,c.contact,c.facility,c.phone,c.zalo,c.service,c.model,c.address,c.note].join(" ").toLowerCase().includes(q)));
   return pageHead("Hồ sơ khách hàng",`${S.clients.size} khách · bấm một dòng để mở hồ sơ`,btnClient)+
   `<section class="card"><div class="card-b" style="padding-bottom:0"><div class="filters">
     <input class="ctl grow" id="q" type="search" placeholder="Tìm tên, cơ sở, SĐT, địa chỉ, mã KH…" value="${esc(S.q)}">
-    <select class="ctl" id="fStatus"><option value="">Mọi tình trạng</option><option value="_open"${S.fStatus==="_open"?" selected":""}>Đang chăm sóc / triển khai</option><option value="_closed"${S.fStatus==="_closed"?" selected":""}>Đã kết thúc</option>${STATUSES.map(s=>`<option${s===S.fStatus?" selected":""}>${s}</option>`).join("")}</select>
+    <select class="ctl" id="fStatus"><option value="">Mọi tình trạng</option><option value="_new"${S.fStatus==="_new"?" selected":""}>Data mới — chưa gọi</option><option value="_open"${S.fStatus==="_open"?" selected":""}>Đang chăm sóc / triển khai</option><option value="_closed"${S.fStatus==="_closed"?" selected":""}>Đã kết thúc</option>${STATUSES.map(s=>`<option${s===S.fStatus?" selected":""}>${s}</option>`).join("")}</select>
     <select class="ctl" id="fSvc"><option value="">Mọi dịch vụ</option>${SERVICES.map(s=>`<option${s===S.fSvc?" selected":""}>${s}</option>`).join("")}</select>
     <select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>
     <select class="ctl" id="cSort" aria-label="Sắp xếp">${[["new","Mới nhất trước"],["old","Cũ nhất trước"],["pri","Ưu tiên: Nóng → Lạnh"],["next","Hẹn liên hệ gần nhất"],["val","Giá trị HĐ cao nhất"]].map(([k,l])=>`<option value="${k}"${(S.cSort||"new")===k?" selected":""}>${l}</option>`).join("")}</select>
     <select class="ctl" id="fPri"><option value="">Mọi mức ưu tiên</option>${PRIORITIES.map(o=>`<option${o===S.fPri?" selected":""}>${o}</option>`).join("")}</select>
   </div></div>
   ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:1180px"><thead><tr><th class="r" style="width:48px">STT</th><th>Tên KH / Tên công ty</th><th>Ngày nhận</th><th>Tình trạng</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn liên hệ</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
-  ${list.map((c,ix)=>{const v=at[c.id]||{thu:0,chi:0,tax:0};const p=profitOf(v);const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td class="r num" style="color:var(--muted)">${ix+1}</td><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span><span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span></div></div></td><td class="num">${dmy(c.date)||"—"}</td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="10" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
+  ${list.map((c,ix)=>{const v=at[c.id]||{thu:0,chi:0,tax:0};const p=profitOf(v);const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td class="r num" style="color:var(--muted)">${ix+1}</td><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span>${isUncalled(c)?" "+FRESH:""}<span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span></div></div></td><td class="num">${dmy(c.date)||"—"}</td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="10" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
   </tbody></table></div>`:emptyBox("users","Chưa có khách nào","Thêm khách bằng tay hoặc nhập file CSV từ Google Sheets ở mục Nhập / xuất dữ liệu.",btnClient)}</section>`;
 }
 
@@ -813,7 +817,7 @@ function clientDetail(id){
   const owe=SIGNED.has(c.status)?Math.max(0,(c.contractValue||0)-thu):null;const d=dueInfo(c.nextDate);
   const evs=[...acts.map(a=>({k:"a",date:a.date,t:a.createdAt||0,a})),...ent.map(e=>({k:"e",date:e.date,t:e.createdAt||0,e}))].sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.t-x.t);
   const info=[["Vai trò",c.role],["Điện thoại",c.phone],["Zalo / Email",c.zalo],["Mô hình",c.model],["Dịch vụ",c.service],["Khu vực",[c.region,c.address].filter(Boolean).join(" · ")],["Nguồn",c.source],["Phụ trách",c.owner],["Tiếp nhận",dmy(c.date)],["Ngày ký HĐ",dmy(c.signedDate)],["Liên hệ gần nhất",dmy(c.lastContact)]].filter(x=>x[1]);
-  openModal(`<div class="sheet-h"><h3><span class="pri-dot ${priCls(c.priority)}"></span>${esc(c.contact||c.id)} <span class="code">${esc(c.id)}</span><span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span></h3>${S.canWrite?`<button class="btn sm" type="button" data-edit-client="${esc(id)}">Sửa hồ sơ</button>`:""}<button class="btn sm ghost" type="button" data-close>Đóng</button></div>
+  openModal(`<div class="sheet-h"><h3><span class="pri-dot ${priCls(c.priority)}"></span>${esc(c.contact||c.id)} <span class="code">${esc(c.id)}</span>${isUncalled(c)?FRESH:""}<span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span></h3>${S.canWrite?`<button class="btn sm" type="button" data-edit-client="${esc(id)}">Sửa hồ sơ</button>`:""}<button class="btn sm ghost" type="button" data-close>Đóng</button></div>
   <div class="sheet-b"><div class="detail">
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
       ${c.facility?`<div style="font-weight:600;font-size:15px">${esc(c.facility)}</div>`:""}
