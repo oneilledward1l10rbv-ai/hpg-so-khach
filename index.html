@@ -416,11 +416,12 @@ code.k{font-family:var(--f-code);font-size:11.5px;background:var(--sunk);padding
 const STATUSES=["1. Mới tiếp nhận","2. Đã liên hệ","3. Đang tư vấn","4. Đã gửi báo giá","5. Chờ quyết định","6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành","9. Tạm dừng","10. Không chốt"];
 const SIGNED=new Set(["6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành"]);
 const CLOSED=new Set(["8. Hoàn thành","9. Tạm dừng","10. Không chốt"]);
-const CARE_TAGS=["Đã gọi","Không nghe máy","Khách hẹn gọi lại","Thuê bao / sai số","Đã kết nối Zalo","Đã gửi hồ sơ mẫu","Đã gửi báo giá","Đã hẹn gặp","Đã gặp trực tiếp","Chờ phản hồi","Khách suy nghĩ thêm"];
+const UNC="Chưa gọi";
+const CARE_TAGS=[UNC,"Đã gọi","Không nghe máy","Khách hẹn gọi lại","Thuê bao / sai số","Đã kết nối Zalo","Đã gửi hồ sơ mẫu","Đã gửi báo giá","Đã hẹn gặp","Đã gặp trực tiếp","Chờ phản hồi","Khách suy nghĩ thêm"];
 const tagCls=t=>/Không nghe|sai số|suy nghĩ|Chờ|hẹn gọi lại/.test(t)?"t-warn":/hẹn gặp|Đã gặp/.test(t)?"t-pos":"";
 const tagsOf=c=>Array.isArray(c&&c.tags)?c.tags:[];
-const tagHtml=(c,max)=>{const t=tagsOf(c);if(!t.length)return "";const sh=max?t.slice(-max):t;return `<div class="tags">${sh.map(x=>`<span class="tag ${tagCls(x)}">${esc(x)}</span>`).join("")}${max&&t.length>max?`<span class="tag">+${t.length-max}</span>`:""}</div>`};
-const isUncalled=c=>c&&c.status==="1. Mới tiếp nhận"&&!c.lastContact&&!tagsOf(c).length;
+const tagHtml=(c,max)=>{const t=tagsOf(c).filter(x=>x!==UNC);if(!t.length)return "";const sh=max?t.slice(-max):t;return `<div class="tags">${sh.map(x=>`<span class="tag ${tagCls(x)}">${esc(x)}</span>`).join("")}${max&&t.length>max?`<span class="tag">+${t.length-max}</span>`:""}</div>`};
+const isUncalled=c=>c&&(tagsOf(c).includes(UNC)||(c.status==="1. Mới tiếp nhận"&&!c.lastContact&&!tagsOf(c).length));
 const FRESH='<span class="pill fresh">Chưa gọi</span>';
 const OPEN_DEAL=s=>/^[1-5]\./.test(s||"");
 const MODELS=["Phòng khám chuyên khoa","Phòng khám đa khoa","Phòng khám thẩm mỹ","Bệnh viện thẩm mỹ","Spa / Thẩm mỹ viện","Nha khoa","Phòng chẩn trị YHCT","Phòng khám YHCT","Phòng khám da liễu","Bác sĩ cá nhân","Nhà đầu tư (chưa có cơ sở)","Khác"];
@@ -701,10 +702,10 @@ function vClients(){
     <select class="ctl" id="fSvc"><option value="">Mọi dịch vụ</option>${SERVICES.map(s=>`<option${s===S.fSvc?" selected":""}>${s}</option>`).join("")}</select>
     <select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>
     <select class="ctl" id="cSort" aria-label="Sắp xếp">${[["new","Mới nhất trước"],["old","Cũ nhất trước"],["pri","Ưu tiên: Nóng → Lạnh"],["next","Hẹn liên hệ gần nhất"],["val","Giá trị HĐ cao nhất"]].map(([k,l])=>`<option value="${k}"${(S.cSort||"new")===k?" selected":""}>${l}</option>`).join("")}</select>
-    <select class="ctl" id="fTag" aria-label="Nhãn chăm sóc"><option value="">Mọi nhãn chăm sóc</option><option value="_fresh"${S.fTag==="_fresh"?" selected":""}>Chưa gọi</option>${CARE_TAGS.map(t=>`<option${S.fTag===t?" selected":""}>${esc(t)}</option>`).join("")}</select>
+    <select class="ctl" id="fTag" aria-label="Nhãn chăm sóc"><option value="">Mọi nhãn chăm sóc</option><option value="_fresh"${S.fTag==="_fresh"||S.fTag===UNC?" selected":""}>Chưa gọi</option>${CARE_TAGS.filter(t=>t!==UNC).map(t=>`<option${S.fTag===t?" selected":""}>${esc(t)}</option>`).join("")}</select>
     <select class="ctl" id="fPri"><option value="">Mọi mức ưu tiên</option>${PRIORITIES.map(o=>`<option${o===S.fPri?" selected":""}>${o}</option>`).join("")}</select>
   </div></div>
-  ${S.canWrite&&!S.needTags&&list.length?`<div class="card-b" style="padding-top:12px;padding-bottom:0"><div class="bulk">${S.fTag==="_fresh"?`<b style="color:var(--neg)">${list.length} khách chưa gọi.</b> Đã gọi rồi thì gắn nhãn hàng loạt:`:`Gắn nhãn cho <b>${list.length}</b> khách đang hiển thị:`}<select class="ctl" id="bulkTag">${CARE_TAGS.map(t=>`<option>${esc(t)}</option>`).join("")}</select><button class="btn sm" type="button" data-bulk="${list.map(c=>c.id).join(",")}">Gắn nhãn</button><span class="sub" style="display:inline">Hoặc bấm “+ Nhãn” ở từng dòng.</span></div></div>`:""}
+  ${S.canWrite&&!S.needTags&&list.length?`<div class="card-b" style="padding-top:12px;padding-bottom:0"><div class="bulk">${S.fTag==="_fresh"?`<b style="color:var(--neg)">${list.length} khách chưa gọi.</b> Đã gọi rồi thì gắn nhãn hàng loạt:`:`Gắn nhãn cho <b>${list.length}</b> khách đang hiển thị:`}<select class="ctl" id="bulkTag">${CARE_TAGS.map(t=>`<option${t==="Đã gọi"?" selected":""}>${esc(t)}</option>`).join("")}</select><button class="btn sm" type="button" data-bulk="${list.map(c=>c.id).join(",")}">Gắn nhãn</button><span class="sub" style="display:inline">Hoặc bấm “+ Nhãn” ở từng dòng.</span></div></div>`:""}
   ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:1380px"><thead><tr><th class="r" style="width:48px">STT</th><th>Tên KH / Tên công ty</th><th>Ngày nhận</th><th>Tình trạng</th><th>Nhãn chăm sóc</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn liên hệ</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
   ${list.map((c,ix)=>{const v=at[c.id]||{thu:0,chi:0,tax:0};const p=profitOf(v);const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td class="r num" style="color:var(--muted)">${ix+1}</td><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span>${isUncalled(c)?" "+FRESH:""}<span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span></div></div></td><td class="num">${dmy(c.date)||"—"}</td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td class="tagcell">${S.needTags?"":`${tagHtml(c)}${S.canWrite?`<button class="btn sm ghost tagbtn" type="button" data-tagpop="${esc(c.id)}">+ Nhãn</button>`:""}`}</td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="11" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
   </tbody></table></div>`:emptyBox("users","Chưa có khách nào","Thêm khách bằng tay hoặc nhập file CSV từ Google Sheets ở mục Nhập / xuất dữ liệu.",btnClient)}</section>`;
@@ -992,17 +993,17 @@ async function bulkTag(btn){
   const ids=btn.dataset.bulk.split(",").filter(Boolean);const tag=val("bulkTag");if(!ids.length||!tag)return;
   if(!btn.classList.contains("arm")){btn.classList.add("arm","pri");btn.dataset.label=btn.textContent;btn.textContent=`Bấm lần nữa: gắn “${tag}” cho ${ids.length} khách`;setTimeout(()=>{if(btn.isConnected){btn.classList.remove("arm","pri");btn.textContent=btn.dataset.label}},4000);return}
   btn.disabled=true;btn.textContent="Đang gắn…";let n=0;S.quiet=true;
-  try{for(const id of ids){const c=S.clients.get(id);if(!c||tagsOf(c).includes(tag))continue;const patch={tags:[...tagsOf(c),tag],updated_at:Date.now()};
-      if(!c.lastContact&&tag!=="Thuê bao / sai số")patch.last_contact=todayISO();if(c.status==="1. Mới tiếp nhận")patch.status="2. Đã liên hệ";if(/hẹn gặp|Đã gặp/.test(tag)&&/^[12]\./.test(patch.status||c.status||""))patch.status="3. Đang tư vấn";
+  try{for(const id of ids){const c=S.clients.get(id);if(!c)continue;const cur=tagsOf(c);if(cur.includes(tag)&&(tag===UNC||!cur.includes(UNC)))continue;const patch={tags:tag===UNC?[...cur.filter(x=>x!=="Đã gọi"),UNC]:[...cur.filter(x=>x!==UNC&&x!==tag),tag],updated_at:Date.now()};
+      if(tag!==UNC){if(!c.lastContact&&tag!=="Thuê bao / sai số")patch.last_contact=todayISO();if(c.status==="1. Mới tiếp nhận")patch.status="2. Đã liên hệ";if(/hẹn gặp|Đã gặp/.test(tag)&&/^[12]\./.test(patch.status||c.status||""))patch.status="3. Đang tư vấn";}
       const {error}=await sb.from("clients").update(patch).eq("id",id);if(error)throw dbErr(error);n++}}
   catch(e){writeErr(e)}finally{S.quiet=false;await reload()}
   toast(`Đã gắn nhãn “${tag}” cho ${n} khách`);
 }
 async function toggleTag(key){
   const i=key.indexOf("|");const id=key.slice(0,i),tag=key.slice(i+1);const c=S.clients.get(id);if(!c)return;
-  const t=tagsOf(c).slice();const on=t.includes(tag);const tags=on?t.filter(x=>x!==tag):[...t,tag];
+  const t=tagsOf(c).slice();const on=t.includes(tag);const tags=on?t.filter(x=>x!==tag):tag===UNC?[...t.filter(x=>x!=="Đã gọi"),UNC]:[...t.filter(x=>x!==UNC),tag];
   const patch={tags,updated_at:Date.now()};
-  if(!on){if(!c.lastContact&&tag!=="Thuê bao / sai số")patch.last_contact=todayISO();if(c.status==="1. Mới tiếp nhận")patch.status="2. Đã liên hệ";if(/hẹn gặp|Đã gặp/.test(tag)&&/^[12]\./.test(patch.status||c.status||""))patch.status="3. Đang tư vấn";}
+  if(!on&&tag!==UNC){if(!c.lastContact&&tag!=="Thuê bao / sai số")patch.last_contact=todayISO();if(c.status==="1. Mới tiếp nhận")patch.status="2. Đã liên hệ";if(/hẹn gặp|Đã gặp/.test(tag)&&/^[12]\./.test(patch.status||c.status||""))patch.status="3. Đang tư vấn";}
   c.tags=tags;if(patch.last_contact)c.lastContact=patch.last_contact;if(patch.status)c.status=patch.status;
   const ov=$(".overlay"),top=ov?ov.scrollTop:0;if(ov){clientDetail(id);const o2=$(".overlay");if(o2)o2.scrollTop=top;closeModal.dirty=true}else{const sy=scrollY;render();scrollTo(0,sy);if(S.tagPop===id)openTagPop(id)}
   S.quiet=true;try{const {error}=await sb.from("clients").update(patch).eq("id",id);if(error)throw dbErr(error);toast(on?`Đã bỏ nhãn “${tag}”`:`Đã gắn nhãn “${tag}”${patch.status?" · "+patch.status:""}`)}catch(e){writeErr(e)}finally{S.quiet=false}
