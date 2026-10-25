@@ -251,6 +251,8 @@ tfoot td{font-weight:700;border-top:1px solid var(--line-2);border-bottom:0;back
 .pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;background:var(--idle-soft);color:var(--idle)}
 .tag{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
 .tag.t-warn{background:var(--warn-soft);color:var(--warn)}.tag.t-pos{background:var(--pos-soft);color:var(--pos)}
+.bulk{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.bulk .ctl{width:auto}
 .tagpop{position:fixed;z-index:50;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;box-shadow:0 10px 30px rgba(8,16,32,.18);padding:10px;width:300px;max-width:calc(100vw - 24px);display:flex;flex-direction:column;gap:8px}
 .tagpop .tp-h{font-size:12px;font-weight:600;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
 .tagcell{min-width:200px}
@@ -702,6 +704,7 @@ function vClients(){
     <select class="ctl" id="fTag" aria-label="Nhãn chăm sóc"><option value="">Mọi nhãn chăm sóc</option><option value="_fresh"${S.fTag==="_fresh"?" selected":""}>Chưa gọi</option>${CARE_TAGS.map(t=>`<option${S.fTag===t?" selected":""}>${esc(t)}</option>`).join("")}</select>
     <select class="ctl" id="fPri"><option value="">Mọi mức ưu tiên</option>${PRIORITIES.map(o=>`<option${o===S.fPri?" selected":""}>${o}</option>`).join("")}</select>
   </div></div>
+  ${S.canWrite&&!S.needTags&&list.length?`<div class="card-b" style="padding-top:12px;padding-bottom:0"><div class="bulk">${S.fTag==="_fresh"?`<b style="color:var(--neg)">${list.length} khách chưa gọi.</b> Đã gọi rồi thì gắn nhãn hàng loạt:`:`Gắn nhãn cho <b>${list.length}</b> khách đang hiển thị:`}<select class="ctl" id="bulkTag">${CARE_TAGS.map(t=>`<option>${esc(t)}</option>`).join("")}</select><button class="btn sm" type="button" data-bulk="${list.map(c=>c.id).join(",")}">Gắn nhãn</button><span class="sub" style="display:inline">Hoặc bấm “+ Nhãn” ở từng dòng.</span></div></div>`:""}
   ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:1380px"><thead><tr><th class="r" style="width:48px">STT</th><th>Tên KH / Tên công ty</th><th>Ngày nhận</th><th>Tình trạng</th><th>Nhãn chăm sóc</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn liên hệ</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
   ${list.map((c,ix)=>{const v=at[c.id]||{thu:0,chi:0,tax:0};const p=profitOf(v);const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td class="r num" style="color:var(--muted)">${ix+1}</td><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span>${isUncalled(c)?" "+FRESH:""}<span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span></div></div></td><td class="num">${dmy(c.date)||"—"}</td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td class="tagcell">${S.needTags?"":`${tagHtml(c)}${S.canWrite?`<button class="btn sm ghost tagbtn" type="button" data-tagpop="${esc(c.id)}">+ Nhãn</button>`:""}`}</td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="11" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
   </tbody></table></div>`:emptyBox("users","Chưa có khách nào","Thêm khách bằng tay hoặc nhập file CSV từ Google Sheets ở mục Nhập / xuất dữ liệu.",btnClient)}</section>`;
@@ -985,6 +988,16 @@ function openTagPop(id){
   let x=Math.min(r.left,innerWidth-w-12),y=r.bottom+6;if(y+h>innerHeight-12)y=Math.max(12,r.top-h-6);el.style.left=Math.max(12,x)+"px";el.style.top=y+"px";
 }
 function closeTagPop(){S.tagPop=null;const el=$("#tagpop");if(el)el.hidden=true}
+async function bulkTag(btn){
+  const ids=btn.dataset.bulk.split(",").filter(Boolean);const tag=val("bulkTag");if(!ids.length||!tag)return;
+  if(!btn.classList.contains("arm")){btn.classList.add("arm","pri");btn.dataset.label=btn.textContent;btn.textContent=`Bấm lần nữa: gắn “${tag}” cho ${ids.length} khách`;setTimeout(()=>{if(btn.isConnected){btn.classList.remove("arm","pri");btn.textContent=btn.dataset.label}},4000);return}
+  btn.disabled=true;btn.textContent="Đang gắn…";let n=0;S.quiet=true;
+  try{for(const id of ids){const c=S.clients.get(id);if(!c||tagsOf(c).includes(tag))continue;const patch={tags:[...tagsOf(c),tag],updated_at:Date.now()};
+      if(!c.lastContact&&tag!=="Thuê bao / sai số")patch.last_contact=todayISO();if(c.status==="1. Mới tiếp nhận")patch.status="2. Đã liên hệ";if(/hẹn gặp|Đã gặp/.test(tag)&&/^[12]\./.test(patch.status||c.status||""))patch.status="3. Đang tư vấn";
+      const {error}=await sb.from("clients").update(patch).eq("id",id);if(error)throw dbErr(error);n++}}
+  catch(e){writeErr(e)}finally{S.quiet=false;await reload()}
+  toast(`Đã gắn nhãn “${tag}” cho ${n} khách`);
+}
 async function toggleTag(key){
   const i=key.indexOf("|");const id=key.slice(0,i),tag=key.slice(i+1);const c=S.clients.get(id);if(!c)return;
   const t=tagsOf(c).slice();const on=t.includes(tag);const tags=on?t.filter(x=>x!==tag):[...t,tag];
@@ -1270,6 +1283,7 @@ document.addEventListener("click",e=>{
   const ded=t.closest("[data-dedit]");if(ded){docEditForm(ded.dataset.dedit);return}
   const ddx=t.closest("[data-ddel]");if(ddx){deleteDoc(ddx.dataset.ddel,ddx);return}
   const dct=t.closest("[data-dcat]");if(dct){S.dCat=dct.dataset.dcat;render();return}
+  const bk=t.closest("[data-bulk]");if(bk){bulkTag(bk);return}
   const tg=t.closest("[data-tag]");if(tg){toggleTag(tg.dataset.tag);return}
   const jt=t.closest("[data-jtoggle]");if(jt){jUpdate(jt.dataset.jtoggle,(j,i)=>{const d=j[i].st==="done";j[i].st=d?"todo":"done";j[i].done=d?"":todayISO()});return}
   const jd=t.closest("[data-jdel]");if(jd){jUpdate(jd.dataset.jdel,(j,i)=>j.splice(i,1));return}
