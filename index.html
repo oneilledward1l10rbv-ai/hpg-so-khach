@@ -249,6 +249,12 @@ tfoot td{font-weight:700;border-top:1px solid var(--line-2);border-bottom:0;back
 
 /* ---------- chips ---------- */
 .pill{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;background:var(--idle-soft);color:var(--idle)}
+.tag{display:inline-flex;align-items:center;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:500;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.tag.t-warn{background:var(--warn-soft);color:var(--warn)}.tag.t-pos{background:var(--pos-soft);color:var(--pos)}
+.tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px}
+.tagbox{display:flex;gap:6px;flex-wrap:wrap}
+.tagbox .chip{font-size:12.5px;padding:4px 10px}
+.tagbox .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .pill.fresh{background:var(--neg-soft);color:var(--neg);font-weight:700;letter-spacing:.02em}
 .grp-h.fresh{color:var(--neg);background:var(--neg-soft)}
 .pill.st-new{background:var(--accent-soft);color:var(--accent)}
@@ -404,7 +410,11 @@ code.k{font-family:var(--f-code);font-size:11.5px;background:var(--sunk);padding
 const STATUSES=["1. Mới tiếp nhận","2. Đã liên hệ","3. Đang tư vấn","4. Đã gửi báo giá","5. Chờ quyết định","6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành","9. Tạm dừng","10. Không chốt"];
 const SIGNED=new Set(["6. Đã ký hợp đồng","7. Đang triển khai","8. Hoàn thành"]);
 const CLOSED=new Set(["8. Hoàn thành","9. Tạm dừng","10. Không chốt"]);
-const isUncalled=c=>c&&c.status==="1. Mới tiếp nhận"&&!c.lastContact;
+const CARE_TAGS=["Đã gọi","Không nghe máy","Thuê bao / sai số","Đã kết nối Zalo","Đã gửi báo giá","Đã hẹn gặp","Đã gặp trực tiếp","Chờ phản hồi","Khách suy nghĩ thêm"];
+const tagCls=t=>/Không nghe|sai số|suy nghĩ|Chờ/.test(t)?"t-warn":/hẹn gặp|Đã gặp/.test(t)?"t-pos":"";
+const tagsOf=c=>Array.isArray(c&&c.tags)?c.tags:[];
+const tagHtml=(c,max)=>{const t=tagsOf(c);if(!t.length)return "";const sh=max?t.slice(-max):t;return `<div class="tags">${sh.map(x=>`<span class="tag ${tagCls(x)}">${esc(x)}</span>`).join("")}${max&&t.length>max?`<span class="tag">+${t.length-max}</span>`:""}</div>`};
+const isUncalled=c=>c&&c.status==="1. Mới tiếp nhận"&&!c.lastContact&&!tagsOf(c).length;
 const FRESH='<span class="pill fresh">Chưa gọi</span>';
 const OPEN_DEAL=s=>/^[1-5]\./.test(s||"");
 const MODELS=["Phòng khám chuyên khoa","Phòng khám đa khoa","Phòng khám thẩm mỹ","Bệnh viện thẩm mỹ","Spa / Thẩm mỹ viện","Nha khoa","Phòng chẩn trị YHCT","Phòng khám YHCT","Phòng khám da liễu","Bác sĩ cá nhân","Nhà đầu tư (chưa có cơ sở)","Khác"];
@@ -535,7 +545,7 @@ function render(){
   if(!$(".app")){root.innerHTML=`<div class="app"><aside class="side"><a class="logo" href="#" data-view="dashboard">${mark("")}<div><b>H&amp;P GROUP</b><span>CRM</span></div></a><nav class="nav" id="nav"></nav><div class="side-foot"><span class="who" id="who"></span><button type="button" id="btnLogout">Đăng xuất</button></div></aside><main class="main"><div class="page" id="page"></div></main></div>`}
   $("#nav").innerHTML=NAV.map(([grp,items])=>`<div class="grp">${grp}</div>`+items.map(([v,l,i])=>`<button type="button" data-view="${v}" ${S.view===v?'aria-current="page"':""}>${ico(i)}<span>${l}</span>${v==="tasks"&&due?`<span class="badge">${due}</span>`:""}</button>`).join("")).join("")+`<button type="button" class="m-only" id="btnLogoutM">Đăng xuất</button>`;
   $("#who").textContent=S.uid||"";
-  const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy lần lượt <code class="k">supabase/migration-2.sql</code> và <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:S.needFinance&&!S.needMigration?`<div class="banner"><b>Cần nâng cấp Sổ thu chi.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-5.sql</code> để lưu hình thức thanh toán, đợt và thuế.</div>`:S.needJourney?`<div class="banner"><b>Cần nâng cấp để bật Hành trình hồ sơ.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:"";
+  const banner=S.needMigration?`<div class="banner"><b>Cần nâng cấp cơ sở dữ liệu.</b> Mở Supabase → SQL Editor, chạy lần lượt <code class="k">supabase/migration-2.sql</code> và <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:S.needTags&&!S.needMigration?`<div class="banner"><b>Cần nâng cấp để bật Nhãn chăm sóc.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-7.sql</code>.</div>`:S.needFinance&&!S.needMigration?`<div class="banner"><b>Cần nâng cấp Sổ thu chi.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-5.sql</code> để lưu hình thức thanh toán, đợt và thuế.</div>`:S.needJourney?`<div class="banner"><b>Cần nâng cấp để bật Hành trình hồ sơ.</b> Mở Supabase → SQL Editor, chạy file <code class="k">supabase/migration-3.sql</code> trong kho GitHub.</div>`:"";
   setTimeout(fillThumbs,0);
   $("#page").innerHTML=banner+({dashboard:vDashboard,tasks:vTasks,journeys:vJourneys,docs:vDocs,pipeline:()=>{S.view="tasks";S.tTab="board";return vTasks()},clients:vClients,ledger:vLedger,reports:vReports,io:vIO}[S.view]||vDashboard)();
 }
@@ -625,7 +635,7 @@ function taskRow(it,compact){
   const c=it.c,d=dueInfo(it.date),step=it.kind==="step";const js=step?jState(c):null;
   return `<div class="task"><span class="pri-dot ${priCls(c.priority)}" title="${esc(c.priority||"")}"></span>
     <div class="t-main"><div><span class="code">${esc(c.id)}</span> <b data-client="${esc(c.id)}" style="cursor:pointer">${esc(c.contact||clientName(c.id))}</b>${it.kind==="follow"&&isUncalled(c)?" "+FRESH:""}${!compact&&c.facility?` <span class="sub" style="display:inline">· ${esc(c.facility)}</span>`:""}</div>
-      <div class="t-what">${step?`<span class="tag-step">Hồ sơ</span>`:""}${esc(it.text)}</div>
+      ${tagHtml(c,3)}<div class="t-what">${step?`<span class="tag-step">Hồ sơ</span>`:""}${esc(it.text)}</div>
       <div class="t-meta">${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span>Chưa hẹn ngày</span>`}${c.owner?`<span>${esc(c.owner)}</span>`:""}${!compact?`<span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span>`:""}${step?`<span>Bước ${js.j.indexOf(it.step)+1}/${js.total}</span>`:""}${!compact&&c.phone?`<span class="num">${esc(c.phone)}</span>`:""}</div></div>
     <div class="t-act">${!S.canWrite?"":step?`<button class="btn sm" type="button" data-jtoggle="${esc(c.id)}|${esc(it.step.k)}">${compact?"Xong":"Đánh dấu xong"}</button>`:!S.needMigration?`<button class="btn sm" type="button" data-log="${esc(c.id)}">${compact?"Ghi":"Ghi chăm sóc"}</button>`:""}</div></div>`;
 }
@@ -670,14 +680,14 @@ function boardHtml(owner){
 }
 function kcard(c){const d=dueInfo(c.nextDate);const js=jState(c);const sub=esc(c.facility&&!/chưa có tên/i.test(c.facility)?c.facility:(c.service||c.model||""));
   if(js.total&&SIGNED.has(c.status)){const dd=dueInfo(js.cur?.due);return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span></div><div class="k2">${sub}</div>${progHtml(js)}<div class="k3"><span class="k2" style="white-space:normal">${js.cur?esc(js.cur.t):"Đã xong mọi bước"}</span>${dd?`<span class="due ${dd.cls}">${dd.txt}</span>`:""}</div></article>`}
-  return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span>${isUncalled(c)?FRESH:""}</div><div class="k2">${sub}</div><div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
+  return `<article class="kcard" draggable="${S.canWrite}" data-card="${esc(c.id)}" data-client="${esc(c.id)}"><div class="k1"><span class="pri-dot ${priCls(c.priority)}"></span><span>${esc(c.contact||c.id)}</span>${isUncalled(c)?FRESH:""}</div><div class="k2">${sub}</div>${tagHtml(c,2)}<div class="k3"><b class="num">${c.contractValue?fmtM(c.contractValue):"<span class='sub' style='display:inline'>Chưa báo giá</span>"}</b>${d?`<span class="due ${d.cls}">${d.txt}</span>`:`<span class="code">${esc(c.id)}</span>`}</div></article>`}
 
 /* ============ VIEW: Khách hàng ============ */
 function vClients(){
   const at=allTime();const q=S.q.trim().toLowerCase();
   const num=c=>parseInt(String(c.id).replace(/\D/g,""),10)||0;const PR={"Nóng":0,"Ấm":1,"Lạnh":2};
   const sorters={new:(a,b)=>String(b.date||"").localeCompare(String(a.date||""))||num(b)-num(a),old:(a,b)=>String(a.date||"").localeCompare(String(b.date||""))||num(a)-num(b),pri:(a,b)=>(PR[a.priority]??3)-(PR[b.priority]??3)||String(b.date||"").localeCompare(String(a.date||""))||num(b)-num(a),next:(a,b)=>(a.nextDate||"9999").localeCompare(b.nextDate||"9999")||num(b)-num(a),val:(a,b)=>(b.contractValue||0)-(a.contractValue||0)||num(b)-num(a)};
-  const list=[...S.clients.values()].sort(sorters[S.cSort||"new"]).filter(c=>(!S.fStatus||(S.fStatus==="_new"?isUncalled(c):S.fStatus==="_open"?!CLOSED.has(c.status):S.fStatus==="_closed"?CLOSED.has(c.status):c.status===S.fStatus))&&(!S.fOwner||c.owner===S.fOwner)&&(!S.fPri||c.priority===S.fPri)&&(!S.fSvc||c.service===S.fSvc)&&(!q||[c.id,c.contact,c.facility,c.phone,c.zalo,c.service,c.model,c.address,c.note].join(" ").toLowerCase().includes(q)));
+  const list=[...S.clients.values()].sort(sorters[S.cSort||"new"]).filter(c=>(!S.fStatus||(S.fStatus==="_new"?isUncalled(c):S.fStatus==="_open"?!CLOSED.has(c.status):S.fStatus==="_closed"?CLOSED.has(c.status):c.status===S.fStatus))&&(!S.fOwner||c.owner===S.fOwner)&&(!S.fPri||c.priority===S.fPri)&&(!S.fTag||(S.fTag==="_fresh"?isUncalled(c):tagsOf(c).includes(S.fTag)))&&(!S.fSvc||c.service===S.fSvc)&&(!q||[c.id,c.contact,c.facility,c.phone,c.zalo,c.service,c.model,c.address,c.note].join(" ").toLowerCase().includes(q)));
   return pageHead("Hồ sơ khách hàng",`${S.clients.size} khách · bấm một dòng để mở hồ sơ`,btnClient)+
   `<section class="card"><div class="card-b" style="padding-bottom:0"><div class="filters">
     <input class="ctl grow" id="q" type="search" placeholder="Tìm tên, cơ sở, SĐT, địa chỉ, mã KH…" value="${esc(S.q)}">
@@ -685,10 +695,11 @@ function vClients(){
     <select class="ctl" id="fSvc"><option value="">Mọi dịch vụ</option>${SERVICES.map(s=>`<option${s===S.fSvc?" selected":""}>${s}</option>`).join("")}</select>
     <select class="ctl" id="fOwner"><option value="">Mọi người phụ trách</option>${ownerList().map(o=>`<option${o===S.fOwner?" selected":""}>${o}</option>`).join("")}</select>
     <select class="ctl" id="cSort" aria-label="Sắp xếp">${[["new","Mới nhất trước"],["old","Cũ nhất trước"],["pri","Ưu tiên: Nóng → Lạnh"],["next","Hẹn liên hệ gần nhất"],["val","Giá trị HĐ cao nhất"]].map(([k,l])=>`<option value="${k}"${(S.cSort||"new")===k?" selected":""}>${l}</option>`).join("")}</select>
+    <select class="ctl" id="fTag" aria-label="Nhãn chăm sóc"><option value="">Mọi nhãn chăm sóc</option><option value="_fresh"${S.fTag==="_fresh"?" selected":""}>Chưa gọi</option>${CARE_TAGS.map(t=>`<option${S.fTag===t?" selected":""}>${esc(t)}</option>`).join("")}</select>
     <select class="ctl" id="fPri"><option value="">Mọi mức ưu tiên</option>${PRIORITIES.map(o=>`<option${o===S.fPri?" selected":""}>${o}</option>`).join("")}</select>
   </div></div>
   ${S.clients.size?`<div class="tbl-wrap" style="margin-top:14px"><table style="min-width:1180px"><thead><tr><th class="r" style="width:48px">STT</th><th>Tên KH / Tên công ty</th><th>Ngày nhận</th><th>Tình trạng</th><th>Dịch vụ</th><th>Phụ trách</th><th>Hẹn liên hệ</th><th class="r">Giá trị HĐ</th><th class="r">Đã thu</th><th class="r">Lợi nhuận</th></tr></thead><tbody>
-  ${list.map((c,ix)=>{const v=at[c.id]||{thu:0,chi:0,tax:0};const p=profitOf(v);const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td class="r num" style="color:var(--muted)">${ix+1}</td><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span>${isUncalled(c)?" "+FRESH:""}<span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span></div></div></td><td class="num">${dmy(c.date)||"—"}</td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="10" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
+  ${list.map((c,ix)=>{const v=at[c.id]||{thu:0,chi:0,tax:0};const p=profitOf(v);const d=dueInfo(c.nextDate);return `<tr class="click" data-client="${esc(c.id)}"><td class="r num" style="color:var(--muted)">${ix+1}</td><td><div style="display:flex;align-items:center;gap:8px"><span class="pri-dot ${priCls(c.priority)}"></span><div><span class="cell-main">${esc(c.contact||"—")}</span> <span class="code">${esc(c.id)}</span>${isUncalled(c)?" "+FRESH:""}<span class="sub">${esc(c.facility||"")}${c.phone?" · "+esc(c.phone):""}</span>${tagHtml(c,3)}</div></div></td><td class="num">${dmy(c.date)||"—"}</td><td><span class="pill ${stClass(c.status)}">${esc(c.status||"—")}</span></td><td><span class="sub" style="color:var(--ink)">${esc(c.service||"—")}</span></td><td>${esc(c.owner||"—")}</td><td>${d&&!CLOSED.has(c.status)?`<span class="due ${d.cls}">${d.txt}</span>`:"—"}</td><td class="r num">${c.contractValue?fmt(c.contractValue):"—"}</td><td class="r num">${v.thu?fmt(v.thu):"—"}</td><td class="r num ${p<0?"neg":""}">${v.thu||v.chi?fmt(p):"—"}</td></tr>`}).join("")||`<tr><td colspan="10" class="sub">Không có khách khớp bộ lọc.</td></tr>`}
   </tbody></table></div>`:emptyBox("users","Chưa có khách nào","Thêm khách bằng tay hoặc nhập file CSV từ Google Sheets ở mục Nhập / xuất dữ liệu.",btnClient)}</section>`;
 }
 
@@ -818,7 +829,7 @@ function clientDetail(id){
   const evs=[...acts.map(a=>({k:"a",date:a.date,t:a.createdAt||0,a})),...ent.map(e=>({k:"e",date:e.date,t:e.createdAt||0,e}))].sort((x,y)=>String(y.date).localeCompare(String(x.date))||y.t-x.t);
   const info=[["Vai trò",c.role],["Điện thoại",c.phone],["Zalo / Email",c.zalo],["Mô hình",c.model],["Dịch vụ",c.service],["Khu vực",[c.region,c.address].filter(Boolean).join(" · ")],["Nguồn",c.source],["Phụ trách",c.owner],["Tiếp nhận",dmy(c.date)],["Ngày ký HĐ",dmy(c.signedDate)],["Liên hệ gần nhất",dmy(c.lastContact)]].filter(x=>x[1]);
   openModal(`<div class="sheet-h"><h3><span class="pri-dot ${priCls(c.priority)}"></span>${esc(c.contact||c.id)} <span class="code">${esc(c.id)}</span>${isUncalled(c)?FRESH:""}<span class="pill ${stClass(c.status)}">${esc(c.status||"")}</span></h3>${S.canWrite?`<button class="btn sm" type="button" data-edit-client="${esc(id)}">Sửa hồ sơ</button>`:""}<button class="btn sm ghost" type="button" data-close>Đóng</button></div>
-  <div class="sheet-b"><div class="detail">
+  <div class="sheet-b">${careBox(c)}<div class="detail">
     <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
       ${c.facility?`<div style="font-weight:600;font-size:15px">${esc(c.facility)}</div>`:""}
       <div class="facts"><div><span>Giá trị HĐ</span><b class="num">${c.contractValue?fmt(c.contractValue):"—"}</b></div><div><span>Đã thu</span><b class="num" style="color:var(--c-thu)">${fmt(thu)}</b></div><div><span>Thuế · chi phí</span><b class="num" style="color:var(--gold-ink)">${fmt(tax)} · ${fmt(chi)}</b></div><div><span>Lợi nhuận${thu?" · "+(p/thu*100).toFixed(0)+"%":""}</span><b class="num ${p<0?"neg":""}">${fmt(p)}</b></div>${owe!=null?`<div style="grid-column:1/-1"><span>Còn phải thu</span><b class="num ${owe?"neg":""}">${fmt(owe)}</b></div>`:""}</div>
@@ -956,6 +967,20 @@ async function deleteDoc(id,btn){
   await sb.from("documents").delete().eq("id",id);await reload();closeModal();toast("Đã xoá tài liệu");
 }
 
+function careBox(c){
+  if(S.needTags)return "";const t=tagsOf(c);
+  return `<div style="display:flex;flex-direction:column;gap:8px"><div class="h3">Nhãn chăm sóc<span class="r" style="text-transform:none;letter-spacing:0;font-weight:500">${isUncalled(c)?FRESH:`<span class="sub" style="display:inline">${t.length?"Bấm để bật / tắt nhãn":""}</span>`}</span></div>
+  <div class="tagbox">${CARE_TAGS.map(x=>`<button class="chip" type="button" data-tag="${esc(c.id)}|${esc(x)}" aria-pressed="${t.includes(x)}" ${S.canWrite?"":"disabled"}>${esc(x)}</button>`).join("")}</div></div>`;
+}
+async function toggleTag(key){
+  const i=key.indexOf("|");const id=key.slice(0,i),tag=key.slice(i+1);const c=S.clients.get(id);if(!c)return;
+  const t=tagsOf(c).slice();const on=t.includes(tag);const tags=on?t.filter(x=>x!==tag):[...t,tag];
+  const patch={tags,updated_at:Date.now()};
+  if(!on){if(!c.lastContact&&tag!=="Thuê bao / sai số")patch.last_contact=todayISO();if(c.status==="1. Mới tiếp nhận")patch.status="2. Đã liên hệ";if(/hẹn gặp|Đã gặp/.test(tag)&&/^[12]\./.test(patch.status||c.status||""))patch.status="3. Đang tư vấn";}
+  c.tags=tags;if(patch.last_contact)c.lastContact=patch.last_contact;if(patch.status)c.status=patch.status;
+  const ov=$(".overlay"),top=ov?ov.scrollTop:0;if(ov){clientDetail(id);const o2=$(".overlay");if(o2)o2.scrollTop=top;closeModal.dirty=true}else render();
+  S.quiet=true;try{const {error}=await sb.from("clients").update(patch).eq("id",id);if(error)throw dbErr(error);toast(on?`Đã bỏ nhãn “${tag}”`:`Đã gắn nhãn “${tag}”${patch.status?" · "+patch.status:""}`)}catch(e){writeErr(e)}finally{S.quiet=false}
+}
 function journeyBlock(c){
   if(S.needJourney)return "";const st=jState(c);const t=todayISO();const ro=S.canWrite?"":"disabled";
   if(!st.total)return SIGNED.has(c.status)||S.canWrite?`<div class="next"><span class="lbl">Hành trình hồ sơ</span><div class="sub" style="color:var(--ink)">Chưa có các bước theo dõi cho khách này.</div>${S.canWrite?`<div><button class="btn sm pri" type="button" data-jnew="${esc(c.id)}">Tạo hành trình theo dịch vụ</button></div>`:""}</div>`:"";
@@ -1069,6 +1094,7 @@ function clientForm(c){
     <label>Giá trị hợp đồng (VNĐ)<input class="ctl num" id="cValue" inputmode="decimal" value="${c.contractValue?fmt(c.contractValue):""}" placeholder="vd 90tr"></label>
     ${nm?"":`<label>Ngày ký HĐ<input class="ctl" type="date" id="cSigned" value="${esc(String(c.signedDate||"").slice(0,10))}"></label>`}
     <label>Nguồn khách<select class="ctl" id="cSource">${opt(SOURCES.includes(c.source)||!c.source?SOURCES:[c.source,...SOURCES],c.source,"")}</select></label>
+    ${S.needTags?"":`<div class="full"><span style="font-size:12.5px;font-weight:600;color:var(--muted)">Nhãn chăm sóc</span><div class="tagbox" style="margin-top:6px">${CARE_TAGS.map((x,i)=>`<label class="chip" style="display:inline-flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" class="cTag" value="${esc(x)}" ${tagsOf(c).includes(x)?"checked":""}>${esc(x)}</label>`).join("")}</div></div>`}
     ${nm?"":`<div class="sec-t">Chăm sóc</div>
     <label class="full">Việc cần làm tiếp<input class="ctl" id="cNext" value="${esc(c.nextAction)}"></label>
     <label>Hẹn liên hệ tiếp<input class="ctl" type="date" id="cNextDate" value="${esc(String(c.nextDate||"").slice(0,10))}"></label>`}
@@ -1133,6 +1159,7 @@ async function saveClient(form){
   const d={date:val("cDate"),contact:val("cContact").trim(),phone:val("cPhone").trim(),facility:val("cFacility").trim(),model:val("cModel"),service:val("cService"),status:val("cStatus"),owner:val("cOwner"),contractValue:parseMoney(val("cValue")),source:val("cSource"),note:val("cNote"),updatedAt:Date.now()};
   if(!S.needMigration)Object.assign(d,{role:val("cRole"),zalo:val("cZalo").trim(),region:val("cRegion"),address:val("cAddress").trim(),priority:val("cPriority"),signedDate:val("cSigned"),nextAction:val("cNext").trim(),nextDate:val("cNextDate")});
   if(!S.needLinks)d.driveUrl=(val("cDrive")||"").trim();
+  if(!S.needTags)d.tags=[...document.querySelectorAll(".cTag:checked")].map(x=>x.value);
   if(!S.needMigration&&SIGNED.has(d.status)&&!d.signedDate)d.signedDate=todayISO();
   if(!S.needJourney&&SIGNED.has(d.status)&&!jOf(S.clients.get(id)).length)d.journey=newJourney(d.service,d.signedDate||todayISO());
   const old=S.clients.get(id)||{};
@@ -1228,6 +1255,7 @@ document.addEventListener("click",e=>{
   const ded=t.closest("[data-dedit]");if(ded){docEditForm(ded.dataset.dedit);return}
   const ddx=t.closest("[data-ddel]");if(ddx){deleteDoc(ddx.dataset.ddel,ddx);return}
   const dct=t.closest("[data-dcat]");if(dct){S.dCat=dct.dataset.dcat;render();return}
+  const tg=t.closest("[data-tag]");if(tg){toggleTag(tg.dataset.tag);return}
   const jt=t.closest("[data-jtoggle]");if(jt){jUpdate(jt.dataset.jtoggle,(j,i)=>{const d=j[i].st==="done";j[i].st=d?"todo":"done";j[i].done=d?"":todayISO()});return}
   const jd=t.closest("[data-jdel]");if(jd){jUpdate(jd.dataset.jdel,(j,i)=>j.splice(i,1));return}
   const jn=t.closest("[data-jnew]");if(jn){const c=S.clients.get(jn.dataset.jnew);if(c)saveJourney(c.id,newJourney(c.service,SIGNED.has(c.status)?(c.signedDate||todayISO()):""));return}
@@ -1256,7 +1284,7 @@ document.addEventListener("change",e=>{const id=e.target.id,v=e.target.value;
   if(id==="eClient"){if($("#eType").value==="thu"&&!$("#fEntry").dataset.id)entryAutoInst();entryRecalc();return}
   if(id==="eTaxIncl"){entryRecalc();return}
   if(id==="eTaxRate"){entryRecalc();if(v==="x")$("#eTax").focus();return}
-  const map={cSort:"cSort",period:"period",fStatus:"fStatus",fOwner:"fOwner",fPri:"fPri",fSvc:"fSvc",tOwner:"tOwner"};
+  const map={fTag:"fTag",cSort:"cSort",period:"period",fStatus:"fStatus",fOwner:"fOwner",fPri:"fPri",fSvc:"fSvc",tOwner:"tOwner"};
   if(map[id]){S[map[id]]=v;render()}
   if(id==="lfType"){S.lf.type=v;render()}if(id==="lfCat"){S.lf.cat=v;render()}if(id==="lfClient"){S.lf.client=v;render()}
   if(e.target.dataset.jf){const parts=e.target.dataset.jf.split("|");const f=parts.pop();const v=e.target.value;jUpdate(parts.join("|"),(j,i)=>{j[i][f]=f==='note'?v.trim():v});return}
@@ -1288,12 +1316,12 @@ document.addEventListener("scroll",()=>tipEl.hidden=true,true);
 const CFG=window.HPG_CONFIG||{};let sb=null;
 const COLS_BASE={clients:["id","date","contact","phone","facility","model","service","status","owner","contract_value","source","note","updated_at"],entries:["id","type","date","client_id","category","amount","note","created_by_email","created_at","updated_at"],activities:["id","client_id","date","channel","content","result","next_date","created_by_email","created_at"]};
 const COLS_NEW={clients:["role","zalo","region","address","priority","signed_date","next_action","next_date","last_contact"],entries:["method","installment","tax"]};
-const colsFor=t=>{const base=S.needMigration?COLS_BASE[t]:[...COLS_BASE[t],...(t==="entries"?[]:COLS_NEW[t]||[]),...(t==="clients"&&!S.needJourney?["journey"]:[])];const b2=t==="clients"&&!S.needLinks?[...base,"drive_url"]:base;return t==="entries"&&!S.needFinance?[...b2,...COLS_NEW.entries]:b2};
+const colsFor=t=>{const base=S.needMigration?COLS_BASE[t]:[...COLS_BASE[t],...(t==="entries"?[]:COLS_NEW[t]||[]),...(t==="clients"&&!S.needJourney?["journey"]:[])];const b2=t==="clients"?[...base,...(!S.needLinks?["drive_url"]:[]),...(!S.needTags?["tags"]:[])]:base;return t==="entries"&&!S.needFinance?[...b2,...COLS_NEW.entries]:b2};
 const MAP={driveUrl:"drive_url",contractValue:"contract_value",updatedAt:"updated_at",clientId:"client_id",createdAt:"created_at",by:"created_by_email",signedDate:"signed_date",nextAction:"next_action",nextDate:"next_date",lastContact:"last_contact"};
 const INV=Object.fromEntries(Object.entries(MAP).map(([a,b])=>[b,a]));
 const DATE_COLS=new Set(["date","signed_date","next_date","last_contact","client_id"]);
 function toRow(t,o){const r={},cols=colsFor(t);for(const [k,v] of Object.entries(o)){if(v===undefined)continue;const c=MAP[k]||k;if(!cols.includes(c))continue;r[c]=(v===""&&DATE_COLS.has(c))?null:v}return r}
-function fromRow(r){const o={};for(const [k,v] of Object.entries(r))o[INV[k]||k]=v??"";o.amount=Number(r.amount||0);o.contractValue=Number(r.contract_value||0);o.tax=Number(r.tax||0);o.installment=Number(r.installment||0);o.method=r.method||"";o.journey=Array.isArray(r.journey)?r.journey:[];return o}
+function fromRow(r){const o={};for(const [k,v] of Object.entries(r))o[INV[k]||k]=v??"";o.amount=Number(r.amount||0);o.contractValue=Number(r.contract_value||0);o.tax=Number(r.tax||0);o.installment=Number(r.installment||0);o.method=r.method||"";o.journey=Array.isArray(r.journey)?r.journey:[];o.tags=Array.isArray(r.tags)?r.tags:[];return o}
 function dbErr(error){console.error(error);if(error.code==="23503")return {code:"fk"};if(error.code==="42501"||/row-level security|permission/i.test(error.message||""))return {code:"invalid_argument"};return {code:"unavailable"}}
 const db={
   async insert(t,d){const {error}=await sb.from(t).insert(toRow(t,d));if(error)throw dbErr(error);await reload()},
@@ -1305,7 +1333,7 @@ async function reload(){
   const [c,e,a,dc,fx,lk]=await Promise.all([sb.from("clients").select("*"),sb.from("entries").select("*").order("date",{ascending:false}).limit(5000),sb.from("activities").select("*").order("date",{ascending:false}).limit(5000),sb.from("documents").select("*").order("created_at",{ascending:false}).limit(5000),sb.from("entries").select("method,installment,tax").limit(1),sb.from("documents").select("url").limit(1)]);
   if(c.error||e.error){toast("Chưa tải được dữ liệu, thử tải lại trang");return}
   S.needMigration=!!a.error||!c.data.length?!!a.error:!("next_date" in c.data[0]);S.needJourney=S.needMigration||(c.data.length?!("journey" in c.data[0]):false);
-  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);S.needDocs=!!dc.error;S.needFinance=!!fx.error;S.needLinks=!!lk.error||(c.data.length?!("drive_url" in c.data[0]):false);S.docs=dc.error?[]:dc.data.map(r=>({...fromRow(r),docDate:r.doc_date||"",size:Number(r.size)||0}));
+  S.clients=new Map(c.data.map(r=>[r.id,fromRow(r)]));S.entries=e.data.map(fromRow);S.acts=a.error?[]:a.data.map(fromRow);S.needDocs=!!dc.error;S.needFinance=!!fx.error;S.needTags=c.data.length?!("tags" in c.data[0]):false;S.needLinks=!!lk.error||(c.data.length?!("drive_url" in c.data[0]):false);S.docs=dc.error?[]:dc.data.map(r=>({...fromRow(r),docDate:r.doc_date||"",size:Number(r.size)||0}));
   if($("#modal").innerHTML){closeModal.dirty=true;return}
   render();
 }

@@ -117,7 +117,7 @@ async function insertActs(id, lines) {
 }
 
 async function main() {
-  const cr = await rest("clients?select=id,phone,note,model,service,region");
+  const cr = await rest("clients?select=id,phone,note,model,service,region,date");
   if (!cr.ok) { console.error("Không đọc được danh sách khách từ Supabase:", cr.status); process.exit(1); }
   const clients = await cr.json();
   const byPhone = new Map(clients.map(c => [normPhone(c.phone), c]).filter(([p]) => p));
@@ -131,6 +131,7 @@ async function main() {
       const msgs = await customerMessages(page, cu, idx, phones);
       const lines = noteLines(msgs, page.name);
       const info = detect(msgs.map(m => m.text).join(" ") + " " + (cu.lives_in || ""));
+      const firstDay = [msgs[0]?.at, cu.inserted_at].filter(Boolean).map(vnDate).sort()[0] || vnDate(); // ngày đầu tiên khách nhắn
 
       if (ex) { // khách đã có: bổ sung phần còn thiếu, không ghi đè
         stats.dup++;
@@ -141,6 +142,7 @@ async function main() {
         if (!ex.model && info.model) patch.model = info.model;
         if (!ex.service && info.service) patch.service = info.service;
         if (!ex.region && info.region) patch.region = info.region;
+        if (firstDay && (!ex.date || firstDay < String(ex.date).slice(0, 10))) patch.date = firstDay;
         if (Object.keys(patch).length) {
           patch.updated_at = Date.now();
           const r = await rest(`clients?id=eq.${encodeURIComponent(ex.id)}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(patch) });
@@ -150,7 +152,7 @@ async function main() {
         continue;
       }
 
-      const date = vnDate(cu.inserted_at), today = vnDate(); let ok = false;
+      const date = firstDay, today = vnDate(); let ok = false;
       for (let tries = 0; tries < 5 && !ok; tries++) {
         const id = "KH" + String(++maxN).padStart(3, "0");
         const body = { id, date, contact: cu.name || "Khách Pancake", phone: phones[0], status: "1. Mới tiếp nhận", source: "Fanpage / Inbox", owner: OWNER, priority: "Ấm",
