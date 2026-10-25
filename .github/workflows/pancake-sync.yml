@@ -3,7 +3,12 @@ name: Đồng bộ khách từ Pancake
 on:
   schedule:
     - cron: "*/15 * * * *"   # khoảng 15 phút một lần (GitHub có thể chạy trễ vài phút)
-  workflow_dispatch: {}       # cho phép bấm "Run workflow" để chạy ngay
+  workflow_dispatch:          # cho phép bấm "Run workflow" để chạy ngay
+    inputs:
+      lookback_hours:
+        description: "Quét tin nhắn trong bao nhiêu giờ gần nhất (48 = 2 ngày, 720 = 30 ngày)"
+        required: false
+        default: "48"
 
 concurrency:
   group: pancake-sync
@@ -12,7 +17,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -25,3 +30,4 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PANCAKE_PAGES: ${{ secrets.PANCAKE_PAGES }}
           CRM_DEFAULT_OWNER: ${{ secrets.CRM_DEFAULT_OWNER }}
+          LOOKBACK_HOURS: ${{ inputs.lookback_hours || '48' }}
